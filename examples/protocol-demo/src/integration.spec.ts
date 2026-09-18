@@ -40,7 +40,7 @@ describe('Phase 1 end-to-end: client -> HTTP -> server -> core -> SSE -> client'
 
     const client = createCopilotClient({ baseUrl: started.baseUrl });
     const run = client.run({
-      message: { role: 'user', content: [{ type: 'text', text: 'Hello protocol' }] },
+      messages: [{ role: 'user', content: [{ type: 'text', text: 'Hello protocol' }] }],
     });
 
     const events: CopilotEvent[] = [];
@@ -77,7 +77,7 @@ describe('Phase 1 end-to-end: client -> HTTP -> server -> core -> SSE -> client'
 
     const client = createCopilotClient({ baseUrl: started.baseUrl });
     const run = client.run({
-      message: { role: 'user', content: [{ type: 'text', text: 'Hello protocol' }] },
+      messages: [{ role: 'user', content: [{ type: 'text', text: 'Hello protocol' }] }],
     });
     const iterator = run.events[Symbol.asyncIterator]() as AsyncIterator<
       CopilotEvent,
@@ -109,7 +109,7 @@ describe('Phase 1 end-to-end: client -> HTTP -> server -> core -> SSE -> client'
 
     const client = createCopilotClient({ baseUrl: started.baseUrl });
     const run = client.run({
-      message: { role: 'user', content: [{ type: 'text', text: 'Hello protocol' }] },
+      messages: [{ role: 'user', content: [{ type: 'text', text: 'Hello protocol' }] }],
     });
     const iterator = run.events[Symbol.asyncIterator]() as AsyncIterator<
       CopilotEvent,

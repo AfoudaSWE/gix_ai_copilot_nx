@@ -59,7 +59,7 @@ async function main(): Promise<void> {
 
   const client = createCopilotClient({ baseUrl });
   const run = client.run({
-    message: { role: 'user', content: [{ type: 'text', text: inputText }] },
+    messages: [{ role: 'user', content: [{ type: 'text', text: inputText }] }],
   });
 
   const onSigint = (): void => {
