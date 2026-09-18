@@ -1,0 +1,31 @@
+{
+  "name": "gix-ai-copilot-nx",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Framework-independent, TypeScript-first AI Copilot & Agent SDK (monorepo root)",
+  "type": "module",
+  "packageManager": "pnpm@11.1.2",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "build": "nx run-many -t build",
+    "typecheck": "nx run-many -t typecheck",
+    "test": "nx run-many -t test",
+    "lint": "nx run-many -t lint",
+    "validate": "nx run-many -t lint,typecheck,test,build",
+    "graph": "nx graph",
+    "demo": "pnpm --filter @aicopilot/protocol-demo run demo"
+  },
+  "devDependencies": {
+    "@nx/eslint-plugin": "21.6.11",
+    "@types/node": "22.20.3",
+    "eslint": "10.11.0",
+    "eslint-config-prettier": "10.1.8",
+    "nx": "21.6.11",
+    "prettier": "3.9.8",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.70.0",
+    "vitest": "5.0.1"
+  }
+}
