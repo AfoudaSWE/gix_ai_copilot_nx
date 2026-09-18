@@ -28,7 +28,11 @@ function delay(ms: number, signal: AbortSignal): Promise<void> {
 }
 
 function extractInputText(input: ExecutorInput): string {
-  return input.message.content
+  const lastMessage = input.messages.at(-1);
+  if (!lastMessage) {
+    return '';
+  }
+  return lastMessage.content
     .filter((part) => part.type === 'text')
     .map((part) => part.text)
     .join('');
@@ -47,7 +51,7 @@ export function createEchoExecutor(options: EchoExecutorOptions = {}): Executor 
   const delayMsPerChunk = options.delayMsPerChunk ?? 0;
 
   return {
-    async *execute(input: ExecutorInput, context: ExecutorContext): AsyncIterable<string> {
+    async *execute(input: ExecutorInput, context: ExecutorContext) {
       const text = extractInputText(input);
       const chunks = text.match(/\S+|\s+/g) ?? [];
 

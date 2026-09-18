@@ -6,7 +6,10 @@ async function collect(executor: ReturnType<typeof createEchoExecutor>, text: st
   const controller = new AbortController();
   const chunks: string[] = [];
   for await (const chunk of executor.execute(
-    { threadId: createThreadId(), message: { role: 'user', content: [{ type: 'text', text }] } },
+    {
+      threadId: createThreadId(),
+      messages: [{ role: 'user', content: [{ type: 'text', text }] }],
+    },
     { runId: createRunId(), signal: controller.signal },
   )) {
     chunks.push(chunk);
@@ -34,6 +37,25 @@ describe('createEchoExecutor', () => {
     expect(chunks).toEqual([]);
   });
 
+  it('echoes only the latest message, ignoring earlier conversation history', async () => {
+    const executor = createEchoExecutor();
+    const chunks: string[] = [];
+    for await (const chunk of executor.execute(
+      {
+        threadId: createThreadId(),
+        messages: [
+          { role: 'user', content: [{ type: 'text', text: 'ignored' }] },
+          { role: 'assistant', content: [{ type: 'text', text: 'also ignored' }] },
+          { role: 'user', content: [{ type: 'text', text: 'latest' }] },
+        ],
+      },
+      { runId: createRunId(), signal: new AbortController().signal },
+    )) {
+      chunks.push(chunk);
+    }
+    expect(chunks.join('')).toBe('latest');
+  });
+
   it('stops yielding once its signal is already aborted', async () => {
     const executor = createEchoExecutor();
     const controller = new AbortController();
@@ -42,7 +64,7 @@ describe('createEchoExecutor', () => {
     for await (const chunk of executor.execute(
       {
         threadId: createThreadId(),
-        message: { role: 'user', content: [{ type: 'text', text: 'Hello protocol' }] },
+        messages: [{ role: 'user', content: [{ type: 'text', text: 'Hello protocol' }] }],
       },
       { runId: createRunId(), signal: controller.signal },
     )) {

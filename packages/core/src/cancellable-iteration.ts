@@ -16,29 +16,33 @@ function waitForAbort(signal: AbortSignal): Promise<typeof ABORTED> {
  * well-behaved executor gets a chance to release its own resources (timers, sockets, etc).
  * This exists so cancellation stays prompt even against an executor that is slow to notice
  * `context.signal` on its own - see the executor module's cancellation contract.
+ *
+ * The source generator's own return value (e.g. an Executor's ExecutorCompletion) is
+ * propagated through when it finishes naturally; on abort there is no real completion value
+ * to report, so `undefined` is returned instead.
  */
-export async function* cancellable<T>(
-  iterable: AsyncIterable<T>,
+export async function* cancellable<T, TReturn = void>(
+  iterable: AsyncIterable<T> | AsyncGenerator<T, TReturn, undefined>,
   signal: AbortSignal,
-): AsyncGenerator<T, void, undefined> {
-  // Explicitly parametrized (TReturn = void, not the default `any`) so `.next()`'s result
-  // stays properly typed instead of letting `value` collapse to `any` - see
-  // typescript-standards' no-`any` rule.
-  const iterator = iterable[Symbol.asyncIterator]() as AsyncIterator<T, void, undefined>;
+): AsyncGenerator<T, TReturn | undefined, undefined> {
+  // Explicitly parametrized (not the default `any` for TReturn) so `.next()`'s result stays
+  // properly typed instead of letting `value` collapse to `any` - see typescript-standards'
+  // no-`any` rule.
+  const iterator = iterable[Symbol.asyncIterator]() as AsyncIterator<T, TReturn, undefined>;
   try {
     while (true) {
       if (signal.aborted) {
-        return;
+        return undefined;
       }
 
       const outcome = await Promise.race([iterator.next(), waitForAbort(signal)]);
       if (outcome === ABORTED) {
-        return;
+        return undefined;
       }
 
       const { value, done } = outcome;
       if (done) {
-        return;
+        return value;
       }
       yield value;
     }

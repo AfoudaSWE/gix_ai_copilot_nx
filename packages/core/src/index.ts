@@ -2,7 +2,13 @@ export { RunLifecycle } from './lifecycle.js';
 
 export { EventSequencer } from './sequencer.js';
 
-export type { Executor, ExecutorContext, ExecutorInput, ExecutorMessageInput } from './executor.js';
+export type {
+  Executor,
+  ExecutorCompletion,
+  ExecutorContext,
+  ExecutorInput,
+  ExecutorMessageInput,
+} from './executor.js';
 
 export { cancellable } from './cancellable-iteration.js';
 

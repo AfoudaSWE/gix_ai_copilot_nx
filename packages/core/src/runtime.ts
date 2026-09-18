@@ -18,7 +18,7 @@ import type {
 import { cancellable } from './cancellable-iteration.js';
 import { RunLifecycle } from './lifecycle.js';
 import { EventSequencer } from './sequencer.js';
-import type { Executor } from './executor.js';
+import type { Executor, ExecutorCompletion } from './executor.js';
 
 export interface RunMessageInput {
   readonly role: MessageRole;
@@ -27,7 +27,12 @@ export interface RunMessageInput {
 
 export interface RunOptions {
   readonly threadId?: ThreadId;
-  readonly message: RunMessageInput;
+  /**
+   * The full conversation so far, oldest first. Renamed/pluralized in Phase 2 (was a single
+   * `message`) so multi-turn history can reach a model executor - see
+   * docs/adr/0006-model-provider-abstraction.md.
+   */
+  readonly messages: readonly RunMessageInput[];
   /** Cancels the run if aborted, in addition to the `cancel()` method on the returned run. */
   readonly signal?: AbortSignal;
 }
@@ -100,15 +105,30 @@ export function createRuntime(options: CreateRuntimeOptions): Runtime {
             role: 'assistant',
           };
 
-          const executorInput = { threadId, message: runOptions.message };
+          const executorInput = { threadId, messages: runOptions.messages };
           const executorContext = { runId, signal: abortController.signal };
 
-          for await (const delta of cancellable(
+          // Driven manually (not `for await`) so the executor's own return value
+          // (ExecutorCompletion - usage/finishReason) is captured once it finishes, rather
+          // than discarded the way a plain `for await` loop would discard it.
+          const deltaIterator = cancellable(
             executor.execute(executorInput, executorContext),
             abortController.signal,
-          )) {
-            aggregatedText += delta;
-            yield { ...envelope(), type: 'message.delta', messageId: assistantMessageId, delta };
+          );
+          let completion: ExecutorCompletion | undefined;
+          while (true) {
+            const step = await deltaIterator.next();
+            if (step.done) {
+              completion = step.value ?? undefined;
+              break;
+            }
+            aggregatedText += step.value;
+            yield {
+              ...envelope(),
+              type: 'message.delta',
+              messageId: assistantMessageId,
+              delta: step.value,
+            };
           }
 
           if (abortController.signal.aborted) {
@@ -121,7 +141,14 @@ export function createRuntime(options: CreateRuntimeOptions): Runtime {
           yield { ...envelope(), type: 'message.end', messageId: assistantMessageId, content };
 
           lifecycle.transitionTo('completed');
-          yield { ...envelope(), type: 'run.completed', usage: createEmptyUsage() };
+          yield {
+            ...envelope(),
+            type: 'run.completed',
+            usage: completion?.usage ?? createEmptyUsage(),
+            ...(completion?.finishReason !== undefined
+              ? { finishReason: completion.finishReason }
+              : {}),
+          };
         } catch (error) {
           if (abortController.signal.aborted) {
             lifecycle.transitionTo('cancelled');
