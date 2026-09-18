@@ -1,0 +1,25 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "protocol",
+  "projectType": "library",
+  "sourceRoot": "packages/protocol/src",
+  "tags": ["scope:protocol", "type:lib"],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm run build", "cwd": "packages/protocol" }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm run typecheck", "cwd": "packages/protocol" }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm run test", "cwd": "packages/protocol" }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm run lint", "cwd": "packages/protocol" }
+    }
+  }
+}
