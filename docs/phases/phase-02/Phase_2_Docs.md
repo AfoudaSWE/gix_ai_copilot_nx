@@ -19,10 +19,13 @@ root under `docs/` (`PROJECT_STATUS.md`, `DECISIONS.md`, `TECHNICAL_DEBT.md`,
 
 ## A Note on Phase 1's Documentation Set
 
-The Phase 2 prompt asked to read `docs/phases/phase-01/*` before starting; that directory
-did not exist — Phase 1's actual documentation lives at `docs/architecture/overview.md` and
-`docs/adr/0001`–`0005`, plus each package's own README. Per Phase 2 Section 2 ("Do not
-assume the original Phase 1 prompt exactly matches repository reality — the repository is
-the source of truth"), this was treated as the authoritative Phase 1 record rather than
-retroactively fabricated into the `phase-01/` shape. This `phase-02/` directory is the first
-of its kind in the repository.
+At the time this `phase-02/` directory was written, the Phase 2 prompt had asked to read a
+`docs/phases/phase-01/*` directory that did not yet exist — Phase 1's contemporaneous
+documentation was (and still is) `docs/architecture/overview.md` and `docs/adr/0001`–`0005`,
+plus each package's own README. Per Phase 2 Section 2 ("Do not assume the original Phase 1
+prompt exactly matches repository reality — the repository is the source of truth"), that
+was treated as the authoritative Phase 1 record rather than retroactively fabricated into
+the `phase-01/` shape at the time. A `docs/phases/phase-01/` directory was subsequently
+added on explicit request, after Phase 2 completed — see its own
+[Phase_1_Docs.md](../phase-01/Phase_1_Docs.md) for how it was reconstructed and why it
+still defers to the original ADRs as the primary source.

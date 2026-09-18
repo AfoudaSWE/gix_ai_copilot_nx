@@ -2,7 +2,8 @@
 
 > This file did not exist before Phase 2. Phase 1 recorded its status via
 > `docs/architecture/overview.md` and `docs/adr/*`; those remain the source of truth for
-> Phase 1's design record. This file is the ongoing, phase-by-phase status tracker going
+> Phase 1's design record (a `docs/phases/phase-01/` index was added later, on request, but
+> defers to the same ADRs). This file is the ongoing, phase-by-phase status tracker going
 > forward, per Phase 2's documentation requirements.
 
 ## Phase Status
@@ -31,7 +32,7 @@ phase is started without an explicit instruction naming it.
   established, proving `Client -> HTTP -> Server -> Core -> SSE -> Client` end to end with
   a deterministic (non-AI) executor.
 - Full record: `docs/architecture/overview.md`, `docs/adr/0001`–`0005`,
-  `examples/protocol-demo/`.
+  `docs/phases/phase-01/`, `examples/protocol-demo/`.
 
 ## Phase 2 — LLM Runtime & Streaming (COMPLETE)
 

@@ -39,8 +39,8 @@
 
 ## Changed Public APIs (breaking, pre-1.0)
 
-| API                                       | Before (Phase 1)                  | After (Phase 2)                                                                  |
-| ----------------------------------------- | --------------------------------- | -------------------------------------------------------------------------------- |
+| API                                        | Before (Phase 1)                  | After (Phase 2)                                                                  |
+| ------------------------------------------ | --------------------------------- | -------------------------------------------------------------------------------- |
 | `@gixcopilot/core` `Executor.execute()`    | returns `AsyncIterable<string>`   | returns `AsyncGenerator<string, ExecutorCompletion \| void, undefined>`          |
 | `@gixcopilot/core` `ExecutorInput`         | `{ threadId, message }`           | `{ threadId, messages }`                                                         |
 | `@gixcopilot/core` `RunOptions`            | `{ threadId?, message, signal? }` | `{ threadId?, messages, signal? }`                                               |
