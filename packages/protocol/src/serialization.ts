@@ -33,6 +33,14 @@ const publicCopilotErrorSchema = z.object({
     'TRANSPORT_ERROR',
     'CANCELLED',
     'INTERNAL_ERROR',
+    'MODEL_ERROR',
+    'PROVIDER_ERROR',
+    'AUTHENTICATION_ERROR',
+    'RATE_LIMITED',
+    'MODEL_NOT_FOUND',
+    'CONTEXT_LIMIT_EXCEEDED',
+    'TIMEOUT',
+    'NETWORK_ERROR',
   ]),
   message: z.string(),
   retryable: z.boolean(),
@@ -45,6 +53,15 @@ const contentPartSchema = z.object({
 });
 
 const messageRoleSchema = z.enum(['system', 'user', 'assistant', 'tool']);
+
+const finishReasonSchema = z.enum([
+  'stop',
+  'length',
+  'content_filter',
+  'cancelled',
+  'error',
+  'unknown',
+]);
 
 /** Common fields present on every event, regardless of whether `type` is recognized. */
 const copilotEventBaseSchema = z.object({
@@ -63,6 +80,7 @@ const runStartedEventSchema = copilotEventBaseSchema.extend({
 const runCompletedEventSchema = copilotEventBaseSchema.extend({
   type: z.literal('run.completed'),
   usage: usageSchema,
+  finishReason: finishReasonSchema.optional(),
 });
 
 const runFailedEventSchema = copilotEventBaseSchema.extend({

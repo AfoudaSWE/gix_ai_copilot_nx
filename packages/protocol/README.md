@@ -8,15 +8,18 @@ plus runtime validation (Zod) and (de)serialization for those shapes.
 
 ## Responsibilities
 
-- Define `Message`, `Thread`, `Run`, `Usage`, and `CopilotEvent` (and its 8 concrete
-  variants) as plain TypeScript types.
-- Define the normalized `CopilotError` taxonomy and its safe-to-serialize public
+- Define `Message`, `Thread`, `Run`, `Usage`, `FinishReason`, and `CopilotEvent` (and its 8
+  concrete variants) as plain TypeScript types.
+- Define the normalized `CopilotError` taxonomy (extended in Phase 2 with
+  `MODEL_ERROR`/`PROVIDER_ERROR`/`AUTHENTICATION_ERROR`/`RATE_LIMITED`/`MODEL_NOT_FOUND`/
+  `CONTEXT_LIMIT_EXCEEDED`/`TIMEOUT`/`NETWORK_ERROR` — see
+  `docs/adr/0006-model-provider-abstraction.md`) and its safe-to-serialize public
   projection.
 - Provide `parseEvent()` / `serializeEvent()` for validating and (de)serializing events at
   a transport boundary, with explicit, three-way handling of known / forward-compatible
   unknown / malformed input.
 - Own the protocol version constant (`PROTOCOL_VERSION`).
-- Provide branded ID types (`RunId`, `ThreadId`, `MessageId`, `EventId`) and their
+- Provide ID type aliases (`RunId`, `ThreadId`, `MessageId`, `EventId`) and their
   factories.
 
 ## Public API

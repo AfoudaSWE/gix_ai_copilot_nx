@@ -3,6 +3,7 @@ import type { ProtocolVersion } from './version.js';
 import type { MessageRole, ContentPart } from './message.js';
 import type { Usage } from './usage.js';
 import type { PublicCopilotError } from './errors.js';
+import type { FinishReason } from './finish-reason.js';
 
 /**
  * Naming convention (documented per the protocol-design skill's requirement to pick one
@@ -37,6 +38,12 @@ export interface RunStartedEvent extends CopilotEventBase {
 export interface RunCompletedEvent extends CopilotEventBase {
   readonly type: 'run.completed';
   readonly usage: Usage;
+  /**
+   * Added in Phase 2 (see docs/adr/0006-model-provider-abstraction.md) - optional so a
+   * Phase 1 client that has never heard of finish reasons keeps working unmodified. Absent
+   * for a run that didn't go through a model (e.g. the deterministic echo executor).
+   */
+  readonly finishReason?: FinishReason;
 }
 
 export interface RunFailedEvent extends CopilotEventBase {

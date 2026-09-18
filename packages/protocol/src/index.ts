@@ -22,6 +22,8 @@ export type {
 export { createEmptyUsage, addUsage } from './usage.js';
 export type { Usage } from './usage.js';
 
+export type { FinishReason } from './finish-reason.js';
+
 export type { MessageRole, ContentPart, Message } from './message.js';
 
 export type { Thread } from './thread.js';

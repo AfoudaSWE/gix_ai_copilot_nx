@@ -6,6 +6,7 @@ import type {
   CopilotEvent,
   CopilotEventBase,
   MessageStartEvent,
+  RunCompletedEvent,
   RunStartedEvent,
 } from './events.js';
 
@@ -115,5 +116,34 @@ describe('parseEvent', () => {
     const candidate = { ...baseEnvelope(0), type: 'run.started' };
     const result = parseEvent(candidate);
     expect(result.kind).toBe('invalid');
+  });
+
+  it('accepts run.completed both with and without the optional Phase 2 finishReason field', () => {
+    const withoutFinishReason: RunCompletedEvent = {
+      ...baseEnvelope(1),
+      type: 'run.completed',
+      usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
+    };
+    expect(parseEvent(withoutFinishReason).kind).toBe('known');
+
+    const withFinishReason: RunCompletedEvent = {
+      ...withoutFinishReason,
+      finishReason: 'stop',
+    };
+    const result = parseEvent(withFinishReason);
+    expect(result.kind).toBe('known');
+    if (result.kind === 'known' && result.event.type === 'run.completed') {
+      expect(result.event.finishReason).toBe('stop');
+    }
+  });
+
+  it('rejects run.completed with an unrecognized finishReason value', () => {
+    const invalid = {
+      ...baseEnvelope(1),
+      type: 'run.completed',
+      usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
+      finishReason: 'not-a-real-reason',
+    };
+    expect(parseEvent(invalid).kind).toBe('invalid');
   });
 });

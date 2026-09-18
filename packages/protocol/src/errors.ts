@@ -1,10 +1,23 @@
 /**
- * Normalized protocol-level error taxonomy. Provider/model error categories are explicitly
- * out of scope for Phase 1 - see the ai-runtime skill for where those get normalized once
- * an LLM runtime exists.
+ * Normalized protocol-level error taxonomy. The MODEL_ERROR..NETWORK_ERROR codes were added
+ * in Phase 2 (see docs/adr/0006-model-provider-abstraction.md) once an LLM runtime existed
+ * to normalize provider failures into - a provider adapter's job is to map its raw errors
+ * onto this fixed set, never to invent new codes of its own (see the ai-runtime skill).
  */
 export type CopilotErrorCode =
-  'PROTOCOL_ERROR' | 'VALIDATION_ERROR' | 'TRANSPORT_ERROR' | 'CANCELLED' | 'INTERNAL_ERROR';
+  | 'PROTOCOL_ERROR'
+  | 'VALIDATION_ERROR'
+  | 'TRANSPORT_ERROR'
+  | 'CANCELLED'
+  | 'INTERNAL_ERROR'
+  | 'MODEL_ERROR'
+  | 'PROVIDER_ERROR'
+  | 'AUTHENTICATION_ERROR'
+  | 'RATE_LIMITED'
+  | 'MODEL_NOT_FOUND'
+  | 'CONTEXT_LIMIT_EXCEEDED'
+  | 'TIMEOUT'
+  | 'NETWORK_ERROR';
 
 export type CopilotErrorMetadata = Readonly<Record<string, unknown>>;
 
@@ -70,5 +83,44 @@ export class CopilotError extends Error {
 
   static internal(message: string, cause?: unknown): CopilotError {
     return new CopilotError('INTERNAL_ERROR', message, { retryable: false, cause });
+  }
+
+  static model(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('MODEL_ERROR', message, { retryable: false, metadata });
+  }
+
+  static provider(
+    message: string,
+    metadata?: CopilotErrorMetadata,
+    retryable = false,
+  ): CopilotError {
+    return new CopilotError('PROVIDER_ERROR', message, { retryable, metadata });
+  }
+
+  static authentication(message = 'Provider authentication failed.'): CopilotError {
+    return new CopilotError('AUTHENTICATION_ERROR', message, { retryable: false });
+  }
+
+  static rateLimited(
+    message = 'Provider rate limit exceeded.',
+    metadata?: CopilotErrorMetadata,
+  ): CopilotError {
+    return new CopilotError('RATE_LIMITED', message, { retryable: true, metadata });
+  }
+
+  static modelNotFound(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('MODEL_NOT_FOUND', message, { retryable: false, metadata });
+  }
+
+  static contextLimitExceeded(message = 'The model context limit was exceeded.'): CopilotError {
+    return new CopilotError('CONTEXT_LIMIT_EXCEEDED', message, { retryable: false });
+  }
+
+  static timeout(message = 'The request timed out.'): CopilotError {
+    return new CopilotError('TIMEOUT', message, { retryable: true });
+  }
+
+  static networkError(message: string, cause?: unknown): CopilotError {
+    return new CopilotError('NETWORK_ERROR', message, { retryable: true, cause });
   }
 }
