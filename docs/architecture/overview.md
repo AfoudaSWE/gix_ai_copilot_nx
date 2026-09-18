@@ -1,11 +1,13 @@
-# Architecture Overview — Phase 1
+# Architecture Overview — Phase 2
 
 ## Request Flow
+
+Two paths exist side by side, selected by whether the request names a `model`:
 
 ```text
 Client
  |
- |  createCopilotClient({ baseUrl }).run({ message })
+ |  createCopilotClient({ baseUrl }).run({ model?, messages })
  v
 Transport (CopilotTransport)
  |
@@ -13,19 +15,34 @@ Transport (CopilotTransport)
  v
 Server (@aicopilot/server, Fastify)
  |
- |  validates body (Zod) -> runtime.run({ message })
- v
-Core (@aicopilot/core)
+ |  validates body (Zod)
  |
- |  createRuntime({ executor }) drives one Run
- v
-Executor (generic run/execution boundary)
+ +-- no `model` field -----------------> options.runtime.run({ messages })     (Phase 1 path)
  |
- |  yields text deltas (createEchoExecutor for Phase 1 - not an LLM)
- v
-Core translates deltas into CopilotEvents
+ +-- `model` field present ------------> createModelExecutor({ runtime: modelRuntime, model })
+                                          then createRuntime({ executor }).run({ messages })
+                                                     |
+                                                     v
+                                          Model Runtime (@aicopilot/provider)
+                                                     |
+                                                     |  provider lookup, timeout, retry, latency
+                                                     v
+                                          ModelProvider (mock | openai | ...)
+                                                     |
+                                                     |  raw provider chunk
+                                                     v
+                                          Provider Adapter normalizes to ModelStreamEvent
+                                                     |
+                                                     |  content.delta / usage.updated / model.completed
+                                                     v
+                                          createModelExecutor yields text deltas + ExecutorCompletion
+                                                     |
+                                                     v
+Core (@aicopilot/core) - createRuntime({ executor }) drives one Run either way
  |
- |  run.started, message.started, message.delta*, message.end, run.completed
+ |  translates executor output into CopilotEvents
+ |  run.started, message.started, message.delta*, message.end,
+ |  run.completed (usage + optional finishReason), run.failed, run.cancelled
  v
 Server serializes each event and writes an SSE frame
  |
@@ -33,30 +50,40 @@ Server serializes each event and writes an SSE frame
 Client parses the SSE stream back into typed, validated CopilotEvents
 ```
 
-No LLM is involved anywhere in this flow. The `Executor` interface in `@aicopilot/core` is
-the seam where a real model integration will attach in Phase 2 — see the `ai-runtime`
-skill.
+`@aicopilot/core` never learns which path it's on — both paths hand it the same `Executor`
+shape, per `docs/adr/0002-framework-independent-core.md` and
+`docs/adr/0006-model-provider-abstraction.md`.
 
 ## Package Responsibilities
 
-| Package                  | Responsibility                                                                             | Must never depend on                                                                  |
-| ------------------------ | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
-| `@aicopilot/protocol`    | Wire contracts (`Message`, `Thread`, `Run`, `CopilotEvent`), validation, (de)serialization | anything else in the workspace                                                        |
-| `@aicopilot/core`        | Run lifecycle, event sequencing, cancellation, the `Executor` boundary                     | Fastify, any LLM provider, `@aicopilot/server`, `@aicopilot/client`, any UI framework |
-| `@aicopilot/server`      | HTTP/SSE adapter: validation, run creation, streaming, cancellation, error mapping         | any UI framework; must not embed executor/AI logic itself (it's injected)             |
-| `@aicopilot/client`      | Framework-independent streaming client, transport abstraction                              | `@aicopilot/server`, React, Angular                                                   |
-| `examples/protocol-demo` | Proves the full stack end to end with a deterministic executor                             | — (may depend on everything above)                                                    |
+| Package                      | Responsibility                                                                                                                                  | Must never depend on                                                                                           |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `@aicopilot/protocol`        | Wire contracts (`Message`, `Thread`, `Run`, `CopilotEvent`, `FinishReason`), validation, (de)serialization                                      | anything else in the workspace                                                                                 |
+| `@aicopilot/core`            | Run lifecycle, event sequencing, cancellation, the `Executor` boundary                                                                          | Fastify, any LLM provider or `@aicopilot/provider`, `@aicopilot/server`, `@aicopilot/client`, any UI framework |
+| `@aicopilot/provider`        | Provider-neutral model contracts, registry, `ModelRuntime` (retry/timeout/cancellation/usage/latency), `createModelExecutor` bridge into `core` | any concrete provider SDK, `@aicopilot/server`, `@aicopilot/client`, any UI framework                          |
+| `@aicopilot/provider-mock`   | Deterministic, non-network `ModelProvider` for tests/examples/CI                                                                                | any other provider adapter                                                                                     |
+| `@aicopilot/provider-openai` | OpenAI streaming `ModelProvider`; the only package allowed to depend on the `openai` SDK                                                        | any other provider adapter                                                                                     |
+| `@aicopilot/server`          | HTTP/SSE adapter: validation, run creation (default or model-backed), streaming, cancellation, error mapping                                    | any UI framework, any concrete provider adapter; must not embed executor/AI logic itself (injected)            |
+| `@aicopilot/client`          | Framework-independent streaming client, transport abstraction, opaque `model` pass-through                                                      | `@aicopilot/server`, `@aicopilot/provider`, React, Angular                                                     |
+| `examples/protocol-demo`     | Proves the Phase 1 stack end to end with a deterministic executor                                                                               | — (may depend on everything above)                                                                             |
+| `examples/model-streaming`   | Proves the Phase 2 model runtime end to end, mock by default, optional real OpenAI                                                              | — (may depend on everything above)                                                                             |
 
 ## Dependency Direction
 
 ```text
-@aicopilot/protocol
-        ^       ^
-        |       |
-   @aicopilot/  @aicopilot/core
-   client              ^
-                        |
-                  @aicopilot/server
+                         @aicopilot/protocol
+                         ^   ^    ^      ^
+                         |   |    |      |
+   @aicopilot/client ----+   |    |      +---- @aicopilot/provider
+                             |    |                ^        ^
+                     @aicopilot/core                |        |
+                             ^                       |        |
+                             |                        |        |
+                       @aicopilot/server -------------+        |
+                                                                 |
+                                        @aicopilot/provider-mock, @aicopilot/provider-openai
+                                        (each depends on @aicopilot/provider + protocol only,
+                                         never on each other)
 ```
 
 Enforced two ways:
@@ -65,27 +92,28 @@ Enforced two ways:
    into another package's `src/` cannot resolve, at either the TypeScript or the Node.js
    module-resolution level.
 2. **By lint rule**, via `@nx/enforce-module-boundaries` in `eslint.config.js`, using tags
-   (`scope:protocol`, `scope:core`, `scope:client`, `scope:server`, `scope:example`) and
-   explicit `depConstraints`. A `protocol -> core` import, for example, is rejected at lint
-   time (verified manually during Phase 1 validation by introducing exactly that import and
-   confirming `eslint` fails on it).
+   (`scope:protocol`, `scope:core`, `scope:client`, `scope:server`, `scope:provider`,
+   `scope:provider-adapter`, `scope:example`) and explicit `depConstraints`. Verified
+   manually each phase by introducing a forbidden import (e.g. `protocol -> core` in
+   Phase 1, `provider-mock -> provider-openai` in Phase 2) and confirming `eslint` rejects
+   it, then reverting.
 
-This is the Phase 1 slice of the long-term target architecture:
+This is the Phase 1+2 slice of the long-term target architecture:
 
 ```text
 Framework SDKs (React, Angular)         <- Phase 3, 12
       |
-Client SDK                              <- @aicopilot/client (this phase)
+Client SDK                              <- @aicopilot/client
       |
-Protocol                                <- @aicopilot/protocol (this phase)
+Protocol                                <- @aicopilot/protocol
       |
-Server                                  <- @aicopilot/server (this phase)
+Server                                  <- @aicopilot/server
       |
-Core Runtime                            <- @aicopilot/core (this phase)
+Core Runtime                            <- @aicopilot/core
       |
 Agents / Context / Tools                <- Phase 4, 5, 10
       |
-Adapters (LLM providers, DB, MCP, ...)  <- Phase 2, 8, 9
+Adapters (LLM providers, DB, MCP, ...)  <- @aicopilot/provider(-mock|-openai) (this phase), Phase 8, 9
 ```
 
 ## Module Resolution & Build Strategy
@@ -103,20 +131,26 @@ Adapters (LLM providers, DB, MCP, ...)  <- Phase 2, 8, 9
   built yet, via TypeScript's project-reference source redirect.
 - **Nx** orchestrates and caches `lint` / `typecheck` / `test` / `build` per project
   (`nx.json` + each package's `project.json`), without relying on a heavier plugin stack
-  (`@nx/js`, `@nx/vite`, etc.) that isn't needed at this phase's scale — see
-  [ADR 0001](../adr/0001-monorepo-and-package-boundaries.md).
+  (`@nx/js`, `@nx/vite`, etc.) — see [ADR 0001](../adr/0001-monorepo-and-package-boundaries.md).
+- Provider packages live under `packages/providers/*` (a nested workspace glob,
+  `packages/providers/*`, added alongside `packages/*` in `pnpm-workspace.yaml`) to keep
+  them visually grouped as a family, per Section 6's suggested layout.
 
-## Known Phase 1 Limitations
+## Known Limitations
 
 Disclosed rather than hidden, per the code-review skill:
 
 - Each package's `tsconfig.json` includes its own `*.spec.ts` files in the same compiled
-  program as its source, so `dist/` currently also contains compiled test files. Splitting
-  build/typecheck configs to exclude tests from `dist/` is deferred — it doesn't affect
-  correctness (nothing outside `.` is ever importable per the `exports` field) but is
-  slightly wasteful for an eventual npm-publish step.
+  program as its source, so `dist/` currently also contains compiled test files. Deferred
+  cleanup — doesn't affect correctness (nothing outside `.` is ever importable per the
+  `exports` field), slightly wasteful for an eventual npm-publish step.
 - The server's run registry (`@aicopilot/server`'s `createRunRegistry`) is in-memory and
   process-local; it does not survive a restart and does not coordinate across multiple
   server instances.
 - IDs (`RunId`, `ThreadId`, etc.) are plain `string` aliases, not nominally-branded types —
   see the comment in `packages/protocol/src/ids.ts` for why branding was tried and dropped.
+- **(Phase 2)** Model selection is static configuration (`defaultProvider`/`defaultModel`
+  or a per-request `model` field) — there is no intelligent routing, cost-aware model
+  selection, or automatic multi-provider fallback (explicitly out of scope; Section 35/36).
+- **(Phase 2)** `ModelRuntime`'s retry backoff uses real (not virtual/fake) timers; tests
+  keep this fast by setting `baseDelayMs`/`maxDelayMs` to `0` rather than by mocking time.
