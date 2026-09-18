@@ -9,9 +9,11 @@ import eslintConfigPrettier from 'eslint-config-prettier';
  * Module boundaries (dependency direction between packages) are enforced here via
  * `@nx/enforce-module-boundaries`, per the project-architecture and nx-monorepo skills:
  * protocol must not depend on anything else in the workspace; core may depend on protocol;
- * client may depend on protocol; server may depend on protocol + core; examples may depend
- * on anything. This is the executable form of the dependency-direction diagram in
- * docs/architecture/overview.md.
+ * client may depend on protocol; server may depend on protocol + core + the provider
+ * contract; the provider contract (`@aicopilot/provider`) may depend on protocol + core;
+ * provider adapters (mock, openai) may depend on protocol + core + the provider contract,
+ * but never on each other; examples may depend on anything. This is the executable form of
+ * the dependency-direction diagram in docs/architecture/overview.md.
  */
 export default tseslint.config(
   {
@@ -59,7 +61,20 @@ export default tseslint.config(
             },
             {
               sourceTag: 'scope:server',
-              onlyDependOnLibsWithTags: ['scope:protocol', 'scope:core', 'scope:server'],
+              onlyDependOnLibsWithTags: [
+                'scope:protocol',
+                'scope:core',
+                'scope:server',
+                'scope:provider',
+              ],
+            },
+            {
+              sourceTag: 'scope:provider',
+              onlyDependOnLibsWithTags: ['scope:protocol', 'scope:core', 'scope:provider'],
+            },
+            {
+              sourceTag: 'scope:provider-adapter',
+              onlyDependOnLibsWithTags: ['scope:protocol', 'scope:core', 'scope:provider'],
             },
             {
               sourceTag: 'scope:example',
@@ -68,6 +83,8 @@ export default tseslint.config(
                 'scope:core',
                 'scope:client',
                 'scope:server',
+                'scope:provider',
+                'scope:provider-adapter',
                 'scope:example',
               ],
             },

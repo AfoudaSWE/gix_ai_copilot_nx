@@ -15,6 +15,9 @@ export const workspaceAliases = {
   '@aicopilot/core': `${workspaceRoot}packages/core/src/index.ts`,
   '@aicopilot/client': `${workspaceRoot}packages/client/src/index.ts`,
   '@aicopilot/server': `${workspaceRoot}packages/server/src/index.ts`,
+  '@aicopilot/provider': `${workspaceRoot}packages/providers/provider-core/src/index.ts`,
+  '@aicopilot/provider-mock': `${workspaceRoot}packages/providers/mock/src/index.ts`,
+  '@aicopilot/provider-openai': `${workspaceRoot}packages/providers/openai/src/index.ts`,
 };
 
 export const sharedTestConfig = {

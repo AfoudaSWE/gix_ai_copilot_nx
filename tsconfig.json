@@ -5,6 +5,10 @@
     { "path": "packages/core" },
     { "path": "packages/client" },
     { "path": "packages/server" },
-    { "path": "examples/protocol-demo" }
+    { "path": "packages/providers/provider-core" },
+    { "path": "packages/providers/mock" },
+    { "path": "packages/providers/openai" },
+    { "path": "examples/protocol-demo" },
+    { "path": "examples/model-streaming" }
   ]
 }
