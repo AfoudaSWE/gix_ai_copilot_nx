@@ -1,18 +1,53 @@
 import Fastify, { type FastifyInstance } from 'fastify';
 import { CopilotError, asRunId, asThreadId } from '@aicopilot/protocol';
-import type { Runtime } from '@aicopilot/core';
+import { createRuntime, type Runtime } from '@aicopilot/core';
+import { createModelExecutor, type ModelRuntime } from '@aicopilot/provider';
 import { createRunRegistry } from './run-registry.js';
 import { formatSseComment, formatSseFrame, SSE_RESPONSE_HEADERS } from './sse.js';
-import { cancelRunParamsSchema, createRunRequestSchema } from './schemas.js';
+import {
+  cancelRunParamsSchema,
+  createRunRequestSchema,
+  type CreateRunRequestBody,
+} from './schemas.js';
 
 export interface CreateServerOptions {
   /**
-   * The runtime to execute runs against. The server has no opinion on what executor backs
-   * it - dependency injection, per the node-backend skill - so it never embeds AI/business
-   * logic itself. Pass `createRuntime({ executor: ... })` from @aicopilot/core.
+   * The runtime a request without a `model` field executes against (Phase 1 behavior, e.g.
+   * the deterministic echo executor). The server has no opinion on what executor backs it -
+   * dependency injection, per the node-backend skill - so it never embeds AI/business logic
+   * itself. Pass `createRuntime({ executor: ... })` from @aicopilot/core.
    */
   readonly runtime: Runtime;
+  /**
+   * Enables the `model` field on `POST /runs` (Section 37). Optional - a server with no
+   * modelRuntime configured still works for the Phase 1 default-executor path; a request
+   * that names a `model` on such a server gets a clear 400, not a crash.
+   */
+  readonly modelRuntime?: ModelRuntime;
   readonly logger?: boolean;
+}
+
+function buildRun(options: CreateServerOptions, body: CreateRunRequestBody) {
+  const threadId = body.threadId !== undefined ? asThreadId(body.threadId) : undefined;
+
+  if (!body.model) {
+    return { ok: true as const, run: options.runtime.run({ threadId, messages: body.messages }) };
+  }
+
+  if (!options.modelRuntime) {
+    return {
+      ok: false as const,
+      error: CopilotError.validation('This server is not configured for model execution.', {
+        provider: body.model.provider,
+      }),
+    };
+  }
+
+  const executor = createModelExecutor({ runtime: options.modelRuntime, model: body.model });
+  return {
+    ok: true as const,
+    run: createRuntime({ executor }).run({ threadId, messages: body.messages }),
+  };
 }
 
 /**
@@ -41,11 +76,12 @@ export function createServer(options: CreateServerOptions): FastifyInstance {
       return;
     }
 
-    const { threadId, message } = parsed.data;
-    const run = options.runtime.run({
-      threadId: threadId !== undefined ? asThreadId(threadId) : undefined,
-      message,
-    });
+    const built = buildRun(options, parsed.data);
+    if (!built.ok) {
+      await reply.status(400).send({ error: built.error.toPublicJSON() });
+      return;
+    }
+    const { run } = built;
 
     registry.register(run);
     reply.hijack();

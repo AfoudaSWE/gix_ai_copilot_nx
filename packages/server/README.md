@@ -8,13 +8,18 @@ with no AI/business logic of its own.
 
 ## Responsibilities
 
-- `createServer({ runtime })` — builds (does not start) a Fastify instance exposing:
+- `createServer({ runtime, modelRuntime? })` — builds (does not start) a Fastify instance
+  exposing:
   - `GET  /health`
-  - `POST /runs` — validates the body, creates a run via the injected `Runtime`, and
-    streams its events back as Server-Sent Events on the same response.
+  - `POST /runs` — validates the body (now `{ threadId?, model?, messages }`). A request
+    with no `model` runs against the injected `runtime` (Phase 1 behavior, e.g. the echo
+    executor); a request naming a `model` routes through the injected `modelRuntime` (via
+    `@aicopilot/provider`'s `createModelExecutor`) instead — see Phase 2. Streams events
+    back as Server-Sent Events on the same response either way.
   - `POST /runs/:runId/cancel` — cancels an in-flight run by id via an in-memory registry.
-- Maps validation failures to a `400` with a `PublicCopilotError` body; maps an unknown
-  `runId` to a `404`; maps any unexpected error to a `500` without leaking internal detail.
+- Maps validation failures to a `400` with a `PublicCopilotError` body (including a
+  model-naming request when no `modelRuntime` is configured); maps an unknown `runId` to a
+  `404`; maps any unexpected error to a `500` without leaking internal detail.
 - Cancels the underlying run automatically if the client disconnects mid-stream.
 - Cancels every in-flight run when the server is closed (graceful shutdown).
 
@@ -24,30 +29,41 @@ See `src/index.ts`. No deep imports into `src/` are supported.
 
 ## Dependencies
 
-- `@aicopilot/protocol`, `@aicopilot/core` — the only workspace dependencies, matching
-  `server → core`, `server → protocol` in `docs/architecture/overview.md`.
+- `@aicopilot/protocol`, `@aicopilot/core`, `@aicopilot/provider` — matching
+  `server → core`, `server → protocol`, `server → provider` in
+  `docs/architecture/overview.md`. Notably **not** any concrete provider adapter
+  (`@aicopilot/provider-openai`, `@aicopilot/provider-mock`) — the caller constructing the
+  server decides which providers exist; this package only knows the provider-neutral
+  `ModelRuntime` contract.
 - `fastify` — the HTTP framework.
 - `zod` — request validation.
 
 ## Non-responsibilities
 
-- **No embedded executor/AI logic.** The `Runtime` (and therefore the `Executor` backing
-  it) is always injected by the caller — see the node-backend skill's dependency-injection
-  rule. This package has no opinion on what a run actually does.
+- **No embedded executor/AI logic, and no embedded provider.** Both the default `Runtime`
+  and the optional `ModelRuntime` are always injected by the caller — see the node-backend
+  skill's dependency-injection rule. This package has no opinion on what a run actually
+  does or which providers exist.
 - **No persistence.** The run registry is in-memory and process-local; it does not survive
-  a restart and does not coordinate across multiple server instances. A production
-  deployment needing that is out of scope for Phase 1.
+  a restart and does not coordinate across multiple server instances.
 - **No auth/RBAC/ABAC/Action Firewall.** Phase 7 owns enterprise security; this server
   currently trusts any caller that can reach it.
-- **No WebSocket transport.** SSE only for Phase 1 — see
+- **No WebSocket transport.** SSE only — see
   `docs/adr/0004-sse-as-initial-streaming-transport.md`.
+- **No retry/timeout policy of its own.** Those live in `@aicopilot/provider`'s
+  `ModelRuntime`, configured by whoever constructs it.
 
 ## Basic Usage
 
 ```ts
 import { createServer } from '@aicopilot/server';
 import { createRuntime, createEchoExecutor } from '@aicopilot/core';
+import { createModelRuntime } from '@aicopilot/provider';
+import { createMockProvider } from '@aicopilot/provider-mock';
 
-const app = createServer({ runtime: createRuntime({ executor: createEchoExecutor() }) });
+const app = createServer({
+  runtime: createRuntime({ executor: createEchoExecutor() }),
+  modelRuntime: createModelRuntime({ providers: [createMockProvider()] }),
+});
 await app.listen({ port: 0 });
 ```
