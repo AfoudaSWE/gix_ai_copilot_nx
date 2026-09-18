@@ -47,7 +47,7 @@ transport-layer mistake future phases (WebSocket, reconnect) need to watch for a
   client sees the stream end and must start a new run — it cannot resume the old one using
   `Last-Event-ID` today, even though the protocol's `sequence` field (ADR 0003) is designed
   to make that possible later.
-- The `CopilotTransport` interface in `@aicopilot/client` is deliberately not SSE-specific,
+- The `CopilotTransport` interface in `@gixcopilot/client` is deliberately not SSE-specific,
   so adding a WebSocket implementation later is additive (a new class implementing the
   same interface), not a rewrite of the client's public API.
 - A multi-instance server deployment cannot route a cancel request to whichever instance

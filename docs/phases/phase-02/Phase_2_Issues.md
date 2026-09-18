@@ -9,7 +9,7 @@ per the code-review skill's "disclose, don't hide" rule.
 instead of being near-instant.
 
 **Cause:** the `openai` SDK retries retryable-looking responses (429, 5xx) internally by
-default, independent of `@aicopilot/provider`'s own retry policy — so a single "provider
+default, independent of `@gixcopilot/provider`'s own retry policy — so a single "provider
 call" from `ModelRuntime`'s point of view was silently retrying multiple times inside the
 SDK before ever surfacing an error to be classified/retried again at our layer.
 

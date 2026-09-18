@@ -1,4 +1,4 @@
-import { CopilotError, type RunStatus } from '@aicopilot/protocol';
+import { CopilotError, type RunStatus } from '@gixcopilot/protocol';
 
 /**
  * The only valid transitions out of each status. An empty array means the status is

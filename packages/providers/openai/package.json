@@ -1,5 +1,5 @@
 {
-  "name": "@aicopilot/provider-openai",
+  "name": "@gixcopilot/provider-openai",
   "version": "0.1.0",
   "private": true,
   "description": "OpenAI streaming ModelProvider adapter for the AI Copilot SDK. The only package in the workspace allowed to depend on the openai SDK.",
@@ -24,8 +24,8 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@aicopilot/protocol": "workspace:*",
-    "@aicopilot/provider": "workspace:*",
+    "@gixcopilot/protocol": "workspace:*",
+    "@gixcopilot/provider": "workspace:*",
     "openai": "7.19.0"
   },
   "devDependencies": {

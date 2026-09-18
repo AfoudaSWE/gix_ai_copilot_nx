@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { createModelRuntime } from '@aicopilot/provider';
-import { createOpenAIProvider } from '@aicopilot/provider-openai';
-import type { ModelStreamEvent } from '@aicopilot/provider';
+import { createModelRuntime } from '@gixcopilot/provider';
+import { createOpenAIProvider } from '@gixcopilot/provider-openai';
+import type { ModelStreamEvent } from '@gixcopilot/provider';
 
 /**
  * Section 53's optional real-provider smoke test. Only runs when OPENAI_API_KEY is set in
@@ -10,7 +10,7 @@ import type { ModelStreamEvent } from '@aicopilot/provider';
  * real network call to OpenAI's API and costs real (tiny) money when it does run.
  *
  * Run explicitly with:
- *   OPENAI_API_KEY=sk-... pnpm --filter @aicopilot/model-streaming-demo test -- openai-smoke
+ *   OPENAI_API_KEY=sk-... pnpm --filter @gixcopilot/model-streaming-demo test -- openai-smoke
  */
 const apiKey = process.env['OPENAI_API_KEY'];
 

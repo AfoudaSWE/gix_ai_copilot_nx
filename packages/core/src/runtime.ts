@@ -6,7 +6,7 @@ import {
   createMessageId,
   createRunId,
   createThreadId,
-} from '@aicopilot/protocol';
+} from '@gixcopilot/protocol';
 import type {
   ContentPart,
   CopilotEvent,
@@ -14,7 +14,7 @@ import type {
   MessageRole,
   RunId,
   ThreadId,
-} from '@aicopilot/protocol';
+} from '@gixcopilot/protocol';
 import { cancellable } from './cancellable-iteration.js';
 import { RunLifecycle } from './lifecycle.js';
 import { EventSequencer } from './sequencer.js';

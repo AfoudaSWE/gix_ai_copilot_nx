@@ -1,4 +1,4 @@
-import type { ContentPart, CopilotEvent, MessageRole } from '@aicopilot/protocol';
+import type { ContentPart, CopilotEvent, MessageRole } from '@gixcopilot/protocol';
 import type { ClientModelReference } from './client.js';
 
 export interface TransportMessageInput {
@@ -14,7 +14,7 @@ export interface TransportRunRequest {
 }
 
 /**
- * The seam between @aicopilot/client's public API and how a run's events actually arrive
+ * The seam between @gixcopilot/client's public API and how a run's events actually arrive
  * over the wire. `createCopilotClient` depends only on this interface, not on SSE directly
  * - see the sdk-design skill's rule on headless, composable transport boundaries. Only an
  * SSE implementation exists in Phase 1; WebSocket is explicitly future work.

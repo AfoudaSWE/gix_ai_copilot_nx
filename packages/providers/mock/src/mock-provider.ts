@@ -1,16 +1,16 @@
-import { CopilotError } from '@aicopilot/protocol';
+import { CopilotError } from '@gixcopilot/protocol';
 import type {
   CopilotErrorCode,
   FinishReason,
   PublicCopilotError,
   Usage,
-} from '@aicopilot/protocol';
+} from '@gixcopilot/protocol';
 import type {
   ModelExecutionOptions,
   ModelProvider,
   ModelRequest,
   ModelStreamEvent,
-} from '@aicopilot/provider';
+} from '@gixcopilot/provider';
 
 export interface MockFailure {
   readonly code: CopilotErrorCode;

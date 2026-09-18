@@ -6,14 +6,14 @@ The Phase 1 end-to-end demonstration of the AI Copilot SDK's foundation:
 Client -> HTTP request -> Server -> Core -> Typed protocol events -> SSE stream -> Client
 ```
 
-**No LLM is involved.** The server is wired to `@aicopilot/core`'s deterministic
+**No LLM is involved.** The server is wired to `@gixcopilot/core`'s deterministic
 `createEchoExecutor()`, which exists solely to prove the architecture — it echoes its input
 back as a sequence of word/whitespace chunks.
 
 ## Run it
 
 ```sh
-pnpm --filter @aicopilot/protocol-demo run demo
+pnpm --filter @gixcopilot/protocol-demo run demo
 # or, from the repo root:
 pnpm demo
 ```
@@ -21,7 +21,7 @@ pnpm demo
 Optionally pass a custom message:
 
 ```sh
-pnpm --filter @aicopilot/protocol-demo run demo -- "Some other input"
+pnpm --filter @gixcopilot/protocol-demo run demo -- "Some other input"
 ```
 
 Expected output (timestamps/ids vary):
@@ -45,11 +45,11 @@ Press Ctrl+C while it's streaming to see cancellation (`run.cancelled` instead o
 
 ## What this proves
 
-- The protocol (`@aicopilot/protocol`) is transport-independent and validates on both ends.
-- The core runtime (`@aicopilot/core`) drives a real run lifecycle and event sequencing
+- The protocol (`@gixcopilot/protocol`) is transport-independent and validates on both ends.
+- The core runtime (`@gixcopilot/core`) drives a real run lifecycle and event sequencing
   without any AI provider.
-- The server (`@aicopilot/server`) correctly adapts that runtime to HTTP + SSE.
-- The client (`@aicopilot/client`) correctly parses the SSE stream back into typed,
+- The server (`@gixcopilot/server`) correctly adapts that runtime to HTTP + SSE.
+- The client (`@gixcopilot/client`) correctly parses the SSE stream back into typed,
   validated events.
 - `src/integration.spec.ts` runs this same round trip (plus cancellation, both
   client-initiated and out-of-band via the server's cancel endpoint) as an automated test

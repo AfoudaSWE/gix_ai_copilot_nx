@@ -13,7 +13,7 @@ Transport (CopilotTransport)
  |
  |  fetch POST /runs, Accept: text/event-stream
  v
-Server (@aicopilot/server, Fastify)
+Server (@gixcopilot/server, Fastify)
  |
  |  validates body (Zod)
  |
@@ -23,7 +23,7 @@ Server (@aicopilot/server, Fastify)
                                           then createRuntime({ executor }).run({ messages })
                                                      |
                                                      v
-                                          Model Runtime (@aicopilot/provider)
+                                          Model Runtime (@gixcopilot/provider)
                                                      |
                                                      |  provider lookup, timeout, retry, latency
                                                      v
@@ -38,7 +38,7 @@ Server (@aicopilot/server, Fastify)
                                           createModelExecutor yields text deltas + ExecutorCompletion
                                                      |
                                                      v
-Core (@aicopilot/core) - createRuntime({ executor }) drives one Run either way
+Core (@gixcopilot/core) - createRuntime({ executor }) drives one Run either way
  |
  |  translates executor output into CopilotEvents
  |  run.started, message.started, message.delta*, message.end,
@@ -50,7 +50,7 @@ Server serializes each event and writes an SSE frame
 Client parses the SSE stream back into typed, validated CopilotEvents
 ```
 
-`@aicopilot/core` never learns which path it's on — both paths hand it the same `Executor`
+`@gixcopilot/core` never learns which path it's on — both paths hand it the same `Executor`
 shape, per `docs/adr/0002-framework-independent-core.md` and
 `docs/adr/0006-model-provider-abstraction.md`.
 
@@ -58,31 +58,31 @@ shape, per `docs/adr/0002-framework-independent-core.md` and
 
 | Package                      | Responsibility                                                                                                                                  | Must never depend on                                                                                           |
 | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `@aicopilot/protocol`        | Wire contracts (`Message`, `Thread`, `Run`, `CopilotEvent`, `FinishReason`), validation, (de)serialization                                      | anything else in the workspace                                                                                 |
-| `@aicopilot/core`            | Run lifecycle, event sequencing, cancellation, the `Executor` boundary                                                                          | Fastify, any LLM provider or `@aicopilot/provider`, `@aicopilot/server`, `@aicopilot/client`, any UI framework |
-| `@aicopilot/provider`        | Provider-neutral model contracts, registry, `ModelRuntime` (retry/timeout/cancellation/usage/latency), `createModelExecutor` bridge into `core` | any concrete provider SDK, `@aicopilot/server`, `@aicopilot/client`, any UI framework                          |
-| `@aicopilot/provider-mock`   | Deterministic, non-network `ModelProvider` for tests/examples/CI                                                                                | any other provider adapter                                                                                     |
-| `@aicopilot/provider-openai` | OpenAI streaming `ModelProvider`; the only package allowed to depend on the `openai` SDK                                                        | any other provider adapter                                                                                     |
-| `@aicopilot/server`          | HTTP/SSE adapter: validation, run creation (default or model-backed), streaming, cancellation, error mapping                                    | any UI framework, any concrete provider adapter; must not embed executor/AI logic itself (injected)            |
-| `@aicopilot/client`          | Framework-independent streaming client, transport abstraction, opaque `model` pass-through                                                      | `@aicopilot/server`, `@aicopilot/provider`, React, Angular                                                     |
+| `@gixcopilot/protocol`        | Wire contracts (`Message`, `Thread`, `Run`, `CopilotEvent`, `FinishReason`), validation, (de)serialization                                      | anything else in the workspace                                                                                 |
+| `@gixcopilot/core`            | Run lifecycle, event sequencing, cancellation, the `Executor` boundary                                                                          | Fastify, any LLM provider or `@gixcopilot/provider`, `@gixcopilot/server`, `@gixcopilot/client`, any UI framework |
+| `@gixcopilot/provider`        | Provider-neutral model contracts, registry, `ModelRuntime` (retry/timeout/cancellation/usage/latency), `createModelExecutor` bridge into `core` | any concrete provider SDK, `@gixcopilot/server`, `@gixcopilot/client`, any UI framework                          |
+| `@gixcopilot/provider-mock`   | Deterministic, non-network `ModelProvider` for tests/examples/CI                                                                                | any other provider adapter                                                                                     |
+| `@gixcopilot/provider-openai` | OpenAI streaming `ModelProvider`; the only package allowed to depend on the `openai` SDK                                                        | any other provider adapter                                                                                     |
+| `@gixcopilot/server`          | HTTP/SSE adapter: validation, run creation (default or model-backed), streaming, cancellation, error mapping                                    | any UI framework, any concrete provider adapter; must not embed executor/AI logic itself (injected)            |
+| `@gixcopilot/client`          | Framework-independent streaming client, transport abstraction, opaque `model` pass-through                                                      | `@gixcopilot/server`, `@gixcopilot/provider`, React, Angular                                                     |
 | `examples/protocol-demo`     | Proves the Phase 1 stack end to end with a deterministic executor                                                                               | — (may depend on everything above)                                                                             |
 | `examples/model-streaming`   | Proves the Phase 2 model runtime end to end, mock by default, optional real OpenAI                                                              | — (may depend on everything above)                                                                             |
 
 ## Dependency Direction
 
 ```text
-                         @aicopilot/protocol
+                         @gixcopilot/protocol
                          ^   ^    ^      ^
                          |   |    |      |
-   @aicopilot/client ----+   |    |      +---- @aicopilot/provider
+   @gixcopilot/client ----+   |    |      +---- @gixcopilot/provider
                              |    |                ^        ^
-                     @aicopilot/core                |        |
+                     @gixcopilot/core                |        |
                              ^                       |        |
                              |                        |        |
-                       @aicopilot/server -------------+        |
+                       @gixcopilot/server -------------+        |
                                                                  |
-                                        @aicopilot/provider-mock, @aicopilot/provider-openai
-                                        (each depends on @aicopilot/provider + protocol only,
+                                        @gixcopilot/provider-mock, @gixcopilot/provider-openai
+                                        (each depends on @gixcopilot/provider + protocol only,
                                          never on each other)
 ```
 
@@ -103,17 +103,17 @@ This is the Phase 1+2 slice of the long-term target architecture:
 ```text
 Framework SDKs (React, Angular)         <- Phase 3, 12
       |
-Client SDK                              <- @aicopilot/client
+Client SDK                              <- @gixcopilot/client
       |
-Protocol                                <- @aicopilot/protocol
+Protocol                                <- @gixcopilot/protocol
       |
-Server                                  <- @aicopilot/server
+Server                                  <- @gixcopilot/server
       |
-Core Runtime                            <- @aicopilot/core
+Core Runtime                            <- @gixcopilot/core
       |
 Agents / Context / Tools                <- Phase 4, 5, 10
       |
-Adapters (LLM providers, DB, MCP, ...)  <- @aicopilot/provider(-mock|-openai) (this phase), Phase 8, 9
+Adapters (LLM providers, DB, MCP, ...)  <- @gixcopilot/provider(-mock|-openai) (this phase), Phase 8, 9
 ```
 
 ## Module Resolution & Build Strategy
@@ -144,7 +144,7 @@ Disclosed rather than hidden, per the code-review skill:
   program as its source, so `dist/` currently also contains compiled test files. Deferred
   cleanup — doesn't affect correctness (nothing outside `.` is ever importable per the
   `exports` field), slightly wasteful for an eventual npm-publish step.
-- The server's run registry (`@aicopilot/server`'s `createRunRegistry`) is in-memory and
+- The server's run registry (`@gixcopilot/server`'s `createRunRegistry`) is in-memory and
   process-local; it does not survive a restart and does not coordinate across multiple
   server instances.
 - IDs (`RunId`, `ThreadId`, etc.) are plain `string` aliases, not nominally-branded types —

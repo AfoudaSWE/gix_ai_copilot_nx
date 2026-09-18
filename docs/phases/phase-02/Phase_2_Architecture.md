@@ -13,11 +13,11 @@ Server
   |
 Core
   |
-Model Runtime            <- @aicopilot/provider's createModelRuntime
+Model Runtime            <- @gixcopilot/provider's createModelRuntime
   |
-Provider Registry        <- @aicopilot/provider's createModelProviderRegistry
+Provider Registry        <- @gixcopilot/provider's createModelProviderRegistry
   |
-ModelProvider             <- the interface; @aicopilot/provider-mock / @aicopilot/provider-openai implement it
+ModelProvider             <- the interface; @gixcopilot/provider-mock / @gixcopilot/provider-openai implement it
   |
 Provider Adapter         <- the concrete implementation (mock, OpenAI)
   |
@@ -25,8 +25,8 @@ LLM                      <- only for the OpenAI adapter; the mock adapter has no
 ```
 
 Dependency direction runs the _opposite_ way from this call-flow diagram: `Provider Adapter
--> ModelProvider (interface, defined in @aicopilot/provider) -> @aicopilot/provider ->
-@aicopilot/core -> @aicopilot/protocol`. Core never depends downward into the model layer —
+-> ModelProvider (interface, defined in @gixcopilot/provider) -> @gixcopilot/provider ->
+@gixcopilot/core -> @gixcopilot/protocol`. Core never depends downward into the model layer —
 see `docs/adr/0006-model-provider-abstraction.md`.
 
 ## Streaming Pipeline
@@ -49,7 +49,7 @@ createModelExecutor (the Executor bridge)
  |
  |  content.delta -> plain string yield; model.completed -> ExecutorCompletion (usage, finishReason)
  v
-Core (@aicopilot/core's createRuntime)
+Core (@gixcopilot/core's createRuntime)
  |
  |  translates into CopilotEvent: message.delta*, run.completed { usage, finishReason }
  v
@@ -70,13 +70,13 @@ accumulate output before yielding).
 ## Dependency Direction (restated from `docs/architecture/overview.md`)
 
 ```text
-                         @aicopilot/protocol
+                         @gixcopilot/protocol
                          ^   ^    ^      ^
-   @aicopilot/client ----+   |    |      +---- @aicopilot/provider
+   @gixcopilot/client ----+   |    |      +---- @gixcopilot/provider
                              |    |                ^        ^
-                     @aicopilot/core                |        |
+                     @gixcopilot/core                |        |
                              ^                       |        |
-                       @aicopilot/server -------------+        |
+                       @gixcopilot/server -------------+        |
                                                                  |
-                                        @aicopilot/provider-mock, @aicopilot/provider-openai
+                                        @gixcopilot/provider-mock, @gixcopilot/provider-openai
 ```

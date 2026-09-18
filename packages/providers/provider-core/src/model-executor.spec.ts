@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createRunId, createThreadId, CopilotError } from '@aicopilot/protocol';
+import { createRunId, createThreadId, CopilotError } from '@gixcopilot/protocol';
 import { createModelExecutor } from './model-executor.js';
 import { createModelRuntime } from './model-runtime.js';
 import type { ModelProvider } from './model-provider.js';
@@ -125,7 +125,7 @@ describe('createModelExecutor', () => {
     controller.abort();
 
     // The raw Executor throws on cancellation (as it does on any model.failed); it is
-    // @aicopilot/core's own `cancellable()` wrapper around the Executor call, not the
+    // @gixcopilot/core's own `cancellable()` wrapper around the Executor call, not the
     // Executor itself, that turns this into a clean run.cancelled with no thrown error -
     // see runtime.ts. This test only needs to confirm the abort signal actually reached
     // the provider and was classified as CANCELLED, not retried as a generic failure.

@@ -5,7 +5,7 @@ import type {
   RunId,
   ThreadId,
   Usage,
-} from '@aicopilot/protocol';
+} from '@gixcopilot/protocol';
 
 export interface ExecutorMessageInput {
   readonly role: MessageRole;
@@ -45,7 +45,7 @@ export interface ExecutorCompletion {
  * reply as text deltas (honoring cancellation), optionally reporting usage/finish-reason
  * metadata when it naturally finishes.
  *
- * `@aicopilot/provider`'s `createModelExecutor` is the Phase 2 implementation of this
+ * `@gixcopilot/provider`'s `createModelExecutor` is the Phase 2 implementation of this
  * interface backed by a real (or mock) LLM; `createEchoExecutor` remains the deterministic,
  * non-AI reference implementation.
  */

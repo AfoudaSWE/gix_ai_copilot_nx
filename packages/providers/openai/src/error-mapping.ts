@@ -8,8 +8,8 @@ import {
   NotFoundError,
   RateLimitError,
 } from 'openai';
-import { CopilotError } from '@aicopilot/protocol';
-import type { FinishReason } from '@aicopilot/protocol';
+import { CopilotError } from '@gixcopilot/protocol';
+import type { FinishReason } from '@gixcopilot/protocol';
 
 /**
  * Maps the OpenAI SDK's own error hierarchy onto the shared CopilotError taxonomy

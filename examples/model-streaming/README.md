@@ -6,7 +6,7 @@ The Phase 2 end-to-end demonstration of the AI Copilot SDK's LLM runtime:
 Client -> HTTP -> Server -> Core -> Model Runtime -> Provider -> Streaming tokens -> SSE -> Client
 ```
 
-By default this uses `@aicopilot/provider-mock`'s deterministic provider — **no API key or
+By default this uses `@gixcopilot/provider-mock`'s deterministic provider — **no API key or
 network access required.** Set `OPENAI_API_KEY` (and optionally `MODEL_PROVIDER=openai`) to
 stream from a real OpenAI model instead.
 
@@ -14,13 +14,13 @@ stream from a real OpenAI model instead.
 
 ```sh
 # mock provider (default, no credentials needed)
-pnpm --filter @aicopilot/model-streaming-demo run demo
+pnpm --filter @gixcopilot/model-streaming-demo run demo
 
 # with a custom prompt
-pnpm --filter @aicopilot/model-streaming-demo run demo -- "Explain event-driven architecture"
+pnpm --filter @gixcopilot/model-streaming-demo run demo -- "Explain event-driven architecture"
 
 # real OpenAI streaming
-OPENAI_API_KEY=sk-... MODEL_PROVIDER=openai pnpm --filter @aicopilot/model-streaming-demo run demo
+OPENAI_API_KEY=sk-... MODEL_PROVIDER=openai pnpm --filter @gixcopilot/model-streaming-demo run demo
 ```
 
 Expected output (mock provider):
@@ -43,7 +43,7 @@ Input tokens: 0 | Output tokens: 0 | Total tokens: 0
 ```
 
 (The mock provider in this demo echoes the prompt back rather than answering it — see
-`@aicopilot/provider-mock`'s README for why: it exists to prove the architecture
+`@gixcopilot/provider-mock`'s README for why: it exists to prove the architecture
 deterministically, not to simulate intelligence. Point it at a real provider to see an
 actual answer.)
 
@@ -56,19 +56,19 @@ actual answer.)
   OpenAI API. Skipped (not failed) unless `OPENAI_API_KEY` is set:
 
   ```sh
-  OPENAI_API_KEY=sk-... pnpm --filter @aicopilot/model-streaming-demo test
+  OPENAI_API_KEY=sk-... pnpm --filter @gixcopilot/model-streaming-demo test
   ```
 
   This costs a small amount of real money when it runs and is never required for CI.
 
 ## What this proves
 
-- `@aicopilot/provider`'s `ModelRuntime` correctly streams, retries, times out, cancels,
+- `@gixcopilot/provider`'s `ModelRuntime` correctly streams, retries, times out, cancels,
   and normalizes errors/usage/finish-reason independent of which provider is behind it.
-- `@aicopilot/server` routes a request naming a `model` through the injected
+- `@gixcopilot/server` routes a request naming a `model` through the injected
   `ModelRuntime`, while a request without one still runs against the Phase 1 default
   executor unchanged.
-- `@aicopilot/client` needed zero changes to support model-backed runs beyond the
+- `@gixcopilot/client` needed zero changes to support model-backed runs beyond the
   additive `model` field - the same `run()`/`events`/`cancel()` API from Phase 1.
 - Swapping providers (mock ↔ OpenAI) requires no code change anywhere except which
   provider is registered and named in the request - see `docs/adr/0006-model-provider-abstraction.md`.

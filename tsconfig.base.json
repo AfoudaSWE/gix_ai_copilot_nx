@@ -22,13 +22,6 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "baseUrl": ".",
-    "paths": {
-      "@aicopilot/protocol": ["packages/protocol/src/index.ts"],
-      "@aicopilot/core": ["packages/core/src/index.ts"],
-      "@aicopilot/client": ["packages/client/src/index.ts"],
-      "@aicopilot/server": ["packages/server/src/index.ts"]
-    }
+    "noUnusedParameters": true
   }
 }

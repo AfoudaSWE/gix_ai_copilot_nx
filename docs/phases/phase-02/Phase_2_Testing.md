@@ -39,8 +39,8 @@ Explicitly re-verified before and after all Phase 2 changes:
 
 `examples/model-streaming/src/integration.spec.ts` — a real `createCopilotClient`, over
 real HTTP (an actual listening Fastify server, not `.inject()`), through
-`@aicopilot/provider`'s real `ModelRuntime`, to a real (in-process, deterministic)
-`@aicopilot/provider-mock` provider, streamed back as real Server-Sent Events, parsed back
+`@gixcopilot/provider`'s real `ModelRuntime`, to a real (in-process, deterministic)
+`@gixcopilot/provider-mock` provider, streamed back as real Server-Sent Events, parsed back
 into typed events by the real client transport. Covers:
 
 1. The full ordered event sequence, with correct `usage` and `finishReason` from the model.
@@ -61,7 +61,7 @@ In this environment (`OPENAI_API_KEY` unset), the test run reported:
 This is a correct **SKIP**, not a fabricated pass and not a failure. To actually run it:
 
 ```sh
-OPENAI_API_KEY=sk-... pnpm --filter @aicopilot/model-streaming-demo test
+OPENAI_API_KEY=sk-... pnpm --filter @gixcopilot/model-streaming-demo test
 ```
 
 This was not run in this session (no credentials available), and is never part of the
@@ -92,16 +92,16 @@ Input tokens: 0 | Output tokens: 0 | Total tokens: 0
 Two deliberate violations were introduced, confirmed rejected by
 `@nx/enforce-module-boundaries`, then reverted (files never committed):
 
-1. `@aicopilot/provider-mock` importing `@aicopilot/provider-openai` (adapter-to-adapter) —
+1. `@gixcopilot/provider-mock` importing `@gixcopilot/provider-openai` (adapter-to-adapter) —
    rejected: `"A project tagged with 'scope:provider-adapter' can only depend on libs
 tagged with 'scope:protocol', 'scope:core', 'scope:provider'"`.
-2. (Carried over from Phase 1, re-verified) `@aicopilot/protocol` importing
-   `@aicopilot/core` — rejected as a circular-dependency violation.
+2. (Carried over from Phase 1, re-verified) `@gixcopilot/protocol` importing
+   `@gixcopilot/core` — rejected as a circular-dependency violation.
 
 ## Dependency/Secret Review
 
 - `grep`-checked for hardcoded API-key-shaped strings across the repo: none found.
-- `grep`-checked that no package outside `@aicopilot/provider-openai` imports from
+- `grep`-checked that no package outside `@gixcopilot/provider-openai` imports from
   `'openai'`: confirmed none do.
-- `grep`-checked that no real workspace import of `@aicopilot/provider` exists inside
-  `@aicopilot/core`'s source (only a doc-comment mention): confirmed.
+- `grep`-checked that no real workspace import of `@gixcopilot/provider` exists inside
+  `@gixcopilot/core`'s source (only a doc-comment mention): confirmed.

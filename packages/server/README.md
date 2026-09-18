@@ -1,8 +1,8 @@
-# @aicopilot/server
+# @gixcopilot/server
 
 ## Purpose
 
-Fastify HTTP/SSE transport adapter. Adapts `@aicopilot/core`'s runtime to an HTTP
+Fastify HTTP/SSE transport adapter. Adapts `@gixcopilot/core`'s runtime to an HTTP
 boundary — request validation, run creation, streaming, cancellation, and error mapping —
 with no AI/business logic of its own.
 
@@ -14,7 +14,7 @@ with no AI/business logic of its own.
   - `POST /runs` — validates the body (now `{ threadId?, model?, messages }`). A request
     with no `model` runs against the injected `runtime` (Phase 1 behavior, e.g. the echo
     executor); a request naming a `model` routes through the injected `modelRuntime` (via
-    `@aicopilot/provider`'s `createModelExecutor`) instead — see Phase 2. Streams events
+    `@gixcopilot/provider`'s `createModelExecutor`) instead — see Phase 2. Streams events
     back as Server-Sent Events on the same response either way.
   - `POST /runs/:runId/cancel` — cancels an in-flight run by id via an in-memory registry.
 - Maps validation failures to a `400` with a `PublicCopilotError` body (including a
@@ -29,10 +29,10 @@ See `src/index.ts`. No deep imports into `src/` are supported.
 
 ## Dependencies
 
-- `@aicopilot/protocol`, `@aicopilot/core`, `@aicopilot/provider` — matching
+- `@gixcopilot/protocol`, `@gixcopilot/core`, `@gixcopilot/provider` — matching
   `server → core`, `server → protocol`, `server → provider` in
   `docs/architecture/overview.md`. Notably **not** any concrete provider adapter
-  (`@aicopilot/provider-openai`, `@aicopilot/provider-mock`) — the caller constructing the
+  (`@gixcopilot/provider-openai`, `@gixcopilot/provider-mock`) — the caller constructing the
   server decides which providers exist; this package only knows the provider-neutral
   `ModelRuntime` contract.
 - `fastify` — the HTTP framework.
@@ -50,16 +50,16 @@ See `src/index.ts`. No deep imports into `src/` are supported.
   currently trusts any caller that can reach it.
 - **No WebSocket transport.** SSE only — see
   `docs/adr/0004-sse-as-initial-streaming-transport.md`.
-- **No retry/timeout policy of its own.** Those live in `@aicopilot/provider`'s
+- **No retry/timeout policy of its own.** Those live in `@gixcopilot/provider`'s
   `ModelRuntime`, configured by whoever constructs it.
 
 ## Basic Usage
 
 ```ts
-import { createServer } from '@aicopilot/server';
-import { createRuntime, createEchoExecutor } from '@aicopilot/core';
-import { createModelRuntime } from '@aicopilot/provider';
-import { createMockProvider } from '@aicopilot/provider-mock';
+import { createServer } from '@gixcopilot/server';
+import { createRuntime, createEchoExecutor } from '@gixcopilot/core';
+import { createModelRuntime } from '@gixcopilot/provider';
+import { createMockProvider } from '@gixcopilot/provider-mock';
 
 const app = createServer({
   runtime: createRuntime({ executor: createEchoExecutor() }),

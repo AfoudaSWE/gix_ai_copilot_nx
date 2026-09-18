@@ -5,19 +5,19 @@ Copilot UI) if it needs to know what's underneath it.
 
 ## What Exists Now
 
-- A real, provider-independent model runtime (`@aicopilot/provider`) with retry, timeout,
+- A real, provider-independent model runtime (`@gixcopilot/provider`) with retry, timeout,
   cancellation, usage, latency, and normalized errors — proven against both a deterministic
   mock provider and a real OpenAI adapter.
-- `@aicopilot/server` can run a request against either the Phase 1 default executor or a
+- `@gixcopilot/server` can run a request against either the Phase 1 default executor or a
   named model, decided per-request by the presence of a `model` field.
-- `@aicopilot/client` passes `model` through opaquely; it has no idea what a `ModelRuntime`
+- `@gixcopilot/client` passes `model` through opaquely; it has no idea what a `ModelRuntime`
   is and doesn't need to.
 - Two example apps: `protocol-demo` (Phase 1, no AI) and `model-streaming` (Phase 2, mock
   by default, optional real OpenAI).
 
 ## What Phase 3 (React Copilot UI) Can Rely On
 
-- `@aicopilot/client`'s public API (`createCopilotClient`, `RunOptions`, `ClientRun`) is
+- `@gixcopilot/client`'s public API (`createCopilotClient`, `RunOptions`, `ClientRun`) is
   unchanged in shape from a consumer's perspective except for the additive `model` field —
   a hook wrapping this client does not need to know whether a given run is model-backed.
 - Every `CopilotEvent` a UI might render is exactly the same set as Phase 1, plus the
@@ -37,10 +37,10 @@ Copilot UI) if it needs to know what's underneath it.
 ## Extending the Provider Set
 
 Adding a new real provider (Anthropic, Gemini, Ollama) is a new package,
-`@aicopilot/provider-<name>`, depending only on `@aicopilot/provider`, `@aicopilot/protocol`,
+`@gixcopilot/provider-<name>`, depending only on `@gixcopilot/provider`, `@gixcopilot/protocol`,
 and that provider's own SDK, implementing `ModelProvider`, tagged `scope:provider-adapter`
-in its `project.json`. No change to `@aicopilot/core`, `@aicopilot/server`, or
-`@aicopilot/client` is needed — register the new provider alongside existing ones in
+in its `project.json`. No change to `@gixcopilot/core`, `@gixcopilot/server`, or
+`@gixcopilot/client` is needed — register the new provider alongside existing ones in
 whichever `createModelRuntime({ providers: [...] })` call constructs the runtime being used.
 
 ## Known Limitations Carried Forward

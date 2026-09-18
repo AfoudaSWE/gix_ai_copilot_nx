@@ -1,14 +1,14 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { createEchoExecutor, createRuntime } from '@aicopilot/core';
-import { createModelRuntime } from '@aicopilot/provider';
-import type { ModelProvider } from '@aicopilot/provider';
-import { CopilotError } from '@aicopilot/protocol';
+import { createEchoExecutor, createRuntime } from '@gixcopilot/core';
+import { createModelRuntime } from '@gixcopilot/provider';
+import type { ModelProvider } from '@gixcopilot/provider';
+import { CopilotError } from '@gixcopilot/protocol';
 import { createServer } from './app.js';
-import type { CopilotEvent } from '@aicopilot/protocol';
+import type { CopilotEvent } from '@gixcopilot/protocol';
 
 /**
- * A minimal in-file fake ModelProvider, deliberately not @aicopilot/provider-mock: server
- * must only ever depend on the provider *contract* (`@aicopilot/provider`), never a
+ * A minimal in-file fake ModelProvider, deliberately not @gixcopilot/provider-mock: server
+ * must only ever depend on the provider *contract* (`@gixcopilot/provider`), never a
  * concrete adapter, even in tests - see the module boundary rule in eslint.config.js.
  */
 function fakeProvider(scenario: {

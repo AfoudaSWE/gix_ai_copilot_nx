@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CopilotError } from '@aicopilot/protocol';
+import { CopilotError } from '@gixcopilot/protocol';
 import { createModelRuntime } from './model-runtime.js';
 import type { ModelProvider } from './model-provider.js';
 import type { ModelStreamEvent } from './model-stream-event.js';

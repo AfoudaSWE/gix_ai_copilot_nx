@@ -54,7 +54,7 @@ explicit, never an implicit side effect of a tool call.
 
 # Anti-Patterns
 
-- Hardwiring a specific third-party agent framework's runtime into `@aicopilot/agents`.
+- Hardwiring a specific third-party agent framework's runtime into `@gixcopilot/agents`.
 - An agent that silently gains access to every registered tool by default.
 - A "handoff" implemented as one agent directly calling another's internal function with no
   protocol event or audit trail.

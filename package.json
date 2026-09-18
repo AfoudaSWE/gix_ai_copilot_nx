@@ -15,7 +15,7 @@
     "lint": "nx run-many -t lint",
     "validate": "nx run-many -t lint,typecheck,test,build",
     "graph": "nx graph",
-    "demo": "pnpm --filter @aicopilot/protocol-demo run demo"
+    "demo": "pnpm --filter @gixcopilot/protocol-demo run demo"
   },
   "devDependencies": {
     "@nx/eslint-plugin": "21.6.11",

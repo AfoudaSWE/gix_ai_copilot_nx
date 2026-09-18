@@ -1,4 +1,4 @@
-import type { ContentPart, CopilotEvent, MessageRole } from '@aicopilot/protocol';
+import type { ContentPart, CopilotEvent, MessageRole } from '@gixcopilot/protocol';
 import type { CopilotTransport } from './transport.js';
 import { createSseTransport } from './sse-transport.js';
 
@@ -9,7 +9,7 @@ export interface ClientMessageInput {
 
 /**
  * A provider-neutral model reference, `{ provider, model }` - defined locally rather than
- * imported from `@aicopilot/provider`, since the client must never depend on that package
+ * imported from `@gixcopilot/provider`, since the client must never depend on that package
  * (a client can talk to a server with no model support at all; `model` here is just an
  * opaque field passed through on the wire - see docs/adr/0006-model-provider-abstraction.md).
  */
@@ -58,7 +58,7 @@ function linkExternalSignal(controller: AbortController, external: AbortSignal |
 }
 
 /**
- * The framework-independent entry point for @aicopilot/client - no React/Angular
+ * The framework-independent entry point for @gixcopilot/client - no React/Angular
  * dependency (see the react-sdk / angular-sdk skills for how those wrap this).
  */
 export function createCopilotClient(options: CopilotClientOptions): CopilotClient {

@@ -1,5 +1,5 @@
-import { CopilotError } from '@aicopilot/protocol';
-import type { FinishReason, Usage } from '@aicopilot/protocol';
+import { CopilotError } from '@gixcopilot/protocol';
+import type { FinishReason, Usage } from '@gixcopilot/protocol';
 import type { ModelMessage } from './model-message.js';
 import type { ModelReference } from './model-reference.js';
 import type { ModelRequest } from './model-request.js';
@@ -64,7 +64,7 @@ function toProviderError(error: unknown): CopilotError {
 /**
  * Provider lookup, request normalization, streaming, cancellation, timeout, retry, and
  * usage/latency capture (Section 18) - a model *execution* runtime, not an agent runtime.
- * See `createModelExecutor` (model-executor.ts) for the bridge into `@aicopilot/core`'s
+ * See `createModelExecutor` (model-executor.ts) for the bridge into `@gixcopilot/core`'s
  * generic `Executor` boundary.
  */
 export function createModelRuntime(options: CreateModelRuntimeOptions): ModelRuntime {

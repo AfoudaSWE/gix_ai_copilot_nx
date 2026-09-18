@@ -1,5 +1,5 @@
 {
-  "name": "@aicopilot/core",
+  "name": "@gixcopilot/core",
   "version": "0.1.0",
   "private": true,
   "description": "Framework-independent runtime foundation for the AI Copilot SDK: run lifecycle, event sequencing, and cancellation over a generic executor boundary.",
@@ -24,7 +24,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@aicopilot/protocol": "workspace:*"
+    "@gixcopilot/protocol": "workspace:*"
   },
   "devDependencies": {
     "vitest": "5.0.1"

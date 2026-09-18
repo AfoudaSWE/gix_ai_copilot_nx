@@ -10,7 +10,7 @@ import eslintConfigPrettier from 'eslint-config-prettier';
  * `@nx/enforce-module-boundaries`, per the project-architecture and nx-monorepo skills:
  * protocol must not depend on anything else in the workspace; core may depend on protocol;
  * client may depend on protocol; server may depend on protocol + core + the provider
- * contract; the provider contract (`@aicopilot/provider`) may depend on protocol + core;
+ * contract; the provider contract (`@gixcopilot/provider`) may depend on protocol + core;
  * provider adapters (mock, openai) may depend on protocol + core + the provider contract,
  * but never on each other; examples may depend on anything. This is the executable form of
  * the dependency-direction diagram in docs/architecture/overview.md.

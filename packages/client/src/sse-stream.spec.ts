@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PROTOCOL_VERSION, createEventId, createRunId, createThreadId } from '@aicopilot/protocol';
+import { PROTOCOL_VERSION, createEventId, createRunId, createThreadId } from '@gixcopilot/protocol';
 import { parseSseStream } from './sse-stream.js';
 
 function streamFromChunks(chunks: readonly string[]): ReadableStream<Uint8Array> {

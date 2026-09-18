@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createThreadId, createRunId } from '@aicopilot/protocol';
+import { createThreadId, createRunId } from '@gixcopilot/protocol';
 import { createEchoExecutor } from './echo-executor.js';
 
 async function collect(executor: ReturnType<typeof createEchoExecutor>, text: string) {

@@ -1,4 +1,4 @@
-# @aicopilot/client
+# @gixcopilot/client
 
 ## Purpose
 
@@ -13,7 +13,7 @@ this package rather than reimplementing it.
 - `CopilotTransport` — the seam between the public API and the wire. `createSseTransport`
   is the only implementation in Phase 1.
 - `createSseTransport` — POSTs to `<baseUrl>/runs`, parses the SSE response body into
-  typed, validated `CopilotEvent`s (via `@aicopilot/protocol`'s `parseEvent`), and exposes
+  typed, validated `CopilotEvent`s (via `@gixcopilot/protocol`'s `parseEvent`), and exposes
   `cancel(runId)` for out-of-band cancellation against `POST /runs/:runId/cancel`.
 
 ## Public API
@@ -22,8 +22,8 @@ See `src/index.ts`. No deep imports into `src/` are supported.
 
 ## Dependencies
 
-- `@aicopilot/protocol` — the only workspace dependency, matching `client → protocol` in
-  `docs/architecture/overview.md`. This package does **not** depend on `@aicopilot/server`.
+- `@gixcopilot/protocol` — the only workspace dependency, matching `client → protocol` in
+  `docs/architecture/overview.md`. This package does **not** depend on `@gixcopilot/server`.
 - Uses the platform's global `fetch` and Web Streams API (`ReadableStream`) — no HTTP
   client library dependency, keeping this package minimal and portable to both Node and
   the browser.
@@ -40,8 +40,8 @@ See `src/index.ts`. No deep imports into `src/` are supported.
 - **No React/Angular state management.** This client has no framework hooks; see
   `react-sdk` / `angular-sdk`.
 - **No retry logic.** A failed request surfaces as a thrown `CopilotError`; retries against
-  a flaky model happen server-side in `@aicopilot/provider`'s `ModelRuntime`.
-- **No dependency on `@aicopilot/provider`.** `RunOptions.model` is a plain, locally-defined
+  a flaky model happen server-side in `@gixcopilot/provider`'s `ModelRuntime`.
+- **No dependency on `@gixcopilot/provider`.** `RunOptions.model` is a plain, locally-defined
   `{ provider, model }` shape (`ClientModelReference`) passed through opaquely on the wire —
   this client works the same whether or not the server it's talking to has any model
   support configured at all.
@@ -49,7 +49,7 @@ See `src/index.ts`. No deep imports into `src/` are supported.
 ## Basic Usage
 
 ```ts
-import { createCopilotClient } from '@aicopilot/client';
+import { createCopilotClient } from '@gixcopilot/client';
 
 const client = createCopilotClient({ baseUrl: 'http://localhost:3000' });
 

@@ -1,6 +1,6 @@
-import { parseEvent } from '@aicopilot/protocol';
-import type { CopilotEvent } from '@aicopilot/protocol';
-import { CopilotError } from '@aicopilot/protocol';
+import { parseEvent } from '@gixcopilot/protocol';
+import type { CopilotEvent } from '@gixcopilot/protocol';
+import { CopilotError } from '@gixcopilot/protocol';
 
 /**
  * Parses a raw SSE byte stream into CopilotEvents. Frames with an unrecognized `type` are

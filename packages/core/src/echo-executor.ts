@@ -40,7 +40,7 @@ function extractInputText(input: ExecutorInput): string {
 
 /**
  * A deterministic, non-AI reference Executor used to prove the Phase 1 architecture (see
- * docs/architecture/overview.md) and to exercise @aicopilot/core's runtime in tests without
+ * docs/architecture/overview.md) and to exercise @gixcopilot/core's runtime in tests without
  * any network call or provider dependency. It echoes its input back as a sequence of word /
  * whitespace chunks - e.g. "Hello protocol" -> "Hello", " ", "protocol".
  *

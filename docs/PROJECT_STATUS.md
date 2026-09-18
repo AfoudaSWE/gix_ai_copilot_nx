@@ -27,7 +27,7 @@ phase is started without an explicit instruction naming it.
 
 ## Phase 1 — Foundation & Architecture (COMPLETE)
 
-- `@aicopilot/protocol`, `@aicopilot/core`, `@aicopilot/client`, `@aicopilot/server`
+- `@gixcopilot/protocol`, `@gixcopilot/core`, `@gixcopilot/client`, `@gixcopilot/server`
   established, proving `Client -> HTTP -> Server -> Core -> SSE -> Client` end to end with
   a deterministic (non-AI) executor.
 - Full record: `docs/architecture/overview.md`, `docs/adr/0001`–`0005`,
@@ -35,10 +35,10 @@ phase is started without an explicit instruction naming it.
 
 ## Phase 2 — LLM Runtime & Streaming (COMPLETE)
 
-- Added `@aicopilot/provider`, `@aicopilot/provider-mock`, `@aicopilot/provider-openai`: a
+- Added `@gixcopilot/provider`, `@gixcopilot/provider-mock`, `@gixcopilot/provider-openai`: a
   provider-independent model runtime with retry, timeout, cancellation, usage, latency, and
-  normalized errors, bridged into `@aicopilot/core`'s existing `Executor` boundary.
-- `@aicopilot/server` and `@aicopilot/client` extended additively (`model` field, `messages`
+  normalized errors, bridged into `@gixcopilot/core`'s existing `Executor` boundary.
+- `@gixcopilot/server` and `@gixcopilot/client` extended additively (`model` field, `messages`
   array) — a request with no `model` still runs exactly as it did in Phase 1.
 - Full record: `docs/phases/phase-02/`, `docs/adr/0006-model-provider-abstraction.md`,
   `examples/model-streaming/`.

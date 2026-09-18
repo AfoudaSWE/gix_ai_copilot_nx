@@ -1,11 +1,11 @@
-import { createServer } from '@aicopilot/server';
-import { createEchoExecutor, createRuntime } from '@aicopilot/core';
-import { createModelRuntime } from '@aicopilot/provider';
-import type { ModelRuntimeTelemetryEvent } from '@aicopilot/provider';
-import { createMockProvider } from '@aicopilot/provider-mock';
-import { createOpenAIProvider } from '@aicopilot/provider-openai';
-import { createCopilotClient } from '@aicopilot/client';
-import type { CopilotEvent } from '@aicopilot/protocol';
+import { createServer } from '@gixcopilot/server';
+import { createEchoExecutor, createRuntime } from '@gixcopilot/core';
+import { createModelRuntime } from '@gixcopilot/provider';
+import type { ModelRuntimeTelemetryEvent } from '@gixcopilot/provider';
+import { createMockProvider } from '@gixcopilot/provider-mock';
+import { createOpenAIProvider } from '@gixcopilot/provider-openai';
+import { createCopilotClient } from '@gixcopilot/client';
+import type { CopilotEvent } from '@gixcopilot/protocol';
 
 function printEvent(event: CopilotEvent): void {
   switch (event.type) {

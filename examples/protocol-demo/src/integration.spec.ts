@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
-import { createServer } from '@aicopilot/server';
-import { createEchoExecutor, createRuntime } from '@aicopilot/core';
-import { createCopilotClient } from '@aicopilot/client';
-import type { CopilotEvent } from '@aicopilot/protocol';
+import { createServer } from '@gixcopilot/server';
+import { createEchoExecutor, createRuntime } from '@gixcopilot/core';
+import { createCopilotClient } from '@gixcopilot/client';
+import type { CopilotEvent } from '@gixcopilot/protocol';
 
 async function startTestServer(
   delayMsPerChunk = 0,
@@ -21,10 +21,10 @@ async function startTestServer(
 
 /**
  * This is the Phase 1 "Required End-to-End Demonstration" as an automated test: a real
- * client, over real HTTP, to a real (in-process) server, driving @aicopilot/core's runtime,
+ * client, over real HTTP, to a real (in-process) server, driving @gixcopilot/core's runtime,
  * streamed back as real Server-Sent Events, parsed back into typed events on the client.
  * No LLM, no provider SDK, no network call to any external AI service - only the
- * deterministic echo executor from @aicopilot/core.
+ * deterministic echo executor from @gixcopilot/core.
  */
 describe('Phase 1 end-to-end: client -> HTTP -> server -> core -> SSE -> client', () => {
   let app: FastifyInstance | undefined;

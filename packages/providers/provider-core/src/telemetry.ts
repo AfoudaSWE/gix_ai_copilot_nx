@@ -1,4 +1,4 @@
-import type { CopilotErrorCode, FinishReason, Usage } from '@aicopilot/protocol';
+import type { CopilotErrorCode, FinishReason, Usage } from '@gixcopilot/protocol';
 import type { ModelLatency } from './latency.js';
 
 /**

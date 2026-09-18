@@ -1,5 +1,5 @@
-import type { RuntimeRun } from '@aicopilot/core';
-import type { RunId } from '@aicopilot/protocol';
+import type { RuntimeRun } from '@gixcopilot/core';
+import type { RunId } from '@gixcopilot/protocol';
 
 /**
  * In-memory registry of in-flight runs, keyed by RunId, so `POST /runs/:runId/cancel` can

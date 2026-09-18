@@ -1,5 +1,5 @@
-import { serializeEvent } from '@aicopilot/protocol';
-import type { CopilotEvent } from '@aicopilot/protocol';
+import { serializeEvent } from '@gixcopilot/protocol';
+import type { CopilotEvent } from '@gixcopilot/protocol';
 
 export const SSE_RESPONSE_HEADERS = {
   'Content-Type': 'text/event-stream',

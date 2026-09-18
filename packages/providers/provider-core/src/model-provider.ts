@@ -7,8 +7,8 @@ export interface ModelExecutionOptions {
 }
 
 /**
- * The central provider abstraction (Section 8). Concrete adapters (`@aicopilot/provider-
- * mock`, `@aicopilot/provider-openai`, ...) implement this; nothing else in the system
+ * The central provider abstraction (Section 8). Concrete adapters (`@gixcopilot/provider-
+ * mock`, `@gixcopilot/provider-openai`, ...) implement this; nothing else in the system
  * needs to know which one it's talking to. A provider's `id` is how the registry (see
  * registry.ts) and a `ModelReference.provider` field refer to it.
  */

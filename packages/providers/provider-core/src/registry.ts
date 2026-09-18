@@ -1,4 +1,4 @@
-import { CopilotError } from '@aicopilot/protocol';
+import { CopilotError } from '@gixcopilot/protocol';
 import type { ModelProvider } from './model-provider.js';
 
 /**

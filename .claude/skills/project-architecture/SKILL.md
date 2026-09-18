@@ -24,7 +24,7 @@ Any time a new package, module boundary, public interface, or cross-cutting abst
 - No circular dependencies between packages, enforced via [[nx-monorepo]] module boundaries.
 - Every external technology integration (React, Angular, OpenAI, Anthropic, Gemini, Ollama,
   OpenAPI, MCP, PostgreSQL, Redis) is implemented as an adapter or integration package that
-  implements a core-defined interface — never as a hard dependency inside `@aicopilot/core`.
+  implements a core-defined interface — never as a hard dependency inside `@gixcopilot/core`.
 - Public APIs (exported from a package's root/index) must be intentional and reviewed;
   internal implementation types must not leak through public signatures. See
   [[typescript-standards]] for the type-level rules and [[sdk-design]] for API ergonomics.

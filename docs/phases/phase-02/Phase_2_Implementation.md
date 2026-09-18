@@ -2,29 +2,29 @@
 
 ## New Packages
 
-- **`@aicopilot/provider`** (`packages/providers/provider-core`) — `ModelMessage`,
+- **`@gixcopilot/provider`** (`packages/providers/provider-core`) — `ModelMessage`,
   `ModelReference`, `ModelRequest`, `ModelStreamEvent`, `ModelProvider`,
   `createModelProviderRegistry`, `RetryPolicy` + `computeBackoffDelayMs`/`sleep`,
   `ModelLatency`, `ModelRuntimeTelemetryEvent`, `createModelRuntime`,
   `createModelExecutor`.
-- **`@aicopilot/provider-mock`** (`packages/providers/mock`) — `createMockProvider`, with
+- **`@gixcopilot/provider-mock`** (`packages/providers/mock`) — `createMockProvider`, with
   scenario-based (or per-attempt-function) control over chunks, delay, failures (before
   first chunk / mid-stream), usage, and finish reason.
-- **`@aicopilot/provider-openai`** (`packages/providers/openai`) — `createOpenAIProvider`,
+- **`@gixcopilot/provider-openai`** (`packages/providers/openai`) — `createOpenAIProvider`,
   `toOpenAIMessage(s)`, `toNormalizedError`, `mapFinishReason`.
 - **`examples/model-streaming`** — CLI demo (mock by default, optional real OpenAI) plus
   the mandatory mock integration test and the optional real-provider smoke test.
 
 ## Changed Packages
 
-- **`@aicopilot/protocol`**:
+- **`@gixcopilot/protocol`**:
   - Added `FinishReason` (`finish-reason.ts`).
   - Extended `CopilotErrorCode` with 8 model/provider-related codes and matching
     `CopilotError` static factories (`model`, `provider`, `authentication`, `rateLimited`,
     `modelNotFound`, `contextLimitExceeded`, `timeout`, `networkError`).
   - Added optional `RunCompletedEvent.finishReason`; updated its Zod schema
     (`z.literal`/`z.enum` additions) and the `publicCopilotErrorSchema` code enum.
-- **`@aicopilot/core`**:
+- **`@gixcopilot/core`**:
   - `ExecutorInput.message` (singular) -> `ExecutorInput.messages` (array).
   - `Executor.execute()` return type: `AsyncIterable<string>` ->
     `AsyncGenerator<string, ExecutorCompletion | void, undefined>`.
@@ -35,16 +35,16 @@
     `usage`/`finishReason`.
   - `RunOptions.message` -> `RunOptions.messages`; `createEchoExecutor` echoes only the
     latest message (ignores earlier history, by design — see its README).
-- **`@aicopilot/server`**:
+- **`@gixcopilot/server`**:
   - `createRunRequestSchema`: `message` -> `messages` (array), added optional `model`.
   - `CreateServerOptions` gained optional `modelRuntime?: ModelRuntime`.
   - `POST /runs` now branches: no `model` -> the injected default `runtime`; `model`
     present -> `createModelExecutor` + a fresh `createRuntime` for that one run; `model`
     present but no `modelRuntime` configured -> `400 VALIDATION_ERROR`.
-- **`@aicopilot/client`**:
+- **`@gixcopilot/client`**:
   - `RunOptions.message` -> `RunOptions.messages`; added optional `model:
 ClientModelReference` (a locally-defined `{ provider, model }`, not imported from
-    `@aicopilot/provider` — the client never depends on that package).
+    `@gixcopilot/provider` — the client never depends on that package).
   - `TransportRunRequest` and the SSE transport's JSON body assembly updated to match.
 - **`examples/protocol-demo`**: updated for the `messages` rename (Phase 1 demo/tests
   otherwise unchanged — no model support added here, that's what `model-streaming` is for).

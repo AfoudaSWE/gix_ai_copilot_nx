@@ -32,13 +32,13 @@ targets, or reviewing a change that touches more than one package.
   is available and sufficient.
 - Respect Nx's computation cache; do not disable caching to "fix" a flaky task — fix the
   task's determinism instead.
-- Package naming follows the `@aicopilot/<name>` scope. Names are singular, lower-kebab,
+- Package naming follows the `@gixcopilot/<name>` scope. Names are singular, lower-kebab,
   and describe the package's responsibility, not its implementation detail (e.g.
-  `@aicopilot/tools`, not `@aicopilot/zod-tool-helpers`).
+  `@gixcopilot/tools`, not `@gixcopilot/zod-tool-helpers`).
 - Cross-package imports must go through a package's published entry point, never through a
   relative path reaching into another package's `src/`.
 - Planned package set (not to be scaffolded ahead of the approved phase):
-  `@aicopilot/protocol`, `core`, `client`, `server`, `react`, `angular`, `ui`, `agents`,
+  `@gixcopilot/protocol`, `core`, `client`, `server`, `react`, `angular`, `ui`, `agents`,
   `tools`, `context`, `memory`, `rag`, `openapi`, `mcp`, `security`, `telemetry`, `evals`,
   `devtools`.
 

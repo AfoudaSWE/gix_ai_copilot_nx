@@ -1,4 +1,4 @@
-# @aicopilot/core
+# @gixcopilot/core
 
 ## Purpose
 
@@ -18,7 +18,7 @@ LLM provider, HTTP framework, or UI framework.
 - `Executor` — the generic run/execution boundary: given the conversation so far, stream
   the assistant's reply as text deltas, honoring cancellation, and optionally reporting
   `ExecutorCompletion` (`usage`/`finishReason`) once done. No model, prompt, or provider
-  concept lives here — see `@aicopilot/provider`'s `createModelExecutor` for the Phase 2
+  concept lives here — see `@gixcopilot/provider`'s `createModelExecutor` for the Phase 2
   implementation of this interface backed by a real (or mock) model.
 - `createEchoExecutor()` — a deterministic, non-AI reference `Executor` used by this
   package's own tests and by `examples/protocol-demo` to prove the architecture end to end.
@@ -34,23 +34,23 @@ field only exposes `.`).
 
 ## Dependencies
 
-- `@aicopilot/protocol` — the only workspace dependency, per the dependency-direction rule
+- `@gixcopilot/protocol` — the only workspace dependency, per the dependency-direction rule
   in `docs/architecture/overview.md` (`core → protocol`, never the reverse). Notably, core
-  still does **not** depend on `@aicopilot/provider` — it's the other way around; see
+  still does **not** depend on `@gixcopilot/provider` — it's the other way around; see
   `docs/adr/0006-model-provider-abstraction.md`.
 
 ## Non-responsibilities
 
-- **No LLM runtime.** `Executor` is intentionally generic; `@aicopilot/provider` owns the
+- **No LLM runtime.** `Executor` is intentionally generic; `@gixcopilot/provider` owns the
   actual model/provider abstraction, retries, timeouts, and provider-specific token
   accounting — core only knows how to carry whatever `usage`/`finishReason` an executor
   hands it.
-- **No transport.** HTTP/SSE/WebSocket belong to `@aicopilot/server` / `@aicopilot/client`.
+- **No transport.** HTTP/SSE/WebSocket belong to `@gixcopilot/server` / `@gixcopilot/client`.
 - **No multi-subscriber event fan-out.** A `RuntimeRun.events` iterable is single-use and
   single-consumer; iterating it a second time throws. Broadcasting one run's events to
   multiple independent subscribers is out of scope.
 - **No persistence.** Run/event state exists only for the lifetime of the async generator
-  driving it; nothing is written to a database (`@aicopilot/server` will decide whether/how
+  driving it; nothing is written to a database (`@gixcopilot/server` will decide whether/how
   to persist runs when it needs to, e.g. for the cancel-by-id endpoint's run registry).
 - **`createEchoExecutor` is a test/demo fixture, not a production component** — it must
   never be used as a template for a real model integration.
@@ -58,7 +58,7 @@ field only exposes `.`).
 ## Basic Usage
 
 ```ts
-import { createRuntime, createEchoExecutor } from '@aicopilot/core';
+import { createRuntime, createEchoExecutor } from '@gixcopilot/core';
 
 const runtime = createRuntime({ executor: createEchoExecutor() });
 const run = runtime.run({

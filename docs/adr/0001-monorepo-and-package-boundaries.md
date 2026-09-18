@@ -6,7 +6,7 @@ Accepted (Phase 1).
 
 ## Context
 
-The SDK is planned to grow to ~18 packages (`@aicopilot/protocol`, `core`, `client`,
+The SDK is planned to grow to ~18 packages (`@gixcopilot/protocol`, `core`, `client`,
 `server`, `react`, `angular`, `tools`, `agents`, ... — see the `ai-copilot-project` and
 `nx-monorepo` skills) that must stay independently versionable, framework-independent at
 the core, and free of circular or backward dependencies. Phase 1 only needs 4 packages

@@ -1,5 +1,5 @@
-import { CopilotError } from '@aicopilot/protocol';
-import type { ModelMessage } from '@aicopilot/provider';
+import { CopilotError } from '@gixcopilot/protocol';
+import type { ModelMessage } from '@gixcopilot/provider';
 import type OpenAI from 'openai';
 
 function textOf(message: ModelMessage): string {

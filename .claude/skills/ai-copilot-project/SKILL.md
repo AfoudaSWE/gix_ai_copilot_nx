@@ -72,7 +72,7 @@ time.
 
 # Package Philosophy
 
-Small, composable, independently versioned packages under a single `@aicopilot/*` scope.
+Small, composable, independently versioned packages under a single `@gixcopilot/*` scope.
 Framework SDKs (React, Angular) are thin adapters over a framework-independent core. See
 [[nx-monorepo]] for package boundaries and [[sdk-design]] for developer-facing API rules.
 

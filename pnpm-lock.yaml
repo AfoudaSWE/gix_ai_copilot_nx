@@ -38,25 +38,25 @@ importers:
 
   examples/model-streaming:
     dependencies:
-      '@aicopilot/client':
+      '@gixcopilot/client':
         specifier: workspace:*
         version: link:../../packages/client
-      '@aicopilot/core':
+      '@gixcopilot/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@aicopilot/protocol':
+      '@gixcopilot/protocol':
         specifier: workspace:*
         version: link:../../packages/protocol
-      '@aicopilot/provider':
+      '@gixcopilot/provider':
         specifier: workspace:*
         version: link:../../packages/providers/provider-core
-      '@aicopilot/provider-mock':
+      '@gixcopilot/provider-mock':
         specifier: workspace:*
         version: link:../../packages/providers/mock
-      '@aicopilot/provider-openai':
+      '@gixcopilot/provider-openai':
         specifier: workspace:*
         version: link:../../packages/providers/openai
-      '@aicopilot/server':
+      '@gixcopilot/server':
         specifier: workspace:*
         version: link:../../packages/server
     devDependencies:
@@ -69,16 +69,16 @@ importers:
 
   examples/protocol-demo:
     dependencies:
-      '@aicopilot/client':
+      '@gixcopilot/client':
         specifier: workspace:*
         version: link:../../packages/client
-      '@aicopilot/core':
+      '@gixcopilot/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@aicopilot/protocol':
+      '@gixcopilot/protocol':
         specifier: workspace:*
         version: link:../../packages/protocol
-      '@aicopilot/server':
+      '@gixcopilot/server':
         specifier: workspace:*
         version: link:../../packages/server
     devDependencies:
@@ -91,7 +91,7 @@ importers:
 
   packages/client:
     dependencies:
-      '@aicopilot/protocol':
+      '@gixcopilot/protocol':
         specifier: workspace:*
         version: link:../protocol
     devDependencies:
@@ -101,7 +101,7 @@ importers:
 
   packages/core:
     dependencies:
-      '@aicopilot/protocol':
+      '@gixcopilot/protocol':
         specifier: workspace:*
         version: link:../protocol
     devDependencies:
@@ -121,10 +121,10 @@ importers:
 
   packages/providers/mock:
     dependencies:
-      '@aicopilot/protocol':
+      '@gixcopilot/protocol':
         specifier: workspace:*
         version: link:../../protocol
-      '@aicopilot/provider':
+      '@gixcopilot/provider':
         specifier: workspace:*
         version: link:../provider-core
     devDependencies:
@@ -134,10 +134,10 @@ importers:
 
   packages/providers/openai:
     dependencies:
-      '@aicopilot/protocol':
+      '@gixcopilot/protocol':
         specifier: workspace:*
         version: link:../../protocol
-      '@aicopilot/provider':
+      '@gixcopilot/provider':
         specifier: workspace:*
         version: link:../provider-core
       openai:
@@ -150,10 +150,10 @@ importers:
 
   packages/providers/provider-core:
     dependencies:
-      '@aicopilot/core':
+      '@gixcopilot/core':
         specifier: workspace:*
         version: link:../../core
-      '@aicopilot/protocol':
+      '@gixcopilot/protocol':
         specifier: workspace:*
         version: link:../../protocol
     devDependencies:
@@ -163,13 +163,13 @@ importers:
 
   packages/server:
     dependencies:
-      '@aicopilot/core':
+      '@gixcopilot/core':
         specifier: workspace:*
         version: link:../core
-      '@aicopilot/protocol':
+      '@gixcopilot/protocol':
         specifier: workspace:*
         version: link:../protocol
-      '@aicopilot/provider':
+      '@gixcopilot/provider':
         specifier: workspace:*
         version: link:../providers/provider-core
       fastify:

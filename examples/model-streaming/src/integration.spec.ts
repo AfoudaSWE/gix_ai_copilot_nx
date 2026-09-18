@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
-import { createServer } from '@aicopilot/server';
-import { createEchoExecutor, createRuntime } from '@aicopilot/core';
-import { createModelRuntime } from '@aicopilot/provider';
-import { createMockProvider } from '@aicopilot/provider-mock';
-import { createCopilotClient } from '@aicopilot/client';
-import type { CopilotEvent } from '@aicopilot/protocol';
+import { createServer } from '@gixcopilot/server';
+import { createEchoExecutor, createRuntime } from '@gixcopilot/core';
+import { createModelRuntime } from '@gixcopilot/provider';
+import { createMockProvider } from '@gixcopilot/provider-mock';
+import { createCopilotClient } from '@gixcopilot/client';
+import type { CopilotEvent } from '@gixcopilot/protocol';
 
 async function startTestServer(): Promise<{ app: FastifyInstance; baseUrl: string }> {
   const modelRuntime = createModelRuntime({
@@ -40,7 +40,7 @@ async function startTestServer(): Promise<{ app: FastifyInstance; baseUrl: strin
 
 /**
  * Section 52's mandatory end-to-end mock integration test: a real client, over real HTTP,
- * to a real (in-process) server, through @aicopilot/provider's model runtime, to a
+ * to a real (in-process) server, through @gixcopilot/provider's model runtime, to a
  * deterministic mock ModelProvider, streamed back as real SSE, parsed back into typed
  * events on the client. No real AI service, no credentials, nothing skippable in CI.
  */

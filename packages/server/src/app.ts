@@ -1,7 +1,7 @@
 import Fastify, { type FastifyInstance } from 'fastify';
-import { CopilotError, asRunId, asThreadId } from '@aicopilot/protocol';
-import { createRuntime, type Runtime } from '@aicopilot/core';
-import { createModelExecutor, type ModelRuntime } from '@aicopilot/provider';
+import { CopilotError, asRunId, asThreadId } from '@gixcopilot/protocol';
+import { createRuntime, type Runtime } from '@gixcopilot/core';
+import { createModelExecutor, type ModelRuntime } from '@gixcopilot/provider';
 import { createRunRegistry } from './run-registry.js';
 import { formatSseComment, formatSseFrame, SSE_RESPONSE_HEADERS } from './sse.js';
 import {
@@ -15,7 +15,7 @@ export interface CreateServerOptions {
    * The runtime a request without a `model` field executes against (Phase 1 behavior, e.g.
    * the deterministic echo executor). The server has no opinion on what executor backs it -
    * dependency injection, per the node-backend skill - so it never embeds AI/business logic
-   * itself. Pass `createRuntime({ executor: ... })` from @aicopilot/core.
+   * itself. Pass `createRuntime({ executor: ... })` from @gixcopilot/core.
    */
   readonly runtime: Runtime;
   /**

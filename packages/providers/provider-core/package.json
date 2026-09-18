@@ -1,5 +1,5 @@
 {
-  "name": "@aicopilot/provider",
+  "name": "@gixcopilot/provider",
   "version": "0.1.0",
   "private": true,
   "description": "Provider-independent model contracts, registry, and model runtime for the AI Copilot SDK.",
@@ -24,8 +24,8 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@aicopilot/core": "workspace:*",
-    "@aicopilot/protocol": "workspace:*"
+    "@gixcopilot/core": "workspace:*",
+    "@gixcopilot/protocol": "workspace:*"
   },
   "devDependencies": {
     "vitest": "5.0.1"

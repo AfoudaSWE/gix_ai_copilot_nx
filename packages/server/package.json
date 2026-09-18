@@ -1,8 +1,8 @@
 {
-  "name": "@aicopilot/server",
+  "name": "@gixcopilot/server",
   "version": "0.1.0",
   "private": true,
-  "description": "Fastify HTTP/SSE transport adapter for the AI Copilot SDK: adapts @aicopilot/core's runtime to an HTTP boundary.",
+  "description": "Fastify HTTP/SSE transport adapter for the AI Copilot SDK: adapts @gixcopilot/core's runtime to an HTTP boundary.",
   "type": "module",
   "sideEffects": false,
   "main": "./dist/index.js",
@@ -24,9 +24,9 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@aicopilot/core": "workspace:*",
-    "@aicopilot/protocol": "workspace:*",
-    "@aicopilot/provider": "workspace:*",
+    "@gixcopilot/core": "workspace:*",
+    "@gixcopilot/protocol": "workspace:*",
+    "@gixcopilot/provider": "workspace:*",
     "fastify": "5.12.5",
     "zod": "4.6.5"
   },

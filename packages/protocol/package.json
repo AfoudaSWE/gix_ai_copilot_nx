@@ -1,5 +1,5 @@
 {
-  "name": "@aicopilot/protocol",
+  "name": "@gixcopilot/protocol",
   "version": "0.1.0",
   "private": true,
   "description": "Transport-independent wire protocol for the AI Copilot SDK: Message, Thread, Run, and CopilotEvent contracts.",

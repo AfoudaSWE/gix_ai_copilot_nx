@@ -1,5 +1,5 @@
 {
-  "name": "@aicopilot/client",
+  "name": "@gixcopilot/client",
   "version": "0.1.0",
   "private": true,
   "description": "Framework-independent streaming client for the AI Copilot SDK. No React/Angular dependency.",
@@ -24,7 +24,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@aicopilot/protocol": "workspace:*"
+    "@gixcopilot/protocol": "workspace:*"
   },
   "devDependencies": {
     "vitest": "5.0.1"

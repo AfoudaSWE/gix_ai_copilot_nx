@@ -1,4 +1,4 @@
-# @aicopilot/provider-mock
+# @gixcopilot/provider-mock
 
 ## Purpose
 
@@ -23,8 +23,8 @@ See `src/index.ts`.
 
 ## Dependencies
 
-- `@aicopilot/protocol`, `@aicopilot/provider` — nothing else. In particular, this package
-  never depends on `@aicopilot/provider-openai` (or any other adapter) — see the
+- `@gixcopilot/protocol`, `@gixcopilot/provider` — nothing else. In particular, this package
+  never depends on `@gixcopilot/provider-openai` (or any other adapter) — see the
   `scope:provider-adapter` module-boundary rule in the root `eslint.config.js`.
 
 ## Non-responsibilities
@@ -38,7 +38,7 @@ See `src/index.ts`.
 ## Basic Usage
 
 ```ts
-import { createMockProvider } from '@aicopilot/provider-mock';
+import { createMockProvider } from '@gixcopilot/provider-mock';
 
 const provider = createMockProvider({
   scenario: { chunks: ['Hello', ' world'], finishReason: 'stop' },

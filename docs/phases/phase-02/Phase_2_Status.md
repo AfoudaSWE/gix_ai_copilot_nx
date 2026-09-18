@@ -5,8 +5,8 @@ assumed.
 
 ## Architecture
 
-- [x] Core has no provider SDK dependency. _(verified: no `openai` import anywhere outside `@aicopilot/provider-openai`)_
-- [x] Provider-neutral model contract exists. _(`@aicopilot/provider`'s `ModelRequest`/`ModelMessage`/`ModelStreamEvent`/`ModelProvider`)_
+- [x] Core has no provider SDK dependency. _(verified: no `openai` import anywhere outside `@gixcopilot/provider-openai`)_
+- [x] Provider-neutral model contract exists. _(`@gixcopilot/provider`'s `ModelRequest`/`ModelMessage`/`ModelStreamEvent`/`ModelProvider`)_
 - [x] Provider adapters are isolated. _(mock/openai each depend only on `provider`+`protocol`(+SDK); boundary-tested)_
 - [x] Provider registry exists. _(`createModelProviderRegistry`, independently tested)_
 - [x] Runtime can resolve providers. _(`createModelRuntime` + `registry.require`)_

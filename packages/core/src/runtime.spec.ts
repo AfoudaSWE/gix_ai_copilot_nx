@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { PROTOCOL_VERSION } from '@aicopilot/protocol';
-import type { CopilotEvent } from '@aicopilot/protocol';
+import { PROTOCOL_VERSION } from '@gixcopilot/protocol';
+import type { CopilotEvent } from '@gixcopilot/protocol';
 import { createRuntime } from './runtime.js';
 import { createEchoExecutor } from './echo-executor.js';
 import type { Executor } from './executor.js';

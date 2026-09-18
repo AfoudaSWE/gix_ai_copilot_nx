@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { PROTOCOL_VERSION, createEventId, createRunId, createThreadId } from '@aicopilot/protocol';
-import type { CopilotEvent } from '@aicopilot/protocol';
+import { PROTOCOL_VERSION, createEventId, createRunId, createThreadId } from '@gixcopilot/protocol';
+import type { CopilotEvent } from '@gixcopilot/protocol';
 import { createCopilotClient } from './client.js';
 import type { CopilotTransport, TransportRunRequest } from './transport.js';
 

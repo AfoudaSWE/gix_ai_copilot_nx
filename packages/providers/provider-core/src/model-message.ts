@@ -1,4 +1,4 @@
-import type { ContentPart, MessageRole } from '@aicopilot/protocol';
+import type { ContentPart, MessageRole } from '@gixcopilot/protocol';
 
 /**
  * A provider-neutral chat message. Reuses protocol's MessageRole/ContentPart rather than

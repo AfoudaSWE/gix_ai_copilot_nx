@@ -8,7 +8,7 @@ Accepted (Phase 2).
 
 Phase 2's stated goal is that "the rest of the SDK must not care whether the underlying
 model is OpenAI, Anthropic, Gemini, Ollama, or another provider." Phase 1 already
-established `@aicopilot/core`'s generic `Executor` boundary specifically so a real model
+established `@gixcopilot/core`'s generic `Executor` boundary specifically so a real model
 integration could attach to it later (see `docs/adr/0002-framework-independent-core.md`).
 Phase 2 has to decide: where does the new provider/model-runtime code actually live
 relative to `core`, and how does a real model's output (usage, finish reason, retries,
@@ -16,21 +16,21 @@ timeouts) reach the existing protocol without turning `core` into something mode
 
 ## Decision
 
-- **New packages, layered _above_ `@aicopilot/core`, not pulled into it:**
-  - `@aicopilot/provider` (`packages/providers/provider-core`) — the provider-neutral
+- **New packages, layered _above_ `@gixcopilot/core`, not pulled into it:**
+  - `@gixcopilot/provider` (`packages/providers/provider-core`) — the provider-neutral
     contract (`ModelMessage`, `ModelRequest`, `ModelReference`, `ModelStreamEvent`,
     `ModelProvider`), the registry, the `ModelRuntime` (retry/timeout/cancellation/
     latency/usage orchestration), and `createModelExecutor` — the bridge that makes a
-    `ModelRuntime` usable as a `@aicopilot/core` `Executor`.
-  - `@aicopilot/provider-mock` and `@aicopilot/provider-openai` — concrete adapters,
-    depending on `@aicopilot/provider` (+ `protocol`), never on each other.
-  - **`@aicopilot/core` gains no new workspace dependency.** It is `@aicopilot/provider`
+    `ModelRuntime` usable as a `@gixcopilot/core` `Executor`.
+  - `@gixcopilot/provider-mock` and `@gixcopilot/provider-openai` — concrete adapters,
+    depending on `@gixcopilot/provider` (+ `protocol`), never on each other.
+  - **`@gixcopilot/core` gains no new workspace dependency.** It is `@gixcopilot/provider`
     that depends on `core` (to implement its `Executor` interface), the same direction
-    `@aicopilot/server` already depends on `core` — not the reverse. Enforced by
+    `@gixcopilot/server` already depends on `core` — not the reverse. Enforced by
     `@nx/enforce-module-boundaries` (`scope:provider` → `protocol, core, provider` only;
     `scope:provider-adapter` → `protocol, core, provider` only, explicitly excluding each
     other).
-- **`@aicopilot/core`'s `Executor` interface is extended, additively, to carry completion
+- **`@gixcopilot/core`'s `Executor` interface is extended, additively, to carry completion
   metadata.** `execute()` now returns `AsyncGenerator<string, ExecutorCompletion | void,
 undefined>` instead of a plain `AsyncIterable<string>` — a generator's own return value
   (`usage`/`finishReason`) is threaded through `cancellable()` (now generic over `TReturn`)
@@ -49,7 +49,7 @@ undefined>` instead of a plain `AsyncIterable<string>` — a generator's own ret
   `RunOptions`, so a model executor can see conversation history, not just the latest
   turn. A new optional `model: { provider, model }` field selects a model-backed run; its
   absence preserves exact Phase 1 behavior (the server's default injected `Runtime`).
-- **A `ModelProvider` never retries internally** (`@aicopilot/provider-openai` explicitly
+- **A `ModelProvider` never retries internally** (`@gixcopilot/provider-openai` explicitly
   sets `maxRetries: 0` on the OpenAI SDK client) — retry is `ModelRuntime`'s job alone, so
   there is exactly one place retry policy and telemetry exist, not two uncoordinated ones.
 - **The model runtime never retries once any content has streamed**, regardless of whether
@@ -62,7 +62,7 @@ undefined>` instead of a plain `AsyncIterable<string>` — a generator's own ret
   behind a run — they consume the same `CopilotEvent` stream either way, with
   `finishReason` simply present or absent.
 - Adding a second real provider (Anthropic, Gemini, Ollama) is: one new package depending
-  on `@aicopilot/provider` + that provider's own SDK, registered alongside existing
+  on `@gixcopilot/provider` + that provider's own SDK, registered alongside existing
   providers in whatever `createModelRuntime({ providers: [...] })` call constructs the
   runtime. No other package changes.
 - Because `messages` replaced `message`, this is a breaking change to the Phase 1 request
@@ -77,9 +77,9 @@ undefined>` instead of a plain `AsyncIterable<string>` — a generator's own ret
 
 ## Alternatives Considered
 
-- **Make `@aicopilot/core` depend on `@aicopilot/provider`** (core "knows about" models
+- **Make `@gixcopilot/core` depend on `@gixcopilot/provider`** (core "knows about" models
   directly). Rejected: this is exactly the coupling Phase 1's `Executor` boundary exists to
-  prevent, and would make it impossible to use `@aicopilot/core` in a context with no model
+  prevent, and would make it impossible to use `@gixcopilot/core` in a context with no model
   concept at all (e.g., a hypothetical non-AI use of the same runtime primitives).
 - **Model reference as a colon-delimited string** (`"openai:gpt-4o-mini"`). Rejected in
   favor of an explicit `{ provider, model }` object — the registry already keys providers

@@ -35,7 +35,7 @@ Any time TypeScript source is written, edited, or reviewed in this project.
   or equivalent enabled).
 - No unsafe casts (`as any`, double-cast through `unknown`, non-null assertion `!`) without
   an inline comment justifying why the invariant holds.
-- Naming: packages `@aicopilot/<name>` (kebab-case), types/interfaces PascalCase, functions/
+- Naming: packages `@gixcopilot/<name>` (kebab-case), types/interfaces PascalCase, functions/
   variables camelCase, constants intended as public contracts SCREAMING_SNAKE_CASE only for
   true constants (not config objects).
 - Prefer `interface` for object shapes that may be extended or implemented by adapters;
@@ -54,7 +54,7 @@ Any time TypeScript source is written, edited, or reviewed in this project.
   of a single discriminated status field.
 - `catch (e) { throw e as MyError }` without validating `e` is actually that shape.
 - Re-exporting a third-party provider SDK's types directly from a core package's public API.
-- Deep-importing `@aicopilot/core/src/internal/foo` from another package.
+- Deep-importing `@gixcopilot/core/src/internal/foo` from another package.
 
 # Validation Checklist
 

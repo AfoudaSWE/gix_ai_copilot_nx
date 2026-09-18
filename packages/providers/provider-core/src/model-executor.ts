@@ -1,6 +1,6 @@
-import { CopilotError } from '@aicopilot/protocol';
-import type { FinishReason, Usage } from '@aicopilot/protocol';
-import type { Executor, ExecutorCompletion, ExecutorContext, ExecutorInput } from '@aicopilot/core';
+import { CopilotError } from '@gixcopilot/protocol';
+import type { FinishReason, Usage } from '@gixcopilot/protocol';
+import type { Executor, ExecutorCompletion, ExecutorContext, ExecutorInput } from '@gixcopilot/core';
 import type { ModelReference } from './model-reference.js';
 import type { ModelRuntime } from './model-runtime.js';
 
@@ -16,7 +16,7 @@ export interface CreateModelExecutorOptions {
 
 /**
  * The seam Section 5's architecture diagram describes: wraps a `ModelRuntime` (Phase 2, in
- * this package) as an `@aicopilot/core` `Executor` (Phase 1's generic run/execution
+ * this package) as an `@gixcopilot/core` `Executor` (Phase 1's generic run/execution
  * boundary), so `createRuntime({ executor: createModelExecutor({...}) })` drives a real
  * model exactly the way it already drives `createEchoExecutor()`. Core itself never learns
  * anything about providers, retries, or timeouts - this is the only place that knowledge

@@ -21,18 +21,18 @@ with React/Angular, Node.js server, and LLM provider adapters layered on top.
 Client -> Server -> Core -> (default executor | Model Runtime -> Provider) -> SSE -> Client
 ```
 
-- **`@aicopilot/protocol`** — transport-independent contracts (`Message`, `Thread`, `Run`,
+- **`@gixcopilot/protocol`** — transport-independent contracts (`Message`, `Thread`, `Run`,
   `CopilotEvent`, `FinishReason`), runtime validation, and (de)serialization.
-- **`@aicopilot/core`** — the framework-independent runtime: run lifecycle, event
+- **`@gixcopilot/core`** — the framework-independent runtime: run lifecycle, event
   sequencing, cancellation, and a generic `Executor` boundary.
-- **`@aicopilot/provider`** — provider-neutral model contracts, a registry, and a
+- **`@gixcopilot/provider`** — provider-neutral model contracts, a registry, and a
   `ModelRuntime` (retry, timeout, cancellation, usage, latency, normalized errors).
-- **`@aicopilot/provider-mock`** — a deterministic, non-network provider for tests/CI.
-- **`@aicopilot/provider-openai`** — a real OpenAI streaming provider (the only package
+- **`@gixcopilot/provider-mock`** — a deterministic, non-network provider for tests/CI.
+- **`@gixcopilot/provider-openai`** — a real OpenAI streaming provider (the only package
   depending on the `openai` SDK).
-- **`@aicopilot/server`** — a Fastify HTTP/SSE adapter, routing a request to either the
+- **`@gixcopilot/server`** — a Fastify HTTP/SSE adapter, routing a request to either the
   default executor or a named model.
-- **`@aicopilot/client`** — a framework-independent streaming client (no React/Angular).
+- **`@gixcopilot/client`** — a framework-independent streaming client (no React/Angular).
 - **`examples/protocol-demo`** — the Phase 1 proof (no AI), CLI + integration test.
 - **`examples/model-streaming`** — the Phase 2 proof (mock by default, optional real
   OpenAI), CLI + mandatory mock integration test + optional real-provider smoke test.
@@ -41,14 +41,14 @@ Client -> Server -> Core -> (default executor | Model Runtime -> Provider) -> SS
 
 ```text
 packages/
-  protocol/             @aicopilot/protocol
-  core/                 @aicopilot/core
-  client/               @aicopilot/client
-  server/               @aicopilot/server
+  protocol/             @gixcopilot/protocol
+  core/                 @gixcopilot/core
+  client/               @gixcopilot/client
+  server/               @gixcopilot/server
   providers/
-    provider-core/      @aicopilot/provider
-    mock/               @aicopilot/provider-mock
-    openai/             @aicopilot/provider-openai
+    provider-core/      @gixcopilot/provider
+    mock/               @gixcopilot/provider-mock
+    openai/             @gixcopilot/provider-openai
 examples/
   protocol-demo/        Phase 1 end-to-end CLI demo + integration test
   model-streaming/       Phase 2 end-to-end CLI demo + integration test + optional OpenAI smoke test
@@ -89,10 +89,10 @@ pnpm validate       # all four, in one call
 pnpm demo           # run the Phase 1 end-to-end CLI demo
 ```
 
-Each command also works scoped to a single project, e.g. `pnpm --filter @aicopilot/core test`,
+Each command also works scoped to a single project, e.g. `pnpm --filter @gixcopilot/core test`,
 or via Nx directly: `npx nx run core:test`, `npx nx run-many -t test --projects=core,server`.
 
-Run the Phase 2 model-streaming demo with `pnpm --filter @aicopilot/model-streaming-demo run demo`
+Run the Phase 2 model-streaming demo with `pnpm --filter @gixcopilot/model-streaming-demo run demo`
 (mock provider by default; set `OPENAI_API_KEY` and `MODEL_PROVIDER=openai` for real
 streaming — see [`examples/model-streaming/README.md`](examples/model-streaming/README.md)).
 

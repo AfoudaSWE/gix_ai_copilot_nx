@@ -1,4 +1,4 @@
-# @aicopilot/provider-openai
+# @gixcopilot/provider-openai
 
 ## Purpose
 
@@ -19,7 +19,7 @@ true } })`, mapping each chunk's `delta.content` to `content.delta`, the final
   `APIConnectionTimeoutError`, `APIConnectionError`, generic `APIError`) onto the shared
   `CopilotErrorCode` taxonomy — see `src/error-mapping.ts`.
 - Disables the SDK's own built-in retry (`maxRetries: 0`): retry is
-  `@aicopilot/provider`'s `ModelRuntime`'s job, not duplicated here.
+  `@gixcopilot/provider`'s `ModelRuntime`'s job, not duplicated here.
 
 ## Public API
 
@@ -27,7 +27,7 @@ See `src/index.ts`.
 
 ## Dependencies
 
-- `@aicopilot/protocol`, `@aicopilot/provider`, `openai`.
+- `@gixcopilot/protocol`, `@gixcopilot/provider`, `openai`.
 
 ## Non-responsibilities
 
@@ -38,7 +38,7 @@ See `src/index.ts`.
   the option/environment variable given to it; this package has no notion of multiple
   tenants' keys.
 - **No retry policy of its own** — see above; a caller wanting retries configures
-  `@aicopilot/provider`'s `ModelRuntime`.
+  `@gixcopilot/provider`'s `ModelRuntime`.
 
 ## Configuration
 
@@ -48,7 +48,7 @@ the security skill). Optionally set `baseURL` for an OpenAI-compatible endpoint.
 ## Basic Usage
 
 ```ts
-import { createOpenAIProvider } from '@aicopilot/provider-openai';
+import { createOpenAIProvider } from '@gixcopilot/provider-openai';
 
 const provider = createOpenAIProvider({ apiKey: process.env.OPENAI_API_KEY });
 ```

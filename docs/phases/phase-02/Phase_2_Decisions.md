@@ -4,8 +4,8 @@ The full reasoning for each of these lives in
 [ADR 0006](../../adr/0006-model-provider-abstraction.md); this file is a short index of
 what was decided and why, for anyone who wants the summary without the full ADR.
 
-1. **Provider packages depend on `@aicopilot/core`, not the other way around.**
-   `@aicopilot/core` gained zero new workspace dependencies this phase. The model
+1. **Provider packages depend on `@gixcopilot/core`, not the other way around.**
+   `@gixcopilot/core` gained zero new workspace dependencies this phase. The model
    abstraction is a new layer built _on top of_ core's existing `Executor` boundary.
 
 2. **`Executor.execute()`'s return type was extended additively**: from
@@ -37,7 +37,7 @@ undefined>`. `createEchoExecutor` needed no behavior change — it simply never 
    (or a scenario in the mock provider doesn't set them), `usage` stays `undefined` all the
    way through to `run.completed` — never defaulted to zero or guessed.
 
-9. **`@aicopilot/client` does not depend on `@aicopilot/provider`.** `ClientModelReference`
+9. **`@gixcopilot/client` does not depend on `@gixcopilot/provider`.** `ClientModelReference`
    is a small, locally-duplicated `{ provider, model }` type, so the client works identically
    whether or not the server it's talking to has any model support configured.
 

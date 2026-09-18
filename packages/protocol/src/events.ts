@@ -16,7 +16,7 @@ import type { FinishReason } from './finish-reason.js';
  * Every event carries enough to correlate, order, and version it without a lookup:
  *  - `id`         - unique id of this event (for de-duplication).
  *  - `runId` / `threadId` - correlation back to the run/thread it belongs to.
- *  - `sequence`   - 1-based, strictly increasing per run; see @aicopilot/core's sequencer.
+ *  - `sequence`   - 1-based, strictly increasing per run; see @gixcopilot/core's sequencer.
  *  - `timestamp`  - ISO 8601, for debugging/ordering display only (sequence is authoritative
  *                   for ordering, not timestamp, since clocks are not a reliable ordering
  *                   source).

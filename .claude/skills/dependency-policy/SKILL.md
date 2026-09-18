@@ -28,7 +28,7 @@ Before adding a dependency, work through and be able to answer all of the follow
 6. **Duplication**: does the workspace already have a package that solves this (e.g. a
    second HTTP client, a second date library, a second schema validator)? Reuse the
    existing one unless there's a documented reason not to.
-7. **Core minimalism**: `@aicopilot/core` (and other core/protocol packages) carry the
+7. **Core minimalism**: `@gixcopilot/core` (and other core/protocol packages) carry the
    fewest possible dependencies; anything optional or provider-specific is pushed into an
    adapter package instead of the core.
 8. **Prefer adapters** for optional functionality (a specific LLM provider, a specific
@@ -44,7 +44,7 @@ Before adding a dependency, work through and be able to answer all of the follow
 - Adding a whole date-formatting library for one date computation `Intl.DateTimeFormat`
   already covers.
 - Adding a second state-management library because it's "nicer" than what's already used.
-- Pulling a provider SDK into `@aicopilot/core` "just for this feature," instead of behind
+- Pulling a provider SDK into `@gixcopilot/core` "just for this feature," instead of behind
   an adapter.
 - Adding a dependency with no maintenance activity in years for a load-bearing feature.
 

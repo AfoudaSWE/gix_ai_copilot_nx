@@ -1,4 +1,4 @@
-import type { FinishReason, PublicCopilotError, Usage } from '@aicopilot/protocol';
+import type { FinishReason, PublicCopilotError, Usage } from '@gixcopilot/protocol';
 
 /**
  * Normalized provider output. A provider adapter's only job is translating its raw SDK/API

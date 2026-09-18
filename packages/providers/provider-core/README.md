@@ -1,4 +1,4 @@
-# @aicopilot/provider
+# @gixcopilot/provider
 
 ## Purpose
 
@@ -18,7 +18,7 @@ that means OpenAI, Anthropic, or a deterministic mock.
   — provider lookup, request normalization, streaming, cancellation, timeout, retry
   (bounded exponential backoff with jitter, never retrying once content has streamed or
   after user cancellation), and usage/latency capture.
-- `createModelExecutor({ runtime, model, ... })` — the bridge into `@aicopilot/core`'s
+- `createModelExecutor({ runtime, model, ... })` — the bridge into `@gixcopilot/core`'s
   `Executor` boundary, so `createRuntime({ executor: createModelExecutor({...}) })` drives
   a real model exactly the way Phase 1 drove `createEchoExecutor()`.
 
@@ -28,15 +28,15 @@ See `src/index.ts`. No deep imports into `src/` are supported.
 
 ## Dependencies
 
-- `@aicopilot/protocol` and `@aicopilot/core` — see
+- `@gixcopilot/protocol` and `@gixcopilot/core` — see
   `docs/adr/0006-model-provider-abstraction.md` for why this package depends on core
   (to implement its `Executor` interface) rather than the other way around.
-- No provider SDK is a dependency of this package — see `@aicopilot/provider-openai`.
+- No provider SDK is a dependency of this package — see `@gixcopilot/provider-openai`.
 
 ## Non-responsibilities
 
-- **No concrete provider.** This package defines the contract; `@aicopilot/provider-mock`
-  and `@aicopilot/provider-openai` implement it.
+- **No concrete provider.** This package defines the contract; `@gixcopilot/provider-mock`
+  and `@gixcopilot/provider-openai` implement it.
 - **No agent logic.** This is a _model execution_ runtime, not an agent runtime — no
   planning, no tool calling, no multi-step orchestration (Phase 5/10).
 - **No intelligent model routing or automatic multi-model fallback.** `defaultProvider`/
@@ -47,9 +47,9 @@ See `src/index.ts`. No deep imports into `src/` are supported.
 ## Basic Usage
 
 ```ts
-import { createModelRuntime, createModelExecutor } from '@aicopilot/provider';
-import { createMockProvider } from '@aicopilot/provider-mock';
-import { createRuntime } from '@aicopilot/core';
+import { createModelRuntime, createModelExecutor } from '@gixcopilot/provider';
+import { createMockProvider } from '@gixcopilot/provider-mock';
+import { createRuntime } from '@gixcopilot/core';
 
 const modelRuntime = createModelRuntime({
   providers: [

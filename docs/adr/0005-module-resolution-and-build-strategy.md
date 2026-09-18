@@ -48,7 +48,7 @@ answer for how one package's `tsconfig` resolves another workspace package's typ
   add publish-specific metadata (license, repository, etc.) — the entry-point shape doesn't
   need to change.
 - Vitest is configured with its own resolution aliases (`tools/vitest.shared.ts`) mapping
-  each `@aicopilot/*` specifier straight to that package's `src/index.ts`, so `pnpm test`
+  each `@gixcopilot/*` specifier straight to that package's `src/index.ts`, so `pnpm test`
   never requires `pnpm build` to have run first, independent of the TypeScript project-
   reference mechanism used for `tsc`.
 - If a consumer ever needs CJS (e.g., an older tool that can't load ESM), that's a new,

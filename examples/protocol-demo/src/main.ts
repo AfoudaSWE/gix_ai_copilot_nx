@@ -1,7 +1,7 @@
-import { createServer } from '@aicopilot/server';
-import { createEchoExecutor, createRuntime } from '@aicopilot/core';
-import { createCopilotClient } from '@aicopilot/client';
-import type { CopilotEvent } from '@aicopilot/protocol';
+import { createServer } from '@gixcopilot/server';
+import { createEchoExecutor, createRuntime } from '@gixcopilot/core';
+import { createCopilotClient } from '@gixcopilot/client';
+import type { CopilotEvent } from '@gixcopilot/protocol';
 
 function printEvent(event: CopilotEvent): void {
   switch (event.type) {
@@ -41,7 +41,7 @@ function printEvent(event: CopilotEvent): void {
 async function main(): Promise<void> {
   const inputText = process.argv[2] ?? 'Hello protocol';
 
-  // The only executor in this demo is the deterministic reference one from @aicopilot/core -
+  // The only executor in this demo is the deterministic reference one from @gixcopilot/core -
   // no LLM, no provider, no network call to any AI service. See docs/architecture/overview.md.
   const runtime = createRuntime({ executor: createEchoExecutor({ delayMsPerChunk: 60 }) });
   const app = createServer({ runtime });

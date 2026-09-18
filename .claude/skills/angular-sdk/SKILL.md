@@ -1,6 +1,6 @@
 ---
 name: angular-sdk
-description: Angular SDK standards - services, DI, signals, directives, and the requirement to wrap the same framework-independent core rather than reimplement runtime logic. Load when writing or reviewing @aicopilot/angular code.
+description: Angular SDK standards - services, DI, signals, directives, and the requirement to wrap the same framework-independent core rather than reimplement runtime logic. Load when writing or reviewing @gixcopilot/angular code.
 ---
 
 # Purpose

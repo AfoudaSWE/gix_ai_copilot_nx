@@ -1,5 +1,5 @@
 {
-  "name": "@aicopilot/model-streaming-demo",
+  "name": "@gixcopilot/model-streaming-demo",
   "version": "0.1.0",
   "private": true,
   "description": "Phase 2 demonstration: client -> server -> core -> model runtime -> provider -> streaming tokens -> SSE -> client, defaulting to the deterministic mock provider (no credentials required) with optional real OpenAI streaming.",
@@ -12,13 +12,13 @@
     "demo": "tsc -b tsconfig.json && node dist/main.js"
   },
   "dependencies": {
-    "@aicopilot/client": "workspace:*",
-    "@aicopilot/core": "workspace:*",
-    "@aicopilot/protocol": "workspace:*",
-    "@aicopilot/provider": "workspace:*",
-    "@aicopilot/provider-mock": "workspace:*",
-    "@aicopilot/provider-openai": "workspace:*",
-    "@aicopilot/server": "workspace:*"
+    "@gixcopilot/client": "workspace:*",
+    "@gixcopilot/core": "workspace:*",
+    "@gixcopilot/protocol": "workspace:*",
+    "@gixcopilot/provider": "workspace:*",
+    "@gixcopilot/provider-mock": "workspace:*",
+    "@gixcopilot/provider-openai": "workspace:*",
+    "@gixcopilot/server": "workspace:*"
   },
   "devDependencies": {
     "fastify": "5.12.5",

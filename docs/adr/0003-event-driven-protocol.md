@@ -22,7 +22,7 @@ must decide the concrete shape now, since every other package depends on it.
   a lowercase `noun.verb` string (`run.started`, `message.end`, `error`). These two naming
   layers are allowed to differ (interface name vs. wire string) since they serve different
   audiences (TypeScript authors vs. wire consumers in any language).
-- **Ordering**: `@aicopilot/core`'s `EventSequencer` assigns a 1-based, strictly increasing
+- **Ordering**: `@gixcopilot/core`'s `EventSequencer` assigns a 1-based, strictly increasing
   `sequence` number per run; consumers never assign their own. This is sufficient for
   Phase 1 (single in-process producer per run); a distributed producer/reconciliation
   scheme is explicitly out of scope.

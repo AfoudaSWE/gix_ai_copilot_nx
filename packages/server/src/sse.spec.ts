@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { PROTOCOL_VERSION, createEventId, createRunId, createThreadId } from '@aicopilot/protocol';
-import type { RunStartedEvent } from '@aicopilot/protocol';
+import { PROTOCOL_VERSION, createEventId, createRunId, createThreadId } from '@gixcopilot/protocol';
+import type { RunStartedEvent } from '@gixcopilot/protocol';
 import { formatSseComment, formatSseFrame } from './sse.js';
 
 describe('formatSseFrame', () => {

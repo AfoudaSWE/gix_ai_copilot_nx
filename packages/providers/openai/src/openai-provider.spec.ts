@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createOpenAIProvider } from './openai-provider.js';
-import type { ModelStreamEvent } from '@aicopilot/provider';
+import type { ModelStreamEvent } from '@gixcopilot/provider';
 
 function sseChunk(payload: unknown): string {
   return `data: ${JSON.stringify(payload)}\n\n`;

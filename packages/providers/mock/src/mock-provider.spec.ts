@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createMockProvider } from './mock-provider.js';
-import type { ModelStreamEvent } from '@aicopilot/provider';
+import type { ModelStreamEvent } from '@gixcopilot/provider';
 
 async function collect(
   provider: ReturnType<typeof createMockProvider>,

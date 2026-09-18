@@ -1,6 +1,6 @@
 ---
 name: react-sdk
-description: React SDK standards - provider architecture, headless hooks, render optimization, accessibility, SSR, and error boundaries. Load when writing or reviewing any @aicopilot/react code.
+description: React SDK standards - provider architecture, headless hooks, render optimization, accessibility, SSR, and error boundaries. Load when writing or reviewing any @gixcopilot/react code.
 ---
 
 # Purpose

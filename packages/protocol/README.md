@@ -1,4 +1,4 @@
-# @aicopilot/protocol
+# @gixcopilot/protocol
 
 ## Purpose
 
@@ -25,7 +25,7 @@ plus runtime validation (Zod) and (de)serialization for those shapes.
 ## Public API
 
 See `src/index.ts` for the full barrel export. Everything a consumer needs is re-exported
-from `@aicopilot/protocol`'s root — no deep imports into `src/` are supported (the
+from `@gixcopilot/protocol`'s root — no deep imports into `src/` are supported (the
 package's `exports` field only exposes `.`).
 
 ## Dependencies
@@ -37,9 +37,9 @@ package's `exports` field only exposes `.`).
 ## Non-responsibilities
 
 - **No run lifecycle logic.** This package defines `RunStatus` as a type; enforcing valid
-  transitions between statuses is `@aicopilot/core`'s job.
+  transitions between statuses is `@gixcopilot/core`'s job.
 - **No transport implementation.** HTTP, SSE, and WebSocket all belong to
-  `@aicopilot/server` / `@aicopilot/client`; this package only defines what flows over
+  `@gixcopilot/server` / `@gixcopilot/client`; this package only defines what flows over
   them.
 - **No tool/agent/RAG/memory types.** Those belong to later phases (5, 8, 9, 10) and are
   intentionally absent — see `docs/adr/0003-event-driven-protocol.md` for how the event
@@ -57,7 +57,7 @@ import {
   createThreadId,
   createEventId,
   PROTOCOL_VERSION,
-} from '@aicopilot/protocol';
+} from '@gixcopilot/protocol';
 
 const event = {
   id: createEventId(),

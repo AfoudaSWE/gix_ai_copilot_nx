@@ -1,11 +1,11 @@
 import OpenAI from 'openai';
-import type { FinishReason, Usage } from '@aicopilot/protocol';
+import type { FinishReason, Usage } from '@gixcopilot/protocol';
 import type {
   ModelExecutionOptions,
   ModelProvider,
   ModelRequest,
   ModelStreamEvent,
-} from '@aicopilot/provider';
+} from '@gixcopilot/provider';
 import { toOpenAIMessages } from './message-mapping.js';
 import { mapFinishReason, toNormalizedError } from './error-mapping.js';
 
@@ -27,7 +27,7 @@ function createClient(options: CreateOpenAIProviderOptions): OpenAI {
   const apiKey = options.apiKey ?? process.env['OPENAI_API_KEY'];
   return new OpenAI({
     apiKey,
-    // Retries are @aicopilot/provider's ModelRuntime's job (Section 24), not the SDK's -
+    // Retries are @gixcopilot/provider's ModelRuntime's job (Section 24), not the SDK's -
     // letting both retry independently would compound backoff delays in a way our own
     // retry policy and telemetry can't see or control.
     maxRetries: 0,

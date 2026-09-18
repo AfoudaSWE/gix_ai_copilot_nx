@@ -1,4 +1,4 @@
-import { CopilotError, type CopilotEvent, type PublicCopilotError } from '@aicopilot/protocol';
+import { CopilotError, type CopilotEvent, type PublicCopilotError } from '@gixcopilot/protocol';
 import type { CopilotTransport, TransportRunRequest } from './transport.js';
 import { parseSseStream } from './sse-stream.js';
 

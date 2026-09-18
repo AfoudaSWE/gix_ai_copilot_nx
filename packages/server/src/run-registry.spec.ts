@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createRunId, createThreadId } from '@aicopilot/protocol';
-import type { RuntimeRun } from '@aicopilot/core';
+import { createRunId, createThreadId } from '@gixcopilot/protocol';
+import type { RuntimeRun } from '@gixcopilot/core';
 import { createRunRegistry } from './run-registry.js';
 
 function fakeRun(): { run: RuntimeRun; cancel: ReturnType<typeof vi.fn> } {
