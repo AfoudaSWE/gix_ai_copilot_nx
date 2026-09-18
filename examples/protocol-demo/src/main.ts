@@ -1,0 +1,84 @@
+import { createServer } from '@aicopilot/server';
+import { createEchoExecutor, createRuntime } from '@aicopilot/core';
+import { createCopilotClient } from '@aicopilot/client';
+import type { CopilotEvent } from '@aicopilot/protocol';
+
+function printEvent(event: CopilotEvent): void {
+  switch (event.type) {
+    case 'run.started':
+      console.log(`[${event.sequence}] run.started`);
+      break;
+    case 'message.started':
+      console.log(`[${event.sequence}] message.started (${event.role})`);
+      break;
+    case 'message.delta':
+      console.log(`[${event.sequence}] message.delta ${JSON.stringify(event.delta)}`);
+      break;
+    case 'message.end': {
+      const text = event.content.map((part) => (part.type === 'text' ? part.text : '')).join('');
+      console.log(`[${event.sequence}] message.end -> "${text}"`);
+      break;
+    }
+    case 'run.completed':
+      console.log(`[${event.sequence}] run.completed (usage: ${JSON.stringify(event.usage)})`);
+      break;
+    case 'run.failed':
+      console.log(`[${event.sequence}] run.failed: ${event.error.code} - ${event.error.message}`);
+      break;
+    case 'run.cancelled':
+      console.log(`[${event.sequence}] run.cancelled`);
+      break;
+    case 'error':
+      console.log(`[${event.sequence}] error: ${event.error.code} - ${event.error.message}`);
+      break;
+    default: {
+      const exhaustive: never = event;
+      throw new Error(`Unhandled event type: ${JSON.stringify(exhaustive)}`);
+    }
+  }
+}
+
+async function main(): Promise<void> {
+  const inputText = process.argv[2] ?? 'Hello protocol';
+
+  // The only executor in this demo is the deterministic reference one from @aicopilot/core -
+  // no LLM, no provider, no network call to any AI service. See docs/architecture/overview.md.
+  const runtime = createRuntime({ executor: createEchoExecutor({ delayMsPerChunk: 60 }) });
+  const app = createServer({ runtime });
+  await app.listen({ port: 0, host: '127.0.0.1' });
+
+  const address = app.server.address();
+  if (address === null || typeof address === 'string') {
+    throw new Error('Expected the server to bind to a TCP address.');
+  }
+  const baseUrl = `http://127.0.0.1:${address.port}`;
+
+  console.log('AI Copilot SDK - Phase 1 protocol demo');
+  console.log(`Server listening at ${baseUrl}`);
+  console.log(`Sending: ${JSON.stringify(inputText)}\n`);
+
+  const client = createCopilotClient({ baseUrl });
+  const run = client.run({
+    message: { role: 'user', content: [{ type: 'text', text: inputText }] },
+  });
+
+  const onSigint = (): void => {
+    console.log('\nReceived SIGINT - cancelling run...');
+    run.cancel();
+  };
+  process.once('SIGINT', onSigint);
+
+  try {
+    for await (const event of run.events) {
+      printEvent(event);
+    }
+  } finally {
+    process.off('SIGINT', onSigint);
+    await app.close();
+  }
+}
+
+main().catch((error: unknown) => {
+  console.error('Fatal error running the protocol demo:', error);
+  process.exitCode = 1;
+});

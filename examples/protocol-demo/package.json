@@ -1,0 +1,24 @@
+{
+  "name": "@aicopilot/protocol-demo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Phase 1 end-to-end demonstration: client -> HTTP -> server -> core -> SSE -> client, over a deterministic (non-AI) executor.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "typecheck": "tsc -b tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint src",
+    "demo": "tsc -b tsconfig.json && node dist/main.js"
+  },
+  "dependencies": {
+    "@aicopilot/client": "workspace:*",
+    "@aicopilot/core": "workspace:*",
+    "@aicopilot/protocol": "workspace:*",
+    "@aicopilot/server": "workspace:*"
+  },
+  "devDependencies": {
+    "fastify": "5.12.5",
+    "vitest": "5.0.1"
+  }
+}
