@@ -36,23 +36,22 @@ function createFakeTransport(events: readonly CopilotEvent[]) {
 }
 
 describe('createCopilotClient', () => {
-  it('forwards threadId and message to the transport', async () => {
+  it('forwards threadId and messages to the transport', async () => {
     const { transport, getCapturedRequest } = createFakeTransport([fakeEvent('run.started', 1)]);
     const client = createCopilotClient({ baseUrl: 'http://example.invalid', transport });
 
     const run = client.run({
       threadId: 'thread-123',
-      message: { role: 'user', content: [{ type: 'text', text: 'hi' }] },
+      messages: [{ role: 'user', content: [{ type: 'text', text: 'hi' }] }],
     });
     for await (const _event of run.events) {
       // drain
     }
 
     expect(getCapturedRequest()?.threadId).toBe('thread-123');
-    expect(getCapturedRequest()?.message).toEqual({
-      role: 'user',
-      content: [{ type: 'text', text: 'hi' }],
-    });
+    expect(getCapturedRequest()?.messages).toEqual([
+      { role: 'user', content: [{ type: 'text', text: 'hi' }] },
+    ]);
   });
 
   it('yields events from the transport in order', async () => {
@@ -60,7 +59,9 @@ describe('createCopilotClient', () => {
     const { transport } = createFakeTransport(events);
     const client = createCopilotClient({ baseUrl: 'http://example.invalid', transport });
 
-    const run = client.run({ message: { role: 'user', content: [{ type: 'text', text: 'hi' }] } });
+    const run = client.run({
+      messages: [{ role: 'user', content: [{ type: 'text', text: 'hi' }] }],
+    });
     const collected: CopilotEvent[] = [];
     for await (const event of run.events) {
       collected.push(event);
@@ -77,7 +78,9 @@ describe('createCopilotClient', () => {
     const { transport } = createFakeTransport(events);
     const client = createCopilotClient({ baseUrl: 'http://example.invalid', transport });
 
-    const run = client.run({ message: { role: 'user', content: [{ type: 'text', text: 'hi' }] } });
+    const run = client.run({
+      messages: [{ role: 'user', content: [{ type: 'text', text: 'hi' }] }],
+    });
     const iterator = run.events[Symbol.asyncIterator]() as AsyncIterator<
       CopilotEvent,
       void,
@@ -108,7 +111,7 @@ describe('createCopilotClient', () => {
     const external = new AbortController();
     external.abort();
     const run = client.run({
-      message: { role: 'user', content: [{ type: 'text', text: 'hi' }] },
+      messages: [{ role: 'user', content: [{ type: 'text', text: 'hi' }] }],
       signal: external.signal,
     });
 

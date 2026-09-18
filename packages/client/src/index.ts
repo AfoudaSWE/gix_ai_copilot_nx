@@ -1,6 +1,7 @@
 export { createCopilotClient } from './client.js';
 export type {
   ClientMessageInput,
+  ClientModelReference,
   ClientRun,
   CopilotClient,
   CopilotClientOptions,

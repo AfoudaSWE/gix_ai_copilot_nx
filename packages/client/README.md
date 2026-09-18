@@ -39,8 +39,12 @@ See `src/index.ts`. No deep imports into `src/` are supported.
   `createSseTransport(...).cancel(runId)`) for the cross-client case.
 - **No React/Angular state management.** This client has no framework hooks; see
   `react-sdk` / `angular-sdk`.
-- **No retry logic.** A failed request surfaces as a thrown `CopilotError`; automatic
-  retries belong to the `ai-runtime` skill's territory once a real provider exists.
+- **No retry logic.** A failed request surfaces as a thrown `CopilotError`; retries against
+  a flaky model happen server-side in `@aicopilot/provider`'s `ModelRuntime`.
+- **No dependency on `@aicopilot/provider`.** `RunOptions.model` is a plain, locally-defined
+  `{ provider, model }` shape (`ClientModelReference`) passed through opaquely on the wire —
+  this client works the same whether or not the server it's talking to has any model
+  support configured at all.
 
 ## Basic Usage
 
@@ -49,8 +53,15 @@ import { createCopilotClient } from '@aicopilot/client';
 
 const client = createCopilotClient({ baseUrl: 'http://localhost:3000' });
 
+// Phase 1 style - runs against the server's default executor:
 const run = client.run({
-  message: { role: 'user', content: [{ type: 'text', text: 'Hello protocol' }] },
+  messages: [{ role: 'user', content: [{ type: 'text', text: 'Hello protocol' }] }],
+});
+
+// Phase 2 style - names a model, routed through the server's ModelRuntime:
+const modelRun = client.run({
+  model: { provider: 'openai', model: 'gpt-4o-mini' },
+  messages: [{ role: 'user', content: [{ type: 'text', text: 'Hello' }] }],
 });
 
 for await (const event of run.events) {

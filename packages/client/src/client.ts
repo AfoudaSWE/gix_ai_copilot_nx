@@ -7,9 +7,23 @@ export interface ClientMessageInput {
   readonly content: readonly ContentPart[];
 }
 
+/**
+ * A provider-neutral model reference, `{ provider, model }` - defined locally rather than
+ * imported from `@aicopilot/provider`, since the client must never depend on that package
+ * (a client can talk to a server with no model support at all; `model` here is just an
+ * opaque field passed through on the wire - see docs/adr/0006-model-provider-abstraction.md).
+ */
+export interface ClientModelReference {
+  readonly provider: string;
+  readonly model: string;
+}
+
 export interface RunOptions {
   readonly threadId?: string;
-  readonly message: ClientMessageInput;
+  /** Omit to run against the server's default executor (e.g. the Phase 1 echo executor). */
+  readonly model?: ClientModelReference;
+  /** The full conversation so far, oldest first. */
+  readonly messages: readonly ClientMessageInput[];
   /** Cancels the run if aborted, in addition to the `cancel()` method on the returned run. */
   readonly signal?: AbortSignal;
 }
@@ -60,7 +74,8 @@ export function createCopilotClient(options: CopilotClientOptions): CopilotClien
       return {
         events: transport.run({
           threadId: runOptions.threadId,
-          message: runOptions.message,
+          model: runOptions.model,
+          messages: runOptions.messages,
           signal: controller.signal,
         }),
         cancel: () => controller.abort(),

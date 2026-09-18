@@ -1,4 +1,5 @@
 import type { ContentPart, CopilotEvent, MessageRole } from '@aicopilot/protocol';
+import type { ClientModelReference } from './client.js';
 
 export interface TransportMessageInput {
   readonly role: MessageRole;
@@ -7,7 +8,8 @@ export interface TransportMessageInput {
 
 export interface TransportRunRequest {
   readonly threadId?: string;
-  readonly message: TransportMessageInput;
+  readonly model?: ClientModelReference;
+  readonly messages: readonly TransportMessageInput[];
   readonly signal?: AbortSignal;
 }
 

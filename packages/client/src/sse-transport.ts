@@ -43,7 +43,8 @@ export function createSseTransport(options: SseTransportOptions): CopilotTranspo
           headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
           body: JSON.stringify({
             ...(request.threadId !== undefined ? { threadId: request.threadId } : {}),
-            message: request.message,
+            ...(request.model !== undefined ? { model: request.model } : {}),
+            messages: request.messages,
           }),
           signal: request.signal,
         });

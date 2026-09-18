@@ -43,7 +43,7 @@ describe('createSseTransport', () => {
     });
 
     const collected = await drain(
-      transport.run({ message: { role: 'user', content: [{ type: 'text', text: 'hi' }] } }),
+      transport.run({ messages: [{ role: 'user', content: [{ type: 'text', text: 'hi' }] }] }),
     );
     expect(collected).toEqual(events);
   });
@@ -58,7 +58,7 @@ describe('createSseTransport', () => {
     await drain(
       transport.run({
         threadId: 'thread-1',
-        message: { role: 'user', content: [{ type: 'text', text: 'hi' }] },
+        messages: [{ role: 'user', content: [{ type: 'text', text: 'hi' }] }],
       }),
     );
 
@@ -69,7 +69,32 @@ describe('createSseTransport', () => {
         headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
         body: JSON.stringify({
           threadId: 'thread-1',
-          message: { role: 'user', content: [{ type: 'text', text: 'hi' }] },
+          messages: [{ role: 'user', content: [{ type: 'text', text: 'hi' }] }],
+        }),
+      }),
+    );
+  });
+
+  it('includes model only when supplied', async () => {
+    const fetchImpl = vi.fn(() => sseResponse([]));
+    const transport = createSseTransport({
+      baseUrl: 'http://example.invalid',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+
+    await drain(
+      transport.run({
+        model: { provider: 'openai', model: 'gpt-4o-mini' },
+        messages: [{ role: 'user', content: [{ type: 'text', text: 'hi' }] }],
+      }),
+    );
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'http://example.invalid/runs',
+      expect.objectContaining({
+        body: JSON.stringify({
+          model: { provider: 'openai', model: 'gpt-4o-mini' },
+          messages: [{ role: 'user', content: [{ type: 'text', text: 'hi' }] }],
         }),
       }),
     );
@@ -86,7 +111,9 @@ describe('createSseTransport', () => {
     });
 
     await expect(
-      drain(transport.run({ message: { role: 'user', content: [{ type: 'text', text: 'hi' }] } })),
+      drain(
+        transport.run({ messages: [{ role: 'user', content: [{ type: 'text', text: 'hi' }] }] }),
+      ),
     ).rejects.toMatchObject({ code: 'VALIDATION_ERROR', message: 'bad input' });
   });
 
@@ -98,7 +125,9 @@ describe('createSseTransport', () => {
     });
 
     await expect(
-      drain(transport.run({ message: { role: 'user', content: [{ type: 'text', text: 'hi' }] } })),
+      drain(
+        transport.run({ messages: [{ role: 'user', content: [{ type: 'text', text: 'hi' }] }] }),
+      ),
     ).rejects.toMatchObject({ code: 'TRANSPORT_ERROR' });
   });
 
