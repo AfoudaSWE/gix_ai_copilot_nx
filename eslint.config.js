@@ -12,8 +12,10 @@ import eslintConfigPrettier from 'eslint-config-prettier';
  * client may depend on protocol; server may depend on protocol + core + the provider
  * contract; the provider contract (`@gixcopilot/provider`) may depend on protocol + core;
  * provider adapters (mock, openai) may depend on protocol + core + the provider contract,
- * but never on each other; examples may depend on anything. This is the executable form of
- * the dependency-direction diagram in docs/architecture/overview.md.
+ * but never on each other; `@gixcopilot/context` (Phase 4) may depend only on protocol - it
+ * must never depend on React; react may depend on protocol + client + context; examples may
+ * depend on anything. This is the executable form of the dependency-direction diagram in
+ * docs/architecture/overview.md.
  */
 export default tseslint.config(
   {
@@ -52,7 +54,12 @@ export default tseslint.config(
           depConstraints: [
             {
               sourceTag: 'scope:react',
-              onlyDependOnLibsWithTags: ['scope:react', 'scope:client', 'scope:protocol'],
+              onlyDependOnLibsWithTags: [
+                'scope:react',
+                'scope:client',
+                'scope:protocol',
+                'scope:context',
+              ],
             },
             {
               sourceTag: 'scope:ui',
@@ -61,6 +68,10 @@ export default tseslint.config(
             {
               sourceTag: 'scope:protocol',
               onlyDependOnLibsWithTags: ['scope:protocol'],
+            },
+            {
+              sourceTag: 'scope:context',
+              onlyDependOnLibsWithTags: ['scope:protocol', 'scope:context'],
             },
             {
               sourceTag: 'scope:core',
@@ -98,6 +109,7 @@ export default tseslint.config(
                 'scope:server',
                 'scope:provider',
                 'scope:provider-adapter',
+                'scope:context',
                 'scope:example',
               ],
             },

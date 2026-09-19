@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@gixcopilot/client": "workspace:*",
+    "@gixcopilot/context": "workspace:*",
     "@gixcopilot/protocol": "workspace:*"
   },
   "peerDependencies": {

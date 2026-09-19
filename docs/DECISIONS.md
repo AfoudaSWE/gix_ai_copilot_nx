@@ -19,3 +19,7 @@ Add a new row here whenever a new ADR is added under `docs/adr/`.
 | --- | --- |
 | [0007](adr/0007-headless-react-state-and-lifecycle.md) | Headless React/UI split; scoped external store; one active run; cancellation, retry/regenerate and configuration lifecycle; React 19 peers |
 | [0008](adr/0008-copilot-ui-rendering-and-styling.md) | Exported CSS tokens/themes; native popup + Tab wrap/nonmodal sidebar; safe Markdown/GFM; component slots; examples instead of Storybook |
+
+| Phase 4 ADR | Decision |
+| --- | --- |
+| [0009](adr/0009-context-and-state-architecture.md) | `@gixcopilot/context` depends only on protocol; resolved context reaches the model as a leading `system` message built entirely in `@gixcopilot/react`, with a synchronous fast path when nothing is registered; state and context are separate stores, state exposure to the model is explicit opt-in only |

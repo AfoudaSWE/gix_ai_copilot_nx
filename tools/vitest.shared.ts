@@ -14,6 +14,7 @@ export const workspaceAliases = {
   '@gixcopilot/react': `${workspaceRoot}packages/react/src/index.ts`,
   '@gixcopilot/ui': `${workspaceRoot}packages/ui/src/index.ts`,
   '@gixcopilot/protocol': `${workspaceRoot}packages/protocol/src/index.ts`,
+  '@gixcopilot/context': `${workspaceRoot}packages/context/src/index.ts`,
   '@gixcopilot/core': `${workspaceRoot}packages/core/src/index.ts`,
   '@gixcopilot/client': `${workspaceRoot}packages/client/src/index.ts`,
   '@gixcopilot/server': `${workspaceRoot}packages/server/src/index.ts`,

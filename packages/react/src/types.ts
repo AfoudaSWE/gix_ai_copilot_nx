@@ -53,11 +53,19 @@ export interface CopilotAccess extends ChatActions {
   readonly client: CopilotClient;
 }
 
+/** Phase 4 application-context tuning (Section 25). Omit for the engine's own default. */
+export interface CopilotContextOptions {
+  /** Total token budget resolved application context may consume. Default 8000. */
+  readonly maxContextTokens?: number;
+}
+
 /** Connection configuration is exclusive: inject a client or supply an API base URL. */
 export type CopilotProviderProps = {
   readonly children: ReactNode;
   readonly model?: ClientModelReference;
   readonly threadId?: string;
+  /** Optional - a provider with no registered context behaves exactly as in Phase 3. */
+  readonly context?: CopilotContextOptions;
 } & (
   | { readonly runtimeUrl: string; readonly client?: never }
   | { readonly client: CopilotClient; readonly runtimeUrl?: never }

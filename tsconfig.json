@@ -8,6 +8,9 @@
       "path": "packages/core"
     },
     {
+      "path": "packages/context"
+    },
+    {
       "path": "packages/client"
     },
     {
@@ -39,6 +42,9 @@
     },
     {
       "path": "examples/react-custom-ui"
+    },
+    {
+      "path": "examples/react-context"
     }
   ]
 }

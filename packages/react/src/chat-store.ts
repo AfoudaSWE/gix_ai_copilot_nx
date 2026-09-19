@@ -18,11 +18,28 @@ interface ChatStore {
   readonly dispose: () => void;
 }
 
+/**
+ * Resolves Phase 4 application context (if any) into a single content string to prepend as
+ * a leading `system` message, or `undefined` when there is nothing to add - so a provider
+ * with no registered context sends exactly the same request Phase 3 always sent (Section
+ * 64). Deliberately typed as a plain function, not a `@gixcopilot/context` type: this file
+ * stays free of any context-package import, and `provider.tsx` is the only place that
+ * bridges the two (Section 33's "structured system message" placement decision - see
+ * docs/adr/0009-context-and-state-architecture.md).
+ *
+ * May return synchronously (`undefined`, when nothing is registered) instead of a `Promise`
+ * - `consume()` only `await`s when it actually gets one, so a provider with zero context
+ * items dispatches `client.run()` on the exact same tick Phase 3 always did, not one
+ * microtask later.
+ */
+export type ResolveContextMessage = () => Promise<string | undefined> | string | undefined;
+
 /** Internal presentation store. Transport and runtime behavior stay in the client. */
 export function createChatStore(
   client: CopilotClient,
   model?: ClientModelReference,
   threadId?: string,
+  resolveContextMessage?: ResolveContextMessage,
 ): ChatStore {
   const initial: ChatSnapshot = {
     messages: [],
@@ -145,10 +162,17 @@ export function createChatStore(
   async function consume(token: ActiveRun, history: readonly CopilotMessage[]): Promise<void> {
     try {
       if (active !== token || !enabled) return;
+      const contextResult = resolveContextMessage?.();
+      const contextContent = contextResult instanceof Promise ? await contextResult : contextResult;
+      if (active !== token) return; // Re-check: stop()/a new send may have run during the await.
+      const historyMessages = history.map(({ role, content }) => ({ role, content }));
+      const messages = contextContent
+        ? [{ role: 'system' as const, content: [{ type: 'text' as const, text: contextContent }] }, ...historyMessages]
+        : historyMessages;
       token.handle = client.run({
         threadId: state.thread?.id,
         model,
-        messages: history.map(({ role, content }) => ({ role, content })),
+        messages,
       });
       if (active !== token) return;
       for await (const event of token.handle.events) {

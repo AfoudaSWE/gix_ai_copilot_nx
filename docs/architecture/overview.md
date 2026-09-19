@@ -1,6 +1,7 @@
-# Architecture Overview — Phase 3
+# Architecture Overview — Phase 4
 
-Phase 3 adds the following client-side layers while preserving the Phase 1–2 flow below:
+Phase 3 added the following client-side layers on top of the Phase 1–2 flow below; Phase 4
+adds `@gixcopilot/context` beneath React (see the updated diagram and package table):
 
 ```text
                          Protocol
@@ -9,16 +10,23 @@ Phase 3 adds the following client-side layers while preserving the Phase 1–2 f
                       ^          ^  ^
                       |          |  Model Runtime <- Providers
                @gixcopilot/react |       ^
-                   ^       ^     Server -+
-                   |       |
+                   ^  ^    ^     Server -+
+                   |  |    |
+                   |  @gixcopilot/context (protocol only - no React)
+                   |
                Custom UI   @gixcopilot/ui
                              /   |   \
                            Chat Popup Sidebar
 ```
 
-Dependency arrows point toward consumers above: UI depends on React; React on Client and
-Protocol. Core still has no provider/framework dependency. The server composes the core
-and model-runtime interfaces; provider adapters implement those interfaces.
+Dependency arrows point toward consumers above: UI depends on React; React on Client,
+Protocol, and (Phase 4) Context. Core still has no provider/framework dependency. The server
+composes the core and model-runtime interfaces; provider adapters implement those
+interfaces. `@gixcopilot/context` is framework-independent and has no dependency on React —
+see [Phase 4 Architecture](../phases/phase-04/Phase_4_Architecture.md) and
+[ADR 0009](../adr/0009-context-and-state-architecture.md) for its full pipeline and how
+resolved context reaches a model request (a leading `system` message built inside
+`@gixcopilot/react`, with no protocol/core/server change).
 
 `@gixcopilot/react` supplies an isolated provider, immutable local chat snapshots and narrow
 hooks. It consumes the client's public event stream and cancellation API.
@@ -99,6 +107,9 @@ shape, per `docs/adr/0002-framework-independent-core.md` and
 | `@gixcopilot/client`          | Framework-independent streaming client, transport abstraction, opaque `model` pass-through                                                      | `@gixcopilot/server`, `@gixcopilot/provider`, React, Angular                                                      |
 | `examples/protocol-demo`      | Proves the Phase 1 stack end to end with a deterministic executor                                                                               | — (may depend on everything above)                                                                                |
 | `examples/model-streaming`    | Proves the Phase 2 model runtime end to end, mock by default, optional real OpenAI                                                              | — (may depend on everything above)                                                                                |
+| `@gixcopilot/context`         | Framework-independent context registry/engine (scopes, priority, sensitivity, serialization, dedup, token budgeting/truncation) and shared state store | React, Angular, any provider SDK, `@gixcopilot/core`/`client`/`server`                                            |
+| `@gixcopilot/react`           | Headless chat hooks (Phase 3) plus `useCopilotContext`/`useCopilotState` (Phase 4), bridging resolved context into `client.run()` as a leading `system` message | any non-React/UI-adjacent business logic duplicated from `client`/`context`                                       |
+| `examples/react-context`      | Proves Phase 4's context/state engine end to end with a deterministic, non-network context-aware provider                                       | — (may depend on everything above)                                                                                |
 
 ## Dependency Direction
 
@@ -130,11 +141,12 @@ Enforced two ways:
    Phase 1, `provider-mock -> provider-openai` in Phase 2) and confirming `eslint` rejects
    it, then reverting.
 
-The backend above remains the Phase 1+2 slice of the long-term architecture. React is now
-implemented in Phase 3; Angular and subsequent capabilities remain unimplemented:
+The backend above remains the Phase 1+2 slice of the long-term architecture. React is
+implemented (Phase 3); Context/state is implemented (Phase 4); Angular, Tools, Agents and
+subsequent capabilities remain unimplemented:
 
 ```text
-Framework SDKs (React, Angular)         <- Phase 3, 12
+Framework SDKs (React, Angular)         <- Phase 3 (React), 12 (Angular)
       |
 Client SDK                              <- @gixcopilot/client
       |
@@ -144,9 +156,9 @@ Server                                  <- @gixcopilot/server
       |
 Core Runtime                            <- @gixcopilot/core
       |
-Agents / Context / Tools                <- Phase 4, 5, 10
+Agents / Context / Tools                <- @gixcopilot/context (Phase 4, this phase); Agents/Tools: Phase 5, 10
       |
-Adapters (LLM providers, DB, MCP, ...)  <- @gixcopilot/provider(-mock|-openai) (this phase), Phase 8, 9
+Adapters (LLM providers, DB, MCP, ...)  <- @gixcopilot/provider(-mock|-openai) (Phase 2), Phase 8, 9
 ```
 
 ## Module Resolution & Build Strategy

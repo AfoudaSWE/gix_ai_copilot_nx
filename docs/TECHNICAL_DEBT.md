@@ -26,6 +26,12 @@
    needed until a phase actually requires horizontal scaling of the server.
    _(Since: Phase 1)_
 
+Phase 4 review: no new debt was introduced. `@gixcopilot/context` ships with the same
+per-package `*.spec.ts`-in-`dist/` characteristic as item 1 above (not additional debt, the
+same pre-existing pattern); its `files` field already excludes compiled specs, matching
+Phase 3's own fix. No Phase 5+ feature (tools, RAG, agents, security firewall) is tracked
+here — see Section 85 of the phase brief and the phase-gate skill.
+
 ## Resolved
 
 Phase 3 review: the new React/UI package file lists exclude compiled specs from packing.

@@ -5,7 +5,11 @@ import type { ReactElement } from 'react';
 import { createCopilotClient } from '@gixcopilot/client';
 import { CopilotError } from '@gixcopilot/protocol';
 import type { Thread } from '@gixcopilot/protocol';
+import { createContextEngine, createContextRegistry, createCopilotStateStore } from '@gixcopilot/context';
 import { createChatStore } from './chat-store.js';
+import type { ResolveContextMessage } from './chat-store.js';
+import { CopilotInternalsContext } from './internals.js';
+import type { CopilotInternals } from './internals.js';
 import type {
   ChatStatus,
   CopilotAccess,
@@ -23,6 +27,7 @@ export function CopilotProvider({
   runtimeUrl,
   model,
   threadId,
+  context,
 }: CopilotProviderProps): ReactElement {
   const client = useMemo(() => {
     if (suppliedClient) return suppliedClient;
@@ -32,6 +37,33 @@ export function CopilotProvider({
   }, [suppliedClient, runtimeUrl]);
   const provider = model?.provider;
   const modelName = model?.model;
+  const maxContextTokens = context?.maxContextTokens;
+
+  // One isolated context/state universe per provider instance (Section 65) - never a
+  // module-level singleton, so sibling/nested CopilotProviders never see each other's
+  // context or state.
+  const internals: CopilotInternals = useMemo(
+    () => ({
+      registry: createContextRegistry(),
+      engine: createContextEngine({ maxContextTokens }),
+      stateStore: createCopilotStateStore(),
+    }),
+    [maxContextTokens],
+  );
+  useEffect(() => () => internals.registry.clear(), [internals]);
+
+  const resolveContextMessage: ResolveContextMessage = useMemo(
+    () => () => {
+      // Fast, fully synchronous path when nothing is registered (the common Phase 3 case):
+      // no promise, no microtask, `client.run()` dispatches on the same tick it always did.
+      if (internals.registry.list({ enabledOnly: true }).length === 0) return undefined;
+      return internals.engine
+        .resolve(internals.registry)
+        .then((resolved) => resolved.content || undefined);
+    },
+    [internals],
+  );
+
   const store = useMemo(
     () =>
       createChatStore(
@@ -40,14 +72,19 @@ export function CopilotProvider({
           ? { provider, model: modelName }
           : undefined,
         threadId,
+        resolveContextMessage,
       ),
-    [client, provider, modelName, threadId],
+    [client, provider, modelName, threadId, resolveContextMessage],
   );
   useEffect(() => {
     store.mount();
     return () => store.dispose();
   }, [store]);
-  return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>;
+  return (
+    <CopilotInternalsContext.Provider value={internals}>
+      <StoreContext.Provider value={store}>{children}</StoreContext.Provider>
+    </CopilotInternalsContext.Provider>
+  );
 }
 
 function useStore(): ReturnType<typeof createChatStore> {

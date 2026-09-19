@@ -12,7 +12,7 @@
 Phase 01 - Foundation & Architecture           COMPLETE
 Phase 02 - LLM Runtime & Streaming             COMPLETE
 Phase 03 - React Copilot UI                    COMPLETE
-Phase 04 - Application Context & State         NOT STARTED / LOCKED
+Phase 04 - Application Context & State         COMPLETE
 Phase 05 - Tools & Agent Actions               NOT STARTED / LOCKED
 Phase 06 - Generative UI & Shared State        NOT STARTED / LOCKED
 Phase 07 - Enterprise Security & HITL          NOT STARTED / LOCKED
@@ -53,9 +53,35 @@ phase is started without an explicit instruction naming it.
 - Added styled/headless React examples, real-stack integration and Chromium browser tests.
 - Full record: [Phase 3 docs](phases/phase-03/Phase_3_Docs.md),
   [completion report](phases/phase-03/Phase_3_Status.md), ADRs 0007–0008.
-- Phase 4 remains **LOCKED / NOT STARTED**.
 
-## Current Validation (Phase 3 completion)
+## Phase 4 — Application Context & State (COMPLETE)
+
+- Added `@gixcopilot/context`: a framework-independent context registry/engine (scopes,
+  priority, sensitivity metadata, controlled serialization, token budgeting/truncation,
+  deduplication, diagnostics) and a shared, typed state store — depends only on
+  `@gixcopilot/protocol`, no React/provider dependency.
+- Extended `@gixcopilot/react` with `useCopilotContext`/`useCopilotState`/
+  `useCopilotContextDebug`, wired into every `CopilotProvider` automatically; resolved
+  context reaches real model requests as a leading `system` message, verified through the
+  real client → server → core → model-runtime pipeline. No protocol/core/server change.
+- Added `examples/react-context`: an application-aware chat example with a deterministic,
+  non-network context-aware provider and a mandatory end-to-end test.
+- Full record: [Phase 4 docs](phases/phase-04/Phase_4_Docs.md),
+  [completion report](phases/phase-04/Phase_4_Status.md),
+  [ADR 0009](adr/0009-context-and-state-architecture.md).
+- Phase 5 remains **LOCKED / NOT STARTED**.
+
+## Current Validation (Phase 4 completion)
+
+Fresh `pnpm lint && pnpm typecheck && pnpm test && pnpm build` passed across all 16
+lint/typecheck projects and all 15 buildable/testable projects. **228 Vitest tests passed, 1
+existing optional OpenAI smoke test skipped** without credentials, zero failures — including
+every Phase 1–3 test, unmodified. The Chromium/Playwright browser suite was not re-run this
+session (a pre-existing local process already held the port it needs); see
+[Phase 4 Testing](phases/phase-04/Phase_4_Testing.md) and
+[Phase 4 Issues](phases/phase-04/Phase_4_Issues.md).
+
+## Validation (historical Phase 3 completion)
 
 Fresh `nx run-many -t lint,typecheck,test,build --skip-nx-cache` passed the available targets
 across all 14 projects. **159 tests passed, 1 existing optional OpenAI smoke test skipped**

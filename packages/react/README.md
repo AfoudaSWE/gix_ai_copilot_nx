@@ -1,7 +1,8 @@
 # @gixcopilot/react
 
-Headless React 19 adapter over `@gixcopilot/client`. It owns local chat presentation state,
-not the protocol, transport, model runtime, providers, or application context.
+Headless React 19 adapter over `@gixcopilot/client` and `@gixcopilot/context`. It owns local
+chat presentation state and the React bindings for application context/shared state, not the
+protocol, transport, model runtime, or providers.
 
 Packages are workspace-private and have not been published. From this repository run
 `pnpm install && pnpm build`; an application package can depend on
@@ -58,6 +59,38 @@ Exports: `CopilotProvider`, `useCopilot`, `useCopilotChat`, `useCopilotStatus`, 
 is required. All hooks require a provider. Imports and empty initial rendering are SSR
 safe; the public entry has a `use client` directive for client-component consumers.
 
-See the [full API](../../docs/phases/phase-03/Phase_3_API.md),
-[architecture](../../docs/phases/phase-03/Phase_3_Architecture.md), and
-[custom example](../../examples/react-custom-ui/README.md).
+## Application context and shared state (Phase 4)
+
+```tsx
+import { useCopilotContext, useCopilotState } from '@gixcopilot/react';
+
+function ApplicationDetails({ application }: { application: Application }) {
+  useCopilotContext({
+    name: 'selectedApplication',
+    description: 'Application currently being viewed by the user',
+    scope: 'page',
+    priority: 'high',
+    value: { id: application.id, status: application.status },
+  });
+  const [filters, setFilters] = useCopilotState({
+    name: 'applicationFilters',
+    initialValue: { status: 'all' },
+    exposeToModel: { description: 'Current application filters' },
+  });
+  // ...
+}
+```
+
+`useCopilotContext` registers application-aware context (see `ContextScope`/
+`ContextPriority`/`ContextSensitivity`) for the lifetime of the calling component; it is
+removed on unmount and updated in place on re-render. `useCopilotState` is a small typed,
+shared state slot (`CopilotStateStore` under `@gixcopilot/context`) — state is **never**
+automatically sent to a model; set `exposeToModel` explicitly to bridge a slot into context.
+Resolved context reaches every run as a leading `system` message; a provider with nothing
+registered behaves exactly as it did in Phase 3. `useCopilotContextDebug()` gives low-level
+access to `resolve()`/`inspect()` for debugging what would be sent.
+
+See the [full API](../../docs/phases/phase-04/Phase_4_API.md),
+[architecture](../../docs/phases/phase-04/Phase_4_Architecture.md),
+[ADR 0009](../../docs/adr/0009-context-and-state-architecture.md), and the
+[application-context example](../../examples/react-context/README.md).
