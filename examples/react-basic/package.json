@@ -9,7 +9,7 @@
     "test": "vitest run",
     "lint": "eslint src",
     "dev": "vite --host 127.0.0.1",
-    "server": "node dist/server.js"
+    "server": "node --env-file-if-exists=.env dist/server.js"
   },
   "dependencies": {
     "@gixcopilot/react": "workspace:*",
@@ -21,7 +21,8 @@
     "@gixcopilot/server": "workspace:*",
     "@gixcopilot/protocol": "workspace:*",
     "@gixcopilot/provider": "workspace:*",
-    "@gixcopilot/provider-mock": "workspace:*"
+    "@gixcopilot/provider-mock": "workspace:*",
+    "@gixcopilot/provider-openai": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "19.3.0",

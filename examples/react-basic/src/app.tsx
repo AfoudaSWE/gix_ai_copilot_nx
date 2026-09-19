@@ -32,7 +32,10 @@ export function App(): ReactElement {
     headerActions: <Clear />,
   };
   return (
-    <CopilotProvider runtimeUrl="/api/copilot" model={{ provider, model: 'demo' }}>
+    <CopilotProvider
+      runtimeUrl="/api/copilot"
+      model={{ provider, model: provider === 'openai' ? 'gpt-4o-mini' : 'demo' }}
+    >
       <div className="lab">
         <header className="lab-header">
           <a className="lab-brand" href="/">
@@ -87,6 +90,7 @@ export function App(): ReactElement {
                 <option value="mock">Streaming</option>
                 <option value="slow">Slow response</option>
                 <option value="failure">Fail once, then retry</option>
+                <option value="openai">OpenAI (live)</option>
               </select>
             </label>
             <label className="lab-rtl">
@@ -119,7 +123,8 @@ export function App(): ReactElement {
                   </pre>
                 </div>
                 <p className="lab-note-foot">
-                  This demo streams a deterministic response. No API key required.
+                  This demo streams a deterministic response by default. No API key required,
+                  unless the server has OPENAI_API_KEY set and "OpenAI (live)" is selected.
                 </p>
               </section>
             )}
