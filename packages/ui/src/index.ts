@@ -34,3 +34,6 @@ export { Markdown, CodeBlock } from './markdown.js';
 export type { MarkdownProps, CodeBlockProps } from './markdown.js';
 export { DEFAULT_LABELS } from './labels.js';
 export type { CopilotLabels } from './labels.js';
+
+export { ApprovalCard, ApprovalList, SecurityDenial } from './approval.js';
+export type { ApprovalCardProps, ApprovalListProps } from './approval.js';

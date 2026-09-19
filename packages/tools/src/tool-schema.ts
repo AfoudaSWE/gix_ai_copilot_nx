@@ -17,6 +17,7 @@ export function toToolManifestEntry(tool: AnyToolDefinition): ToolManifestEntry 
     description: tool.description,
     parameters,
     executionLocation: tool.metadata?.executionLocation ?? 'server',
+    ...(tool.security !== undefined ? { security: tool.security } : {}),
   };
 }
 

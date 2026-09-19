@@ -1,4 +1,4 @@
-import type { RunId, ThreadId } from '@gixcopilot/protocol';
+import type { RunId, ThreadId, ToolActionPreview, ToolSecurityManifest } from '@gixcopilot/protocol';
 import type { z } from 'zod';
 import type { ToolMetadata } from './tool-metadata.js';
 
@@ -45,6 +45,24 @@ export interface ToolDefinition<TInput = unknown, TOutput = unknown> {
    */
   execute(input: TInput, context: ToolExecutionContext): Promise<TOutput>;
   readonly metadata?: ToolMetadata;
+  /**
+   * Phase 7 security metadata (Section 19, 131) - declared here, not inside `metadata`, so it
+   * reads as its own concern at the call site (`defineTool({ name, security: {...}, ... })`).
+   * Classification only - it is never itself enforcement; the AI Action Firewall
+   * (`@gixcopilot/security`) is what actually enforces it (see the action-firewall skill).
+   * Wire-safe (`ToolSecurityManifest` lives in `@gixcopilot/protocol`) so it crosses the same
+   * `ToolManifestEntry` boundary frontend tools already use.
+   */
+  readonly security?: ToolSecurityManifest;
+  /**
+   * Optional dry-run capability (Phase 7, Section 48-51): produces a preview of what
+   * `execute()` would do, without performing the real mutation - never implemented by
+   * calling `execute()` and then undoing it (Section 49's explicit prohibition). Also serves
+   * as the "explain before execute" surface (Section 46-47) when combined with the tool's own
+   * declared `security.risk`/`reversibility` - not every tool needs to implement this; one is
+   * not required for every tool (Section 50).
+   */
+  dryRun?(input: TInput, context: ToolExecutionContext): Promise<ToolActionPreview>;
   /**
    * Conditional availability (Section 21). A plain `false` disables the tool unconditionally;
    * a function is re-evaluated by the resolver on every discovery call, so it can react to a

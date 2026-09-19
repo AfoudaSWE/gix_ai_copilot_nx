@@ -48,6 +48,14 @@ function describeEventType(event: CopilotEvent): string {
       return `tool completed (${event.name})`;
     case 'tool.failed':
       return `tool failed (${event.name})`;
+    case 'approval.requested':
+      return `approval requested (${event.approvalLevel})`;
+    case 'approval.approved':
+      return `approval approved (${event.approvalId})`;
+    case 'approval.rejected':
+      return `approval rejected (${event.approvalId})`;
+    case 'approval.expired':
+      return `approval expired (${event.approvalId})`;
     default: {
       const exhaustive: never = event;
       throw new Error(`Unhandled event type: ${JSON.stringify(exhaustive)}`);

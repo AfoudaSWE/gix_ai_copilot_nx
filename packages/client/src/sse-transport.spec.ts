@@ -141,6 +141,7 @@ describe('createSseTransport', () => {
     await expect(transport.cancel('some-run-id')).resolves.toBeUndefined();
     expect(fetchImpl).toHaveBeenCalledWith('http://example.invalid/runs/some-run-id/cancel', {
       method: 'POST',
+      headers: {},
     });
   });
 
@@ -215,6 +216,56 @@ describe('createSseTransport', () => {
           data: {},
         }),
       ).rejects.toMatchObject({ code: 'TRANSPORT_ERROR' });
+    });
+  });
+
+  describe('Phase 7 security support', () => {
+    it('decideApproval POSTs to /approvals/:approvalId/approve', async () => {
+      const fetchImpl = vi.fn(() => new Response(null, { status: 200 }));
+      const transport = createSseTransport({
+        baseUrl: 'http://example.invalid',
+        fetchImpl: fetchImpl as unknown as typeof fetch,
+      });
+
+      await transport.decideApproval('approval-1', 'approve', 'looks fine');
+
+      expect(fetchImpl).toHaveBeenCalledWith('http://example.invalid/approvals/approval-1/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comment: 'looks fine' }),
+      });
+    });
+
+    it('decideApproval POSTs to /approvals/:approvalId/reject and surfaces the server error', async () => {
+      const fetchImpl = vi.fn(
+        () =>
+          new Response(
+            JSON.stringify({ error: { code: 'PERMISSION_DENIED', message: 'nope', retryable: false } }),
+            { status: 403 },
+          ),
+      );
+      const transport = createSseTransport({
+        baseUrl: 'http://example.invalid',
+        fetchImpl: fetchImpl as unknown as typeof fetch,
+      });
+
+      await expect(transport.decideApproval('approval-1', 'reject')).rejects.toMatchObject({
+        code: 'PERMISSION_DENIED',
+      });
+    });
+
+    it('getHeaders is merged into every request (e.g. Authorization)', async () => {
+      const fetchImpl = vi.fn(() => sseResponse([]));
+      const transport = createSseTransport({
+        baseUrl: 'http://example.invalid',
+        fetchImpl: fetchImpl as unknown as typeof fetch,
+        getHeaders: () => ({ Authorization: 'Bearer test-token' }),
+      });
+
+      await drain(transport.run({ messages: [{ role: 'user', content: [{ type: 'text', text: 'hi' }] }] }));
+
+      const call = fetchImpl.mock.calls[0] as [string, { headers?: Record<string, string> }] | undefined;
+      expect(call?.[1]?.headers?.['Authorization']).toBe('Bearer test-token');
     });
   });
 });

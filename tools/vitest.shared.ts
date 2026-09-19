@@ -19,6 +19,7 @@ export const workspaceAliases = {
   '@gixcopilot/tools': `${workspaceRoot}packages/tools/src/index.ts`,
   '@gixcopilot/generative-ui': `${workspaceRoot}packages/generative-ui/src/index.ts`,
   '@gixcopilot/client': `${workspaceRoot}packages/client/src/index.ts`,
+  '@gixcopilot/security': `${workspaceRoot}packages/security/src/index.ts`,
   '@gixcopilot/server': `${workspaceRoot}packages/server/src/index.ts`,
   '@gixcopilot/provider': `${workspaceRoot}packages/providers/provider-core/src/index.ts`,
   '@gixcopilot/provider-mock': `${workspaceRoot}packages/providers/mock/src/index.ts`,

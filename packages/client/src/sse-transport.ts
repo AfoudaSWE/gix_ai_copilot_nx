@@ -7,6 +7,13 @@ export interface SseTransportOptions {
   readonly baseUrl: string;
   /** Override for testing, or to supply a non-global fetch implementation. */
   readonly fetchImpl?: typeof fetch;
+  /**
+   * Added in Phase 7 - extra headers merged into every request (e.g. `Authorization`), so an
+   * application's `AuthenticationAdapter` on the server has something trusted to authenticate
+   * (Section 13-14). Never a place to put a role/identity claim directly - the server is what
+   * turns this into a trusted `Identity`, this is only how the credential itself gets there.
+   */
+  readonly getHeaders?: () => Record<string, string> | Promise<Record<string, string>>;
 }
 
 function isAbortError(error: unknown): boolean {
@@ -36,16 +43,25 @@ export function createSseTransport(options: SseTransportOptions): CopilotTranspo
   const fetchImpl = options.fetchImpl ?? fetch;
   const baseUrl = options.baseUrl.replace(/\/+$/, '');
 
+  async function extraHeaders(): Promise<Record<string, string>> {
+    return (await options.getHeaders?.()) ?? {};
+  }
+
   return {
     async *run(request: TransportRunRequest): AsyncGenerator<CopilotEvent, void, undefined> {
       try {
         const response = await fetchImpl(`${baseUrl}/runs`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'text/event-stream',
+            ...(await extraHeaders()),
+          },
           body: JSON.stringify({
             ...(request.threadId !== undefined ? { threadId: request.threadId } : {}),
             ...(request.model !== undefined ? { model: request.model } : {}),
             messages: request.messages,
+            ...(request.action ? { action: request.action } : {}),
             ...(request.tools !== undefined && request.tools.length > 0
               ? { tools: request.tools }
               : {}),
@@ -88,6 +104,7 @@ export function createSseTransport(options: SseTransportOptions): CopilotTranspo
     async cancel(runId: string): Promise<void> {
       const response = await fetchImpl(`${baseUrl}/runs/${encodeURIComponent(runId)}/cancel`, {
         method: 'POST',
+        headers: await extraHeaders(),
       });
       if (!response.ok && response.status !== 404) {
         throw CopilotError.transport(`Cancel request failed with HTTP ${response.status}`);
@@ -99,7 +116,7 @@ export function createSseTransport(options: SseTransportOptions): CopilotTranspo
         `${baseUrl}/runs/${encodeURIComponent(runId)}/tool-results`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...(await extraHeaders()) },
           body: JSON.stringify({ toolCallId, result }),
         },
       );
@@ -107,6 +124,31 @@ export function createSseTransport(options: SseTransportOptions): CopilotTranspo
         throw CopilotError.transport(
           `Submitting the frontend tool result failed with HTTP ${response.status}`,
         );
+      }
+    },
+
+    async decideApproval(
+      approvalId: string,
+      decision: 'approve' | 'reject',
+      comment?: string,
+    ): Promise<void> {
+      const response = await fetchImpl(
+        `${baseUrl}/approvals/${encodeURIComponent(approvalId)}/${decision}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...(await extraHeaders()) },
+          body: JSON.stringify(comment !== undefined ? { comment } : {}),
+        },
+      );
+      if (!response.ok) {
+        const publicError = await readErrorBody(response);
+        if (publicError) {
+          throw new CopilotError(publicError.code, publicError.message, {
+            retryable: publicError.retryable,
+            metadata: publicError.metadata,
+          });
+        }
+        throw CopilotError.transport(`Approval decision failed with HTTP ${response.status}`);
       }
     },
   };

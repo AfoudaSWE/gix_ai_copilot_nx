@@ -1,0 +1,22 @@
+:root { font-family: Inter, system-ui, sans-serif; color: #173b36; background: #f2f5ef; font-synthesis: none; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { max-inline-size: 1600px; margin-inline: auto; padding: 36px; }
+.page-header { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-block-end: 32px; }
+h1 { font-size: clamp(28px, 3vw, 44px); letter-spacing: -.04em; margin-block: 12px; }
+.eyebrow { font-size: 11px; font-weight: 750; letter-spacing: .16em; color: #376b5e; }
+.workspace { display: grid; grid-template-columns: minmax(240px, .8fr) minmax(320px, 1.2fr) minmax(280px, 1fr); gap: 24px; align-items: start; }
+.action-panel, .review-desk { background: white; padding: 24px; border-radius: 18px; border: 1px solid #d6e1d8; }
+.workspace .gix-copilot { block-size: 720px; }
+p { line-height: 1.6; }
+button, select { font: inherit; padding: 12px; border: 1px solid #b1c5b7; border-radius: 8px; background: white; color: inherit; min-block-size: 44px; }
+button { cursor: pointer; text-align: start; }
+button:hover { background: #e8f3ec; }
+button:disabled { opacity: .5; cursor: wait; }
+.action-grid { display: grid; gap: 10px; }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; background: #f2f5ef; padding: 14px; border-radius: 10px; }
+label { display: grid; gap: 8px; }
+.review-desk ol { padding-inline-start: 20px; font-size: 12px; line-height: 1.9; }
+:focus-visible { outline: 3px solid #287b63; outline-offset: 3px; }
+@media(max-width: 1150px) { .workspace { grid-template-columns: 1fr 1fr; } .review-desk { grid-column: 1 / -1; } }
+@media(max-width: 700px) { main { padding: 16px; } .page-header { display: block; } .workspace { display: flex; flex-direction: column; } .workspace > * { inline-size: 100%; } }

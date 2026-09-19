@@ -28,7 +28,21 @@ export type CopilotErrorCode =
   | 'TOOL_EXECUTION_ERROR'
   | 'TOOL_OUTPUT_INVALID'
   | 'TOOL_ITERATION_LIMIT_EXCEEDED'
-  | 'FRONTEND_TOOL_UNAVAILABLE';
+  | 'FRONTEND_TOOL_UNAVAILABLE'
+  /**
+   * Added in Phase 7 (security) - the AI Action Firewall's stable reason codes (Section 61).
+   * These surface as an ordinary `tool.failed` event's `error.code` (Section 62's "reuse
+   * existing events" guidance) rather than inventing a parallel denial event type.
+   */
+  | 'AUTHENTICATION_REQUIRED'
+  | 'PERMISSION_DENIED'
+  | 'TENANT_MISMATCH'
+  | 'POLICY_DENIED'
+  | 'BUSINESS_RULE_DENIED'
+  | 'PII_POLICY_DENIED'
+  | 'APPROVAL_REQUIRED'
+  | 'APPROVAL_REJECTED'
+  | 'APPROVAL_EXPIRED';
 
 export type CopilotErrorMetadata = Readonly<Record<string, unknown>>;
 
@@ -171,5 +185,49 @@ export class CopilotError extends Error {
       `Frontend tool "${name}" did not return a result (client disconnected or timed out).`,
       { retryable: false, metadata: { name } },
     );
+  }
+
+  static authenticationRequired(message = 'This action requires an authenticated identity.'): CopilotError {
+    return new CopilotError('AUTHENTICATION_REQUIRED', message, { retryable: false });
+  }
+
+  static permissionDenied(action: string, missing?: readonly string[]): CopilotError {
+    return new CopilotError(
+      'PERMISSION_DENIED',
+      `You do not have permission to perform "${action}".`,
+      { retryable: false, metadata: missing ? { action, missing } : { action } },
+    );
+  }
+
+  static tenantMismatch(message = 'This action is not permitted for your tenant.'): CopilotError {
+    return new CopilotError('TENANT_MISMATCH', message, { retryable: false });
+  }
+
+  static policyDenied(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('POLICY_DENIED', message, { retryable: false, metadata });
+  }
+
+  static businessRuleDenied(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('BUSINESS_RULE_DENIED', message, { retryable: false, metadata });
+  }
+
+  static piiPolicyDenied(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('PII_POLICY_DENIED', message, { retryable: false, metadata });
+  }
+
+  static approvalRequired(level: string, approvalId: string): CopilotError {
+    return new CopilotError(
+      'APPROVAL_REQUIRED',
+      `This action requires ${level} approval before it can execute.`,
+      { retryable: false, metadata: { level, approvalId } },
+    );
+  }
+
+  static approvalRejected(message = 'The requested action was not approved.'): CopilotError {
+    return new CopilotError('APPROVAL_REJECTED', message, { retryable: false });
+  }
+
+  static approvalExpired(message = 'The approval request expired before a decision was made.'): CopilotError {
+    return new CopilotError('APPROVAL_EXPIRED', message, { retryable: false });
   }
 }

@@ -16,7 +16,7 @@ import type {
 } from '@gixcopilot/generative-ui';
 import { useCopilotInternals } from './internals.js';
 import type { ToolRenderFn } from './internals.js';
-import { useToolCalls } from './provider.js';
+import { useCopilot, useToolCalls } from './provider.js';
 import type { ToolCallState } from './types.js';
 
 export interface UseGenerativeComponentOptions<TProps> {
@@ -109,16 +109,18 @@ export function useToolRenderer(options: UseToolRendererOptions): void {
  * Never invoke a tool's `execute` directly - always go through this (or the model).
  */
 export function useInvokeTool(): (name: string, args: unknown) => Promise<ToolResult> {
-  const { toolRuntime } = useCopilotInternals();
+  const { toolRuntime, serverActions } = useCopilotInternals();
+  const { invokeTool } = useCopilot();
   return useCallback(
     (name: string, args: unknown) =>
-      toolRuntime.execute({
+      serverActions ? invokeTool(name, typeof args === 'object' && args !== null && !Array.isArray(args)
+        ? args as Readonly<Record<string, unknown>> : {}) : toolRuntime.execute({
         toolCallId: createToolCallId(),
         name,
         arguments: args,
         context: { runId: createRunId(), signal: new AbortController().signal },
       }),
-    [toolRuntime],
+    [toolRuntime, serverActions, invokeTool],
   );
 }
 

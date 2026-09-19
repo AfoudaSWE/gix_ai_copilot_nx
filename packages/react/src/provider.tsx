@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useMemo, useSyncExternalStore } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import type { ReactElement } from 'react';
 import { createCopilotClient } from '@gixcopilot/client';
 import { CopilotError } from '@gixcopilot/protocol';
@@ -13,6 +13,7 @@ import type { ResolveContextMessage, ResolveToolManifest } from './chat-store.js
 import { CopilotInternalsContext } from './internals.js';
 import type { CopilotInternals } from './internals.js';
 import type {
+  ApprovalState,
   ChatStatus,
   CopilotAccess,
   CopilotChatResult,
@@ -31,16 +32,25 @@ export function CopilotProvider({
   model,
   threadId,
   context,
+  getHeaders,
+  localToolExecution = false,
 }: CopilotProviderProps): ReactElement {
+  const headersRef = useRef(getHeaders);
+  headersRef.current = getHeaders;
   const client = useMemo(() => {
     if (suppliedClient) return suppliedClient;
     if (!runtimeUrl?.trim())
       throw CopilotError.validation('CopilotProvider requires a client or runtimeUrl.');
-    return createCopilotClient({ baseUrl: runtimeUrl });
+    // `getHeaders` is intentionally not a dependency: it's typically a fresh closure every
+    // render, and re-creating the client (which would reset the whole chat store) every
+    // render just because the caller passed a new function reference would be far worse than
+    // keeping the header callback current through its ref.
+    return createCopilotClient({ baseUrl: runtimeUrl, getHeaders: () => headersRef.current?.() ?? {} });
   }, [suppliedClient, runtimeUrl]);
   const provider = model?.provider;
   const modelName = model?.model;
   const maxContextTokens = context?.maxContextTokens;
+  const dataPolicy = context?.dataPolicy;
 
   // One isolated context/state universe per provider instance (Section 65) - never a
   // module-level singleton, so sibling/nested CopilotProviders never see each other's
@@ -48,8 +58,9 @@ export function CopilotProvider({
   const internals: CopilotInternals = useMemo(() => {
     const toolRegistry = createToolRegistry();
     return {
+      serverActions: !localToolExecution,
       registry: createContextRegistry(),
-      engine: createContextEngine({ maxContextTokens }),
+      engine: createContextEngine({ maxContextTokens, dataPolicy }),
       stateStore: createCopilotStateStore(),
       toolRegistry,
       toolRuntime: createToolRuntime({ resolver: createDefaultToolResolver(toolRegistry) }),
@@ -57,7 +68,7 @@ export function CopilotProvider({
       componentRenderers: new Map(),
       toolRenderers: new Map(),
     };
-  }, [maxContextTokens]);
+  }, [maxContextTokens, localToolExecution, dataPolicy]);
   useEffect(() => () => internals.registry.clear(), [internals]);
   useEffect(() => () => internals.toolRegistry.clear(), [internals]);
   useEffect(() => () => internals.generativeComponentRegistry.clear(), [internals]);
@@ -154,6 +165,33 @@ export function useToolCalls(): readonly ToolCallState[] {
     () => store.getSnapshot().toolCalls,
     () => store.getServerSnapshot().toolCalls,
   );
+}
+
+/**
+ * Headless approval state for the current run (Phase 7, Section 81) - a generic timeline any
+ * custom/headless UI can render without parsing raw `approval.*` protocol events itself,
+ * mirroring `useToolCalls` above. A React default approval component is not mandatory
+ * (Section 82) - this hook is the whole contract a custom application needs.
+ */
+export function useApprovals(): readonly ApprovalState[] {
+  const store = useStore();
+  return useSyncExternalStore(
+    store.subscribe,
+    () => store.getSnapshot().approvals,
+    () => store.getServerSnapshot().approvals,
+  );
+}
+
+/** Convenience filter over `useApprovals()` for the common case of "what still needs a
+ * decision" (Section 81's `usePendingApprovals`). */
+export function usePendingApprovals(): readonly ApprovalState[] {
+  return useApprovals().filter((approval) => approval.status === 'pending');
+}
+
+/** One approval by id, or `undefined` if it does not exist in the current run (Section 81's
+ * `useApproval`). */
+export function useApproval(approvalId: string): ApprovalState | undefined {
+  return useApprovals().find((approval) => approval.approvalId === approvalId);
 }
 
 /** Subscribe to status transitions without rerendering for each delta. */

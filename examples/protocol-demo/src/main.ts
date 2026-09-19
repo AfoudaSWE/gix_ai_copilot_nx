@@ -43,6 +43,11 @@ function printEvent(event: CopilotEvent): void {
     case 'tool.failed':
       console.log(`[${event.sequence}] tool.failed ${event.name}: ${event.error.code}`);
       break;
+    case 'approval.requested':
+    case 'approval.approved':
+    case 'approval.rejected':
+    case 'approval.expired':
+      break;
     default: {
       const exhaustive: never = event;
       throw new Error(`Unhandled event type: ${JSON.stringify(exhaustive)}`);

@@ -2,14 +2,18 @@
 
 export {
   CopilotProvider,
+  useApproval,
+  useApprovals,
   useCopilot,
   useCopilotChat,
   useCopilotStatus,
   useMessages,
+  usePendingApprovals,
   useThread,
   useToolCalls,
 } from './provider.js';
 export type {
+  ApprovalState,
   ChatActions,
   ChatSnapshot,
   ChatStatus,
@@ -63,6 +67,15 @@ export type {
 // `@gixcopilot/tools` dependency just to type a `useFrontendTool`/`useToolCalls` call.
 export type { ToolExecutionContext, ToolMetadata } from '@gixcopilot/tools';
 export type { ToolResult, ToolSource } from '@gixcopilot/protocol';
+
+// Re-exported (Phase 7) so a consumer never needs a direct `@gixcopilot/protocol` dependency
+// just to type a `useApprovals`/`ApprovalState` field.
+export type {
+  ToolActionPreview,
+  ToolActionRisk,
+  ToolActionReversibility,
+  ToolApprovalLevel,
+} from '@gixcopilot/protocol';
 
 // Re-exported (Phase 6) so a consumer never needs a direct `@gixcopilot/generative-ui`
 // dependency just to type a `useGenerativeComponent` call.

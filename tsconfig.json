@@ -11,6 +11,9 @@
       "path": "packages/tools"
     },
     {
+      "path": "packages/security"
+    },
+    {
       "path": "packages/context"
     },
     {
@@ -57,6 +60,9 @@
     },
     {
       "path": "examples/react-generative-ui"
+    },
+    {
+      "path": "examples/react-enterprise"
     }
   ]
 }

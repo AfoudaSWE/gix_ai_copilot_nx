@@ -1,4 +1,5 @@
 import type { z } from 'zod';
+import type { ToolActionPreview, ToolSecurityManifest } from '@gixcopilot/protocol';
 import { assertValidToolName } from './tool-name.js';
 import type { ToolDefinition, ToolExecutionContext } from './tool-definition.js';
 import type { ToolMetadata } from './tool-metadata.js';
@@ -21,6 +22,13 @@ export interface DefineToolOptions<
   readonly output?: TOutputSchema;
   readonly execute: ToolExecutor<TInputSchema, TOutputSchema>;
   readonly metadata?: ToolMetadata;
+  /** Phase 7 security metadata (Section 19) - see `ToolDefinition.security`'s doc comment. */
+  readonly security?: ToolSecurityManifest;
+  /** Phase 7 dry-run capability (Section 48-51) - see `ToolDefinition.dryRun`'s doc comment. */
+  readonly dryRun?: (
+    input: z.infer<TInputSchema>,
+    context: ToolExecutionContext,
+  ) => Promise<ToolActionPreview>;
   readonly enabled?: boolean | (() => boolean);
 }
 
@@ -50,6 +58,8 @@ export function defineTool<
     outputSchema: options.output as z.ZodType<TOutput> | undefined,
     execute: options.execute,
     metadata: options.metadata,
+    security: options.security,
+    dryRun: options.dryRun,
     enabled: options.enabled,
   };
   return definition;

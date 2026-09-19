@@ -20,6 +20,7 @@ function stubClient(): { client: CopilotClient; runs: RunOptions[] } {
       };
     },
     submitToolResult: vi.fn(() => Promise.resolve(undefined)),
+    decideApproval: vi.fn(() => Promise.resolve(undefined)),
   };
   return { client, runs };
 }

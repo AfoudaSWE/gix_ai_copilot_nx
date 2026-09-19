@@ -72,6 +72,7 @@ function fixture() {
       submittedResults.push({ runId, toolCallId, result });
       return Promise.resolve(undefined);
     }),
+    decideApproval: vi.fn(() => Promise.resolve(undefined)),
   };
   return { client, runs, submittedResults };
 }
@@ -367,7 +368,7 @@ describe('useInvokeTool', () => {
       return null;
     }
     render(
-      <CopilotProvider client={f.client}>
+      <CopilotProvider localToolExecution client={f.client}>
         <Harness />
       </CopilotProvider>,
     );
@@ -393,7 +394,7 @@ describe('useInvokeTool', () => {
       return null;
     }
     render(
-      <CopilotProvider client={f.client}>
+      <CopilotProvider localToolExecution client={f.client}>
         <Harness />
       </CopilotProvider>,
     );
@@ -402,5 +403,28 @@ describe('useInvokeTool', () => {
     expect(execute).not.toHaveBeenCalled();
     expect(result?.status).toBe('error');
     expect(result?.status === 'error' && result.error.code).toBe('VALIDATION_ERROR');
+  });
+});
+
+
+describe('server-authorized generated actions', () => {
+  it('routes generated button actions to the server and does not execute on denial', async () => {
+    const f = fixture();
+    const execute = vi.fn(() => Promise.resolve({ removed: true }));
+    const { result } = renderHook(() => {
+      useFrontendTool({ name: 'records.remove', description: 'Delete', input: z.object({ id: z.string() }), execute });
+      return useInvokeTool();
+    }, { wrapper: ({ children }) => <CopilotProvider client={f.client}>{children}</CopilotProvider> });
+    let pending: Promise<ToolResult> | undefined;
+    act(() => { pending = result.current('records.remove', { id: 'a' }); });
+    expect(f.runs[0]?.options.action).toEqual({ name: 'records.remove', arguments: { id: 'a' } });
+    await act(async () => {
+      await Promise.resolve();
+      f.runs[0]?.push({ ...baseEvent(1, 'r', 't'), type: 'run.started' });
+      f.runs[0]?.push({ ...baseEvent(2, 'r', 't'), type: 'tool.failed', toolCallId: 'c', name: 'records.remove', error: { code: 'PERMISSION_DENIED', message: 'Not permitted', retryable: false } });
+      f.runs[0]?.end();
+    });
+    expect((await pending)?.status).toBe('error');
+    expect(execute).not.toHaveBeenCalled();
   });
 });

@@ -63,7 +63,40 @@ export type ToolLifecycleEvent =
       readonly toolCallId: ToolCallId;
       readonly name: string;
       readonly error: PublicCopilotError;
-    };
+    }
+  /**
+   * Phase 7 HITL phases - reuse this exact "internal phase -> wire event" pipeline (Section
+   * 89) rather than inventing a parallel notification path. A run pauses (Section 38) by the
+   * tool-calling executor blocking on `ApprovalStore.awaitDecision()` after reporting
+   * `approval_requested`, exactly the way a pending frontend tool call already blocks on
+   * `frontendToolBridge.awaitResult()` after reporting `requested`.
+   */
+  | {
+      readonly phase: 'approval_requested';
+      readonly toolCallId: ToolCallId;
+      readonly approvalId: string;
+      readonly action: string;
+      readonly approvalLevel: ToolApprovalLevel;
+      readonly summary: string;
+      readonly risk?: ToolActionRisk;
+      readonly reversibility?: ToolActionReversibility;
+      readonly expiresAt?: string;
+      readonly preview?: ToolActionPreview;
+    }
+  | {
+      readonly phase: 'approval_approved';
+      readonly toolCallId: ToolCallId;
+      readonly approvalId: string;
+      readonly decidedBy?: string;
+    }
+  | {
+      readonly phase: 'approval_rejected';
+      readonly toolCallId: ToolCallId;
+      readonly approvalId: string;
+      readonly decidedBy?: string;
+      readonly reason?: string;
+    }
+  | { readonly phase: 'approval_expired'; readonly toolCallId: ToolCallId; readonly approvalId: string };
 
 /**
  * A provider-neutral, wire-safe manifest entry describing one tool the model may call -
@@ -73,9 +106,68 @@ export type ToolLifecycleEvent =
  * never a Zod schema instance - Zod schemas cannot cross the wire or a provider-neutral
  * boundary.
  */
+/**
+ * Action classification dimensions (Phase 7, Section 28-29) - two independent axes, never
+ * conflated into one enum. `risk` is "what kind of effect can this have"; `reversibility` is
+ * "how hard is it to undo" - a `write` action can be `reversible` (reassign) or
+ * `irreversible` (send an email); a tool declares both only when the dimension applies
+ * (`reversibility` has no meaning for `read-only`).
+ */
+export type ToolActionRisk = 'read-only' | 'write' | 'destructive';
+export type ToolActionReversibility = 'reversible' | 'compensatable' | 'irreversible';
+
+/**
+ * Fixed approval-level vocabulary (Phase 7, Section 31) - defined here (protocol), not in
+ * `@gixcopilot/security`, so the wire-safe `ToolManifestEntry` and the security package's
+ * richer runtime types share one source of truth instead of two enums that could drift.
+ */
+export type ToolApprovalLevel =
+  | 'none'
+  | 'user-confirmation'
+  | 'supervisor'
+  | 'admin'
+  | 'two-person';
+
+/** Data sensitivity classification (Phase 7, Section 52). */
+export type DataClassification = 'public' | 'internal' | 'confidential' | 'pii' | 'secret';
+
+/**
+ * A tool's declared security metadata (Phase 7, Section 19), wire-safe so it travels the same
+ * path as the rest of `ToolManifestEntry` for both backend (`defineTool`'s `security` option)
+ * and frontend (`useFrontendTool`'s `security` option) tools. This is classification/policy-
+ * input metadata only - it is never itself an authorization decision; the AI Action Firewall
+ * (`@gixcopilot/security`) is what actually enforces it (see the action-firewall skill).
+ */
+export interface ToolSecurityManifest {
+  readonly requiredPermissions?: readonly string[];
+  readonly risk?: ToolActionRisk;
+  readonly reversibility?: ToolActionReversibility;
+  /** Explicit override of the default risk-based approval policy for this specific tool. */
+  readonly approval?: ToolApprovalLevel;
+  readonly dataClassification?: DataClassification;
+}
+
 export interface ToolManifestEntry {
   readonly name: string;
   readonly description: string;
   readonly parameters: Readonly<Record<string, unknown>>;
   readonly executionLocation: ToolExecutionLocation;
+  readonly security?: ToolSecurityManifest;
+}
+
+/**
+ * A wire-safe dry-run preview (Phase 7, Section 48-51, 136) - "what this action would do,"
+ * produced without performing the real mutation. Sensitive fields must already be filtered
+ * before this is ever sent (Section 51) - this type carries no classification of its own.
+ */
+export interface ToolChangePreview {
+  readonly field: string;
+  readonly before?: unknown;
+  readonly after?: unknown;
+}
+
+export interface ToolActionPreview {
+  readonly summary: string;
+  readonly changes?: readonly ToolChangePreview[];
+  readonly warnings?: readonly string[];
 }

@@ -54,6 +54,25 @@ decision (Section 42's "avoid an excessively powerful expression language"), not
 Phase 7+ feature (Action Firewall, RBAC/ABAC, approval/HITL, OpenAPI/MCP, RAG, agents) is
 tracked here.
 
+Phase 7 review: no new _categories_ of debt were introduced. `@gixcopilot/security` ships
+with the same per-package `*.spec.ts`-in-`dist/` characteristic as item 1 (its `files` field
+excludes compiled specs). `createInMemoryApprovalStore`/`createInMemoryAuditSink` and the
+in-memory rate limiter are process-local, the same documented limitation as the pre-existing
+run registry and frontend-tool bridge (item 3) — a multi-instance deployment needs a shared
+approval store/audit sink/limiter; no action needed until a phase actually requires
+horizontal scaling. Several real bugs were found and fixed during implementation via
+integration testing — see `docs/phases/phase-07/Phase_7_Issues.md` for the full list,
+including: a discovery-vs-execution metadata lookup that let a permission-hidden tool's
+security requirements become invisible to the firewall at execution time (turning a should-
+be-denied manual call into a silently-created, never-resolved approval); a frontend
+`tool.requested` event that was announced during firewall evaluation instead of after
+authorization/approval succeeded, which would have let a denied or approval-pending frontend
+action execute in the browser immediately; and a revalidation bug that treated the firewall's
+stateless re-derivation of the _same_ approval requirement as an automatic denial, which
+would have blocked every approved action from ever executing. None is carried forward as
+debt — all three are fixed and covered by regression tests. No Phase 8+ feature (OpenAPI/MCP
+auto-tool-generation, RAG, agents) is tracked here.
+
 ## Resolved
 
 Phase 3 review: the new React/UI package file lists exclude compiled specs from packing.

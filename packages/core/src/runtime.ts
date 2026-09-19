@@ -103,6 +103,7 @@ export function createRuntime(options: CreateRuntimeOptions): Runtime {
         // executor.ts's doc comment. Drained into real tool.* events on the generator's own
         // turn, in the order they were reported.
         const pendingToolEvents: ToolLifecycleEvent[] = [];
+        let wakeEvents: (() => void) | undefined;
 
         try {
           yield {
@@ -118,6 +119,7 @@ export function createRuntime(options: CreateRuntimeOptions): Runtime {
             signal: abortController.signal,
             onToolEvent: (event: ToolLifecycleEvent) => {
               pendingToolEvents.push(event);
+              wakeEvents?.();
             },
           };
 
@@ -130,7 +132,28 @@ export function createRuntime(options: CreateRuntimeOptions): Runtime {
           );
           let completion: ExecutorCompletion | undefined;
           while (true) {
-            const step = await deltaIterator.next();
+            // Stream notifications while a tool waits for approval or a browser result.
+            // There is always exactly one executor next() in flight.
+            const nextStep = deltaIterator.next().then(
+              (step) => ({ kind: 'step' as const, step }),
+              (error: unknown) => ({ kind: 'error' as const, error }),
+            );
+            let outcome;
+            do {
+              const notification = new Promise<{ kind: 'event' }>((resolve) => {
+                wakeEvents = () => resolve({ kind: 'event' });
+              });
+              outcome = pendingToolEvents.length > 0
+                ? { kind: 'event' as const }
+                : await Promise.race([nextStep, notification]);
+              wakeEvents = undefined;
+              while (pendingToolEvents.length > 0) {
+                const event = pendingToolEvents.shift();
+                if (event) yield toCopilotToolEvent(envelope(), event);
+              }
+            } while (outcome.kind === 'event');
+            if (outcome.kind === 'error') throw outcome.error;
+            const step = outcome.step;
 
             while (pendingToolEvents.length > 0) {
               const toolEvent = pendingToolEvents.shift();
@@ -263,6 +286,44 @@ function toCopilotToolEvent(base: CopilotEventBase, event: ToolLifecycleEvent): 
         toolCallId: event.toolCallId,
         name: event.name,
         error: event.error,
+      };
+    case 'approval_requested':
+      return {
+        ...base,
+        type: 'approval.requested',
+        approvalId: event.approvalId,
+        toolCallId: event.toolCallId,
+        action: event.action,
+        approvalLevel: event.approvalLevel,
+        summary: event.summary,
+        ...(event.risk !== undefined ? { risk: event.risk } : {}),
+        ...(event.reversibility !== undefined ? { reversibility: event.reversibility } : {}),
+        ...(event.expiresAt !== undefined ? { expiresAt: event.expiresAt } : {}),
+        ...(event.preview !== undefined ? { preview: event.preview } : {}),
+      };
+    case 'approval_approved':
+      return {
+        ...base,
+        type: 'approval.approved',
+        approvalId: event.approvalId,
+        toolCallId: event.toolCallId,
+        ...(event.decidedBy !== undefined ? { decidedBy: event.decidedBy } : {}),
+      };
+    case 'approval_rejected':
+      return {
+        ...base,
+        type: 'approval.rejected',
+        approvalId: event.approvalId,
+        toolCallId: event.toolCallId,
+        ...(event.decidedBy !== undefined ? { decidedBy: event.decidedBy } : {}),
+        ...(event.reason !== undefined ? { reason: event.reason } : {}),
+      };
+    case 'approval_expired':
+      return {
+        ...base,
+        type: 'approval.expired',
+        approvalId: event.approvalId,
+        toolCallId: event.toolCallId,
       };
     default: {
       const exhaustive: never = event;

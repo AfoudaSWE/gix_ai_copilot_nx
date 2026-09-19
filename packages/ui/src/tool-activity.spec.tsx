@@ -63,6 +63,7 @@ function fixture() {
         },
       };
     },
+    decideApproval: vi.fn(() => Promise.resolve()),
     submitToolResult: vi.fn(() => Promise.resolve(undefined)),
   };
   return {

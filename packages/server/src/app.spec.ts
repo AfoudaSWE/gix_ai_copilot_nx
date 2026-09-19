@@ -318,15 +318,18 @@ describe('createServer', () => {
         'run.started',
         'message.started',
         'tool.requested',
+        'tool.failed',
         'message.delta',
         'message.end',
         'run.completed',
       ]);
-      // ToolRuntime never emits started/completed/failed for a genuinely unresolvable name
-      // (see @gixcopilot/tools' tool-runtime.spec.ts) - only 'requested' (the caller's own
-      // notification) appears; the failure surfaces to the model as a tool_result, not as a
-      // thrown error or a run.failed.
-      expect(events.some((e) => e.type === 'tool.failed')).toBe(false);
+      // ToolRuntime itself never emits started/completed/failed for a genuinely unresolvable
+      // name (see @gixcopilot/tools' tool-runtime.spec.ts) - only 'requested'. The Phase 7
+      // dispatch boundary (tool-calling-executor.ts) now additionally emits `tool.failed` for
+      // any error-status ToolResult regardless of cause, so a client's tool-call state
+      // reaches a terminal 'failed' status instead of staying stuck at 'requested' forever;
+      // the failure still separately surfaces to the model as an ordinary tool_result, not as
+      // a thrown error or a run.failed.
       const end = events.find((e) => e.type === 'message.end');
       expect(end?.type === 'message.end' && end.content).toEqual([
         { type: 'text', text: 'That tool is not available.' },

@@ -65,6 +65,7 @@ function fixture() {
       };
     },
     submitToolResult: vi.fn(() => Promise.resolve(undefined)),
+    decideApproval: vi.fn(() => Promise.resolve(undefined)),
   };
   const wrapper = ({ children }: { children: ReactNode }) => (
     <StrictMode>
@@ -114,6 +115,10 @@ function fixture() {
       case 'tool.started':
       case 'tool.completed':
       case 'tool.failed':
+      case 'approval.requested':
+      case 'approval.approved':
+      case 'approval.rejected':
+      case 'approval.expired':
         throw new Error(`This test fixture does not construct "${type}" events.`);
     }
   }
@@ -248,6 +253,7 @@ describe('headless React adapter', () => {
         throw new Error('private detail');
       },
       submitToolResult: vi.fn(() => Promise.resolve(undefined)),
+      decideApproval: vi.fn(() => Promise.resolve(undefined)),
     };
     const hook = renderHook(useCopilotChat, {
       wrapper: ({ children }) => <CopilotProvider client={client}>{children}</CopilotProvider>,

@@ -18,6 +18,16 @@ const modelReferenceSchema = z.object({
   model: z.string().min(1),
 });
 
+/** Phase 7 (Section 19) - a client-declared frontend tool's own security classification,
+ * carried the same way backend tools carry theirs (see `@gixcopilot/tools`' `security`). */
+const toolSecurityManifestSchema = z.object({
+  requiredPermissions: z.array(z.string()).optional(),
+  risk: z.enum(['read-only', 'write', 'destructive']).optional(),
+  reversibility: z.enum(['reversible', 'compensatable', 'irreversible']).optional(),
+  approval: z.enum(['none', 'user-confirmation', 'supervisor', 'admin', 'two-person']).optional(),
+  dataClassification: z.enum(['public', 'internal', 'confidential', 'pii', 'secret']).optional(),
+});
+
 /**
  * A client-declared frontend tool (Section 45-46, added in Phase 5). The client sends this
  * wire-safe manifest - a JSON Schema `parameters` object, never a Zod schema instance - so
@@ -28,9 +38,11 @@ const toolManifestEntrySchema = z.object({
   description: z.string(),
   parameters: z.record(z.string(), z.unknown()),
   executionLocation: z.enum(['server', 'client']),
+  security: toolSecurityManifestSchema.optional(),
 });
 
 export const createRunRequestSchema = z.object({
+  action: z.object({ name: z.string().min(1), arguments: z.record(z.string(), z.unknown()) }).optional(),
   threadId: z.string().min(1).optional(),
   model: modelReferenceSchema.optional(),
   /**
@@ -75,3 +87,15 @@ export type SubmitToolResultRequestBody = z.infer<typeof submitToolResultRequest
 export const submitToolResultParamsSchema = z.object({
   runId: z.string().min(1),
 });
+
+/** Phase 7 approval endpoints (Section 83). */
+export const approvalIdParamsSchema = z.object({
+  approvalId: z.string().min(1),
+});
+
+export const decideApprovalRequestSchema = z.object({
+  comment: z.string().max(2000).optional(),
+  revision: z.number().int().nonnegative().optional(),
+});
+
+export type DecideApprovalRequestBody = z.infer<typeof decideApprovalRequestSchema>;

@@ -15,7 +15,7 @@ Phase 03 - React Copilot UI                    COMPLETE
 Phase 04 - Application Context & State         COMPLETE
 Phase 05 - Tools & Agent Actions               COMPLETE
 Phase 06 - Generative UI & Shared State        COMPLETE
-Phase 07 - Enterprise Security & HITL          NOT STARTED / LOCKED
+Phase 07 - Enterprise Security & HITL          COMPLETE
 Phase 08 - OpenAPI + MCP + Integrations        NOT STARTED / LOCKED
 Phase 09 - Knowledge + RAG + Memory            NOT STARTED / LOCKED
 Phase 10 - Agents + Multi-Agent + Workflows    NOT STARTED / LOCKED
@@ -122,7 +122,50 @@ phase is started without an explicit instruction naming it.
 - Full record: [Phase 6 docs](phases/phase-06/Phase_6_Docs.md),
   [completion report](phases/phase-06/Phase_6_Status.md),
   [ADR 0011](adr/0011-generative-ui-and-state-patch-architecture.md).
-- Phase 7 remains **LOCKED / NOT STARTED**.
+
+## Phase 7 — Enterprise Security & HITL (COMPLETE)
+
+- Added `@gixcopilot/security`: a framework-independent AI Action Firewall — trusted
+  identity/tenant boundary, RBAC + ABAC policy engine, risk classification, a five-level
+  human-in-the-loop approval state machine (user confirmation, supervisor, admin,
+  two-person), dry-run/preview, PII redaction, rate limiting, and an audit trail. Depends
+  only on protocol + tools.
+- The firewall's canonical enforcement boundary is `@gixcopilot/server`'s tool-calling
+  executor dispatch step (covers backend, frontend, and direct-invoked actions identically,
+  in a two-pass design so a minutes-long approval wait never blocks the client from seeing
+  the prompt), with a second `ToolRuntimeMiddleware` layer for defense in depth.
+- Extended the protocol additively: a `security`/dry-run-preview manifest shape, four new
+  `approval.*` events, nine new error codes — no Phase 1–6 request/response shape changed.
+- `useInvokeTool()` (Phase 6) now routes through the same server-side firewall once one is
+  configured, closing the "a generated button bypasses the model, therefore the firewall"
+  gap; `@gixcopilot/client`/`@gixcopilot/react` gained `decideApproval`/`getHeaders`/
+  `useApprovals` family; `@gixcopilot/ui` gained accessible `ApprovalCard`/`SecurityDenial`
+  components (verified with a real `axe-core` scan).
+- Added `examples/react-enterprise`: five tools spanning every risk/approval tier, a real
+  tenant + business-rule ABAC policy, dry-run previews, PII redaction, and (optionally) real
+  OpenAI chat through the identical firewall as its own direct-action buttons — no fake
+  model logic in the real execution path. Manually verified live over real HTTP this
+  session: permission denial, tenant isolation, PII redaction, self-approve rejection,
+  real supervisor approval, actual mutation execution, and a populated audit trail.
+- Full record: [Phase 7 docs](phases/phase-07/Phase_7_Docs.md),
+  [completion report](phases/phase-07/Phase_7_Status.md),
+  [ADR 0012](adr/0012-action-firewall-and-hitl-architecture.md).
+- Phase 8 remains **LOCKED / NOT STARTED**.
+
+## Current Validation (Phase 7 completion)
+
+Fresh `pnpm lint && pnpm typecheck && pnpm test && pnpm build` passed across all 22
+lint/typecheck projects and all 21 buildable/testable projects. **351 Vitest tests passed, 1
+pre-existing optional OpenAI smoke test skipped** without credentials, zero failures —
+including every Phase 1–6 test (one pre-existing Phase 5 assertion updated to match a
+disclosed, deliberate behavior improvement — see
+[Phase 7 Issues](phases/phase-07/Phase_7_Issues.md)). `examples/react-enterprise`'s security/
+HITL pipeline was additionally verified manually, live, over real HTTP this session (not only
+via automated tests) — see [Phase 7 Testing](phases/phase-07/Phase_7_Testing.md). No
+`OPENAI_API_KEY` was available for that example in this session, so its own optional real-model
+chat path was **not** exercised against a live model — disclosed explicitly, not assumed. The
+Chromium/Playwright browser suite was not re-run this session (no Phase 7 UI surface was added
+to it; its lint/typecheck targets were re-run and pass).
 
 ## Current Validation (Phase 6 completion)
 

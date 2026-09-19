@@ -2,6 +2,10 @@ import { z } from 'zod';
 import { CopilotError } from './errors.js';
 import { PROTOCOL_VERSION } from './version.js';
 import type {
+  ApprovalApprovedEvent,
+  ApprovalExpiredEvent,
+  ApprovalRejectedEvent,
+  ApprovalRequestedEvent,
   CopilotEvent,
   CopilotEventType,
   ErrorEvent,
@@ -51,6 +55,15 @@ const publicCopilotErrorSchema = z.object({
     'TOOL_OUTPUT_INVALID',
     'TOOL_ITERATION_LIMIT_EXCEEDED',
     'FRONTEND_TOOL_UNAVAILABLE',
+    'AUTHENTICATION_REQUIRED',
+    'PERMISSION_DENIED',
+    'TENANT_MISMATCH',
+    'POLICY_DENIED',
+    'BUSINESS_RULE_DENIED',
+    'PII_POLICY_DENIED',
+    'APPROVAL_REQUIRED',
+    'APPROVAL_REJECTED',
+    'APPROVAL_EXPIRED',
   ]),
   message: z.string(),
   retryable: z.boolean(),
@@ -175,6 +188,62 @@ const toolCallFailedEventSchema = copilotEventBaseSchema.extend({
   error: publicCopilotErrorSchema,
 });
 
+const toolActionRiskSchema = z.enum(['read-only', 'write', 'destructive']);
+const toolActionReversibilitySchema = z.enum(['reversible', 'compensatable', 'irreversible']);
+const toolApprovalLevelSchema = z.enum([
+  'none',
+  'user-confirmation',
+  'supervisor',
+  'admin',
+  'two-person',
+]);
+
+const toolChangePreviewSchema = z.object({
+  field: z.string(),
+  before: z.unknown().optional(),
+  after: z.unknown().optional(),
+});
+
+const toolActionPreviewSchema = z.object({
+  summary: z.string(),
+  changes: z.array(toolChangePreviewSchema).optional(),
+  warnings: z.array(z.string()).optional(),
+});
+
+const approvalRequestedEventSchema = copilotEventBaseSchema.extend({
+  type: z.literal('approval.requested'),
+  approvalId: z.string().min(1),
+  toolCallId: z.string().min(1),
+  action: z.string().min(1),
+  approvalLevel: toolApprovalLevelSchema,
+  summary: z.string(),
+  risk: toolActionRiskSchema.optional(),
+  reversibility: toolActionReversibilitySchema.optional(),
+  expiresAt: z.string().optional(),
+  preview: toolActionPreviewSchema.optional(),
+});
+
+const approvalApprovedEventSchema = copilotEventBaseSchema.extend({
+  type: z.literal('approval.approved'),
+  approvalId: z.string().min(1),
+  toolCallId: z.string().min(1),
+  decidedBy: z.string().optional(),
+});
+
+const approvalRejectedEventSchema = copilotEventBaseSchema.extend({
+  type: z.literal('approval.rejected'),
+  approvalId: z.string().min(1),
+  toolCallId: z.string().min(1),
+  decidedBy: z.string().optional(),
+  reason: z.string().optional(),
+});
+
+const approvalExpiredEventSchema = copilotEventBaseSchema.extend({
+  type: z.literal('approval.expired'),
+  approvalId: z.string().min(1),
+  toolCallId: z.string().min(1),
+});
+
 type EventSchemaFor<T extends CopilotEvent> = z.ZodType<T>;
 
 const eventSchemasByType: {
@@ -190,6 +259,10 @@ const eventSchemasByType: {
   'tool.started': EventSchemaFor<ToolCallStartedEvent>;
   'tool.completed': EventSchemaFor<ToolCallCompletedEvent>;
   'tool.failed': EventSchemaFor<ToolCallFailedEvent>;
+  'approval.requested': EventSchemaFor<ApprovalRequestedEvent>;
+  'approval.approved': EventSchemaFor<ApprovalApprovedEvent>;
+  'approval.rejected': EventSchemaFor<ApprovalRejectedEvent>;
+  'approval.expired': EventSchemaFor<ApprovalExpiredEvent>;
 } = {
   'run.started': runStartedEventSchema,
   'run.completed': runCompletedEventSchema,
@@ -203,6 +276,10 @@ const eventSchemasByType: {
   'tool.started': toolCallStartedEventSchema,
   'tool.completed': toolCallCompletedEventSchema,
   'tool.failed': toolCallFailedEventSchema,
+  'approval.requested': approvalRequestedEventSchema,
+  'approval.approved': approvalApprovedEventSchema,
+  'approval.rejected': approvalRejectedEventSchema,
+  'approval.expired': approvalExpiredEventSchema,
 };
 
 function isKnownEventType(value: string): value is CopilotEventType {

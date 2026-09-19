@@ -1,0 +1,44 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "react-enterprise",
+  "projectType": "application",
+  "sourceRoot": "examples/react-enterprise/src",
+  "tags": [
+    "scope:example",
+    "type:app"
+  ],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run build",
+        "cwd": "examples/react-enterprise"
+      },
+      "outputs": [
+        "{projectRoot}/dist",
+        "{projectRoot}/web-dist"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run typecheck",
+        "cwd": "examples/react-enterprise"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run test",
+        "cwd": "examples/react-enterprise"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run lint",
+        "cwd": "examples/react-enterprise"
+      }
+    }
+  }
+}

@@ -30,6 +30,7 @@ export type ToolRenderFn = (state: ToolRenderState) => ReactNode;
  * a backend one (Section 62's zero-trust-for-model-arguments rule applies on both sides).
  */
 export interface CopilotInternals {
+  readonly serverActions?: boolean;
   readonly registry: ContextRegistry;
   readonly engine: ContextEngine;
   readonly stateStore: CopilotStateStore;

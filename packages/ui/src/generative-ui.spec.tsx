@@ -58,6 +58,7 @@ function fixture() {
         },
       };
     },
+    decideApproval: vi.fn(() => Promise.resolve()),
     submitToolResult: vi.fn((_runId: string, toolCallId: string) => {
       submitted.push({ toolCallId });
       return Promise.resolve(undefined);

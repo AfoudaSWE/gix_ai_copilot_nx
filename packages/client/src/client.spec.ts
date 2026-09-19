@@ -20,6 +20,7 @@ function createFakeTransport(events: readonly CopilotEvent[]) {
   let capturedRequest: TransportRunRequest | undefined;
   const cancel = vi.fn(() => Promise.resolve(undefined));
   const submitToolResult = vi.fn(() => Promise.resolve(undefined));
+  const decideApproval = vi.fn(() => Promise.resolve(undefined));
   const transport: CopilotTransport = {
     async *run(request) {
       await Promise.resolve();
@@ -33,8 +34,9 @@ function createFakeTransport(events: readonly CopilotEvent[]) {
     },
     cancel,
     submitToolResult,
+    decideApproval,
   };
-  return { transport, cancel, submitToolResult, getCapturedRequest: () => capturedRequest };
+  return { transport, cancel, submitToolResult, decideApproval, getCapturedRequest: () => capturedRequest };
 }
 
 describe('createCopilotClient', () => {
@@ -157,5 +159,14 @@ describe('createCopilotClient', () => {
       toolCallId: 'call-1',
       data: {},
     });
+  });
+
+  it('decideApproval delegates to the transport (Section 83)', async () => {
+    const { transport, decideApproval } = createFakeTransport([]);
+    const client = createCopilotClient({ baseUrl: 'http://example.invalid', transport });
+
+    await client.decideApproval('approval-1', 'approve', 'looks fine');
+
+    expect(decideApproval).toHaveBeenCalledWith('approval-1', 'approve', 'looks fine');
   });
 });

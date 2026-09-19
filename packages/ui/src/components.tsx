@@ -1,6 +1,7 @@
 import { Component, memo, useEffect, useId, useRef, useState } from 'react';
 import type { ComponentType, CSSProperties, ErrorInfo, ReactElement, ReactNode } from 'react';
 import {
+  useApprovals,
   useCopilot,
   useCopilotChat,
   useCopilotStatus,
@@ -9,6 +10,7 @@ import {
   useToolCalls,
 } from '@gixcopilot/react';
 import type { CopilotChatResult, CopilotMessage, ToolCallState } from '@gixcopilot/react';
+import { ApprovalList, SecurityDenial } from './approval.js';
 import { DEFAULT_LABELS } from './labels.js';
 import type { CopilotLabels } from './labels.js';
 import { Markdown } from './markdown.js';
@@ -277,7 +279,7 @@ export function RegenerateButton({
 export function ChatInput({ labels = DEFAULT_LABELS }: ChatInputProps): ReactElement {
   const { sendMessage } = useCopilot();
   const status = useCopilotStatus();
-  const busy = status === 'submitting' || status === 'streaming';
+  const busy = status === 'submitting' || status === 'streaming' || status === 'waiting_for_approval';
   const [value, setValue] = useState('');
   const composing = useRef(false);
   const id = useId();
@@ -407,6 +409,19 @@ export function TypingIndicator({
  * happens during *this* component's render, which the `RenderBoundary` wrapped around it
  * from `ToolActivity` (its parent, not itself) correctly isolates (Section 56).
  */
+/** Phase 7 (Section 79) - a `tool.failed` whose error carries one of these codes is an Action
+ * Firewall denial, not an ordinary execution failure, and gets the dedicated denial UI. */
+const SECURITY_DENIAL_CODES = new Set([
+  'AUTHENTICATION_REQUIRED',
+  'PERMISSION_DENIED',
+  'TENANT_MISMATCH',
+  'POLICY_DENIED',
+  'BUSINESS_RULE_DENIED',
+  'PII_POLICY_DENIED',
+  'APPROVAL_REJECTED',
+  'APPROVAL_EXPIRED',
+]);
+
 function ToolActivityRow({
   toolCall,
   labels,
@@ -433,6 +448,9 @@ function ToolActivityRow({
         {toolCall.name} {labels.toolCompleted}
       </>
     );
+  }
+  if (toolCall.error && SECURITY_DENIAL_CODES.has(toolCall.error.code)) {
+    return <SecurityDenial message={toolCall.error.message} labels={labels} />;
   }
   return (
     <>
@@ -499,6 +517,8 @@ function ChatContent({
 }): ReactElement {
   const { status, error, messages } = useCopilotChat();
   const toolCalls = useToolCalls();
+  const approvals = useApprovals();
+  const { approveAction, rejectAction } = useCopilot();
   const resolveRenderer = useResolveToolRenderer();
   const Empty = components.EmptyState ?? EmptyState;
   const Activity = components.ToolActivity ?? ToolActivity;
@@ -530,6 +550,7 @@ function ChatContent({
         resolveRenderer={resolveRenderer}
         onRenderError={onRenderError}
       />
+      <ApprovalList approvals={approvals} onApprove={approveAction} onReject={rejectAction} labels={labels} />
       {status === 'submitting' && toolCalls.length === 0 ? (
         <TypingIndicator label={labels.submitting} />
       ) : null}

@@ -67,6 +67,7 @@ function fixture() {
       submittedResults.push({ runId, toolCallId, result });
       return Promise.resolve(undefined);
     }),
+    decideApproval: vi.fn(() => Promise.resolve(undefined)),
   };
   return { client, runs, submittedResults };
 }

@@ -16,9 +16,12 @@ import eslintConfigPrettier from 'eslint-config-prettier';
  * protocol - it must never depend on React; `@gixcopilot/tools` (Phase 5) may depend only on
  * protocol - it is the framework-independent canonical tool package shared by server and
  * react, and must never depend on React, Fastify, or a provider SDK; `@gixcopilot/generative-ui`
- * (Phase 6) may depend on protocol + tools + context - it must never depend on React; react
- * may depend on protocol + client + context + tools + generative-ui; examples may depend on
- * anything. This is the executable form of the dependency-direction diagram in
+ * (Phase 6) may depend on protocol + tools + context - it must never depend on React;
+ * `@gixcopilot/security` (Phase 7) may depend only on protocol + tools - the framework-
+ * independent AI Action Firewall/HITL/audit engine, consumed by server (never by react/ui
+ * directly - approval-related React state is built from protocol-level event types only);
+ * react may depend on protocol + client + context + tools + generative-ui; examples may
+ * depend on anything. This is the executable form of the dependency-direction diagram in
  * docs/architecture/overview.md.
  */
 export default tseslint.config(
@@ -97,6 +100,10 @@ export default tseslint.config(
               onlyDependOnLibsWithTags: ['scope:protocol', 'scope:core'],
             },
             {
+              sourceTag: 'scope:security',
+              onlyDependOnLibsWithTags: ['scope:protocol', 'scope:tools', 'scope:security'],
+            },
+            {
               sourceTag: 'scope:client',
               onlyDependOnLibsWithTags: ['scope:protocol', 'scope:client'],
             },
@@ -108,6 +115,7 @@ export default tseslint.config(
                 'scope:server',
                 'scope:provider',
                 'scope:tools',
+                'scope:security',
               ],
             },
             {
@@ -132,6 +140,7 @@ export default tseslint.config(
                 'scope:context',
                 'scope:tools',
                 'scope:generative-ui',
+                'scope:security',
                 'scope:example',
               ],
             },

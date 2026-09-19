@@ -32,6 +32,8 @@ export interface RunOptions {
   readonly messages: readonly ClientMessageInput[];
   /** Added in Phase 5 - frontend tools registered for this run only (Section 45-46). */
   readonly tools?: readonly ToolManifestEntry[];
+  /** Direct action through the same server firewall, without a model round trip. */
+  readonly action?: { readonly name: string; readonly arguments: Readonly<Record<string, unknown>> };
   /** Cancels the run if aborted, in addition to the `cancel()` method on the returned run. */
   readonly signal?: AbortSignal;
 }
@@ -48,6 +50,8 @@ export interface CopilotClientOptions {
   /** Override for a non-SSE transport (e.g. in tests) - see the CopilotTransport interface. */
   readonly transport?: CopilotTransport;
   readonly fetchImpl?: typeof fetch;
+  /** Added in Phase 7 - see `SseTransportOptions.getHeaders`'s doc comment. */
+  readonly getHeaders?: () => Record<string, string> | Promise<Record<string, string>>;
 }
 
 export interface CopilotClient {
@@ -55,6 +59,8 @@ export interface CopilotClient {
   /** Added in Phase 5 (Section 50) - reports a frontend tool's outcome back to the server so
    * a suspended Model -> Tool -> Model loop can resume. */
   submitToolResult(runId: string, toolCallId: string, result: ToolResult): Promise<void>;
+  /** Added in Phase 7 (Section 83) - approves or rejects a pending action. */
+  decideApproval(approvalId: string, decision: 'approve' | 'reject', comment?: string): Promise<void>;
 }
 
 function linkExternalSignal(controller: AbortController, external: AbortSignal | undefined): void {
@@ -75,7 +81,11 @@ function linkExternalSignal(controller: AbortController, external: AbortSignal |
 export function createCopilotClient(options: CopilotClientOptions): CopilotClient {
   const transport =
     options.transport ??
-    createSseTransport({ baseUrl: options.baseUrl, fetchImpl: options.fetchImpl });
+    createSseTransport({
+      baseUrl: options.baseUrl,
+      fetchImpl: options.fetchImpl,
+      getHeaders: options.getHeaders,
+    });
 
   return {
     run(runOptions: RunOptions): ClientRun {
@@ -88,6 +98,7 @@ export function createCopilotClient(options: CopilotClientOptions): CopilotClien
           model: runOptions.model,
           messages: runOptions.messages,
           tools: runOptions.tools,
+          action: runOptions.action,
           signal: controller.signal,
         }),
         cancel: () => controller.abort(),
@@ -95,5 +106,7 @@ export function createCopilotClient(options: CopilotClientOptions): CopilotClien
     },
     submitToolResult: (runId, toolCallId, result) =>
       transport.submitToolResult(runId, toolCallId, result),
+    decideApproval: (approvalId, decision, comment) =>
+      transport.decideApproval(approvalId, decision, comment),
   };
 }

@@ -85,6 +85,7 @@ export function createFrontendToolBridge(): FrontendToolBridge {
     },
 
     submitResult(runId, toolCallId, result) {
+      if (result.toolCallId !== toolCallId) return false;
       const mapKey = key(runId, toolCallId);
       const entry = pending.get(mapKey);
       if (!entry) return false;

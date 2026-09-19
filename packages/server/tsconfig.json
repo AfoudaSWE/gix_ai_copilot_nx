@@ -11,6 +11,7 @@
     { "path": "../protocol" },
     { "path": "../core" },
     { "path": "../providers/provider-core" },
-    { "path": "../tools" }
+    { "path": "../tools" },
+    { "path": "../security" }
   ]
 }

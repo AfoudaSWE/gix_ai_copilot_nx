@@ -37,6 +37,18 @@ export interface CopilotLabels {
   readonly toolRunning: string;
   readonly toolCompleted: string;
   readonly toolFailed: string;
+  /** Approval UI (Phase 7, Section 76-79). */
+  readonly approvalTitle: string;
+  readonly approvalPending: string;
+  readonly approvalApproved: string;
+  readonly approvalRejected: string;
+  readonly approvalExpired: string;
+  readonly approvalApprove: string;
+  readonly approvalReject: string;
+  readonly approvalCommentPlaceholder: string;
+  readonly approvalRequires: string;
+  readonly approvalPreviewTitle: string;
+  readonly denialTitle: string;
 }
 
 /** English defaults, centralized rather than embedded throughout the components. */
@@ -75,4 +87,15 @@ export const DEFAULT_LABELS: CopilotLabels = {
   toolRunning: 'Running',
   toolCompleted: 'completed',
   toolFailed: 'failed',
+  approvalTitle: 'Approval required',
+  approvalPending: 'Waiting for approval',
+  approvalApproved: 'Approved',
+  approvalRejected: 'Not approved',
+  approvalExpired: 'Approval expired',
+  approvalApprove: 'Approve',
+  approvalReject: 'Reject',
+  approvalCommentPlaceholder: 'Add a comment (optional)',
+  approvalRequires: 'Requires',
+  approvalPreviewTitle: 'This would change',
+  denialTitle: 'Action not permitted',
 };

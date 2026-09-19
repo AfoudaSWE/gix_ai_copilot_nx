@@ -140,6 +140,9 @@ export function createToolRuntime(options: CreateToolRuntimeOptions): ToolRuntim
 
   async function coreExecute(invocation: ToolInvocationRequest): Promise<ToolResult> {
     const { toolCallId, name, context } = invocation;
+    if (context.signal.aborted) {
+      return { status: 'error', toolCallId, error: CopilotError.cancelled().toPublicJSON() };
+    }
 
     const tool = await resolveTool(
       options.resolver,
@@ -167,6 +170,7 @@ export function createToolRuntime(options: CreateToolRuntimeOptions): ToolRuntim
     const timeoutMs = tool.metadata?.timeoutMs ?? options.defaultTimeoutMs;
     let rawOutput: unknown;
     try {
+      if (context.signal.aborted) throw new ToolAbortedSignal();
       rawOutput = await raceWithDeadline(
         tool.execute(parsedInput.data, context),
         context.signal,

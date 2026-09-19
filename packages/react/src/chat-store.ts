@@ -1,10 +1,12 @@
 import type { ClientModelReference, ClientRun, CopilotClient } from '@gixcopilot/client';
 import { CopilotError, createMessageId, createThreadId } from '@gixcopilot/protocol';
-import type { CopilotEvent, PublicCopilotError, ToolManifestEntry } from '@gixcopilot/protocol';
+import type { CopilotEvent, PublicCopilotError, ToolResult, ToolManifestEntry } from '@gixcopilot/protocol';
 import type { ToolRuntime } from '@gixcopilot/tools';
-import type { ChatSnapshot, CopilotAccess, CopilotMessage, ToolCallState } from './types.js';
+import type { ApprovalState, ChatSnapshot, CopilotAccess, CopilotMessage, ToolCallState } from './types.js';
 
 interface ActiveRun {
+  readonly action?: { readonly name: string; readonly arguments: Readonly<Record<string, unknown>> };
+  resolveAction?: (result: ToolResult) => void;
   handle?: ClientRun;
   runId?: string;
   sequence: number;
@@ -64,6 +66,7 @@ export function createChatStore(
     usage: undefined,
     finishReason: undefined,
     toolCalls: [],
+    approvals: [],
   };
   let state: ChatSnapshot = initial;
   let active: ActiveRun | undefined;
@@ -98,6 +101,15 @@ export function createChatStore(
       ...state,
       toolCalls: state.toolCalls.map((toolCall) =>
         toolCall.id === id ? { ...toolCall, ...patch } : toolCall,
+      ),
+    });
+  }
+
+  function updateApproval(approvalId: string, patch: Partial<ApprovalState>): void {
+    publish({
+      ...state,
+      approvals: state.approvals.map((approval) =>
+        approval.approvalId === approvalId ? { ...approval, ...patch } : approval,
       ),
     });
   }
@@ -211,6 +223,7 @@ export function createChatStore(
           status: 'stopped',
           error: null,
           finishReason: 'cancelled',
+        approvals: state.approvals.map((approval) => approval.status === 'pending' ? { ...approval, status: 'cancelled' as const } : approval),
         });
         break;
       case 'run.failed':
@@ -241,10 +254,46 @@ export function createChatStore(
         updateToolCall(event.toolCallId, { status: 'running' });
         break;
       case 'tool.completed':
+        token.resolveAction?.({ status: 'success', toolCallId: event.toolCallId, data: event.result });
+        token.resolveAction = undefined;
         updateToolCall(event.toolCallId, { status: 'succeeded', result: event.result });
         break;
       case 'tool.failed':
+        token.resolveAction?.({ status: 'error', toolCallId: event.toolCallId, error: event.error });
+        token.resolveAction = undefined;
         updateToolCall(event.toolCallId, { status: 'failed', error: event.error });
+        break;
+      case 'approval.requested':
+        if (state.approvals.some((approval) => approval.approvalId === event.approvalId)) return;
+        publish({
+          ...state,
+          status: 'waiting_for_approval',
+          error: null,
+          approvals: [
+            ...state.approvals,
+            {
+              approvalId: event.approvalId,
+              toolCallId: event.toolCallId,
+              action: event.action,
+              approvalLevel: event.approvalLevel,
+              summary: event.summary,
+              status: 'pending',
+              risk: event.risk,
+              reversibility: event.reversibility,
+              expiresAt: event.expiresAt,
+              preview: event.preview,
+            },
+          ],
+        });
+        break;
+      case 'approval.approved':
+        updateApproval(event.approvalId, { status: 'approved', decidedBy: event.decidedBy });
+        break;
+      case 'approval.rejected':
+        updateApproval(event.approvalId, { status: 'rejected', decidedBy: event.decidedBy });
+        break;
+      case 'approval.expired':
+        updateApproval(event.approvalId, { status: 'expired' });
         break;
     }
   }
@@ -264,6 +313,7 @@ export function createChatStore(
         model,
         messages,
         tools: resolveToolManifest?.(),
+        action: token.action,
       });
       if (active !== token) return;
       for await (const event of token.handle.events) {
@@ -286,6 +336,8 @@ export function createChatStore(
         );
       }
     } finally {
+      token.resolveAction?.({ status: 'error', toolCallId: 'cancelled', error: CopilotError.cancelled().toPublicJSON() });
+      token.resolveAction = undefined;
       token.handle?.cancel();
       abortFrontendToolCalls(token);
     }
@@ -298,9 +350,9 @@ export function createChatStore(
     token.frontendToolControllers.clear();
   }
 
-  function start(history: readonly CopilotMessage[]): boolean {
+  function start(history: readonly CopilotMessage[], action?: ActiveRun["action"], resolveAction?: ActiveRun["resolveAction"]): boolean {
     if (active || !enabled) return false;
-    const token: ActiveRun = { sequence: 0, frontendToolControllers: new Map() };
+    const token: ActiveRun = { sequence: 0, frontendToolControllers: new Map(), action, resolveAction };
     active = token;
     replay = history;
     publish({
@@ -312,6 +364,7 @@ export function createChatStore(
       usage: undefined,
       finishReason: undefined,
       toolCalls: [],
+      approvals: [],
     });
     void consume(token, history);
     return true;
@@ -319,6 +372,16 @@ export function createChatStore(
 
   const access: CopilotAccess = {
     client,
+    invokeTool(name, args) {
+      return new Promise<ToolResult>((resolve) => {
+        const accepted = start(state.messages.length ? state.messages : [{
+          id: createMessageId(), threadId: state.thread?.id ?? createThreadId(), role: 'user',
+          content: [{ type: 'text', text: `Requested action: ${name}` }],
+          createdAt: new Date().toISOString(), status: 'complete',
+        }], { name, arguments: args }, resolve);
+        if (!accepted) resolve({ status: 'error', toolCallId: 'busy', error: CopilotError.validation('A run is already active.').toPublicJSON() });
+      });
+    },
     sendMessage(text) {
       if (!text.trim() || active || !enabled) return false;
       const thread = state.thread ?? {
@@ -348,6 +411,7 @@ export function createChatStore(
         status: 'stopped',
         error: null,
         finishReason: 'cancelled',
+        approvals: state.approvals.map((approval) => approval.status === 'pending' ? { ...approval, status: 'cancelled' as const } : approval),
       });
     },
     retry: () => state.status === 'error' && replay !== undefined && start(replay),
@@ -360,6 +424,8 @@ export function createChatStore(
       replay = undefined;
       publish(initial);
     },
+    approveAction: (approvalId, comment) => client.decideApproval(approvalId, 'approve', comment),
+    rejectAction: (approvalId, comment) => client.decideApproval(approvalId, 'reject', comment),
   };
 
   return {

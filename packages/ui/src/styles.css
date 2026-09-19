@@ -462,3 +462,17 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Phase 7 approval controls: logical spacing supports RTL and narrow screens. */
+.gix-approval-list { list-style: none; margin: 0; padding: 12px; display: grid; gap: 12px; }
+.gix-approval-card { border: 1px solid #91a99b; background: #f7faf7; color: #173b36; border-radius: 12px; padding: 16px; margin-block: 12px; overflow-wrap: anywhere; }
+.gix-approval-title { font-weight: 700; margin-block-start: 0; }
+.gix-approval-risk { font-size: .85em; }
+.gix-approval-actions { display: grid; gap: 8px; }
+.gix-approval-comment { min-inline-size: 0; inline-size: 100%; padding: 10px; border: 1px solid #80998a; border-radius: 6px; font: inherit; }
+.gix-approval-buttons { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+.gix-approval-buttons button { padding: 10px 18px; min-block-size: 44px; border: 1px solid #6a8976; border-radius: 6px; cursor: pointer; }
+.gix-approval-approve { background: #1c5141; color: white; }
+.gix-approval-reject { background: white; color: #173b36; }
+.gix-approval-card button:focus-visible, .gix-approval-card input:focus-visible { outline: 3px solid #267457; outline-offset: 3px; }
+.gix-security-denial { color: #a02525; padding-block: 8px; }

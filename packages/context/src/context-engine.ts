@@ -21,6 +21,8 @@ const DEFAULT_MAX_CONTEXT_TOKENS = 8000;
 const MIN_COMPRESSIBLE_BUDGET_TOKENS = 16;
 
 export interface ContextEngineOptions {
+  /** Filters structured values before serialization or truncation. Throws fail closed per item. */
+  readonly dataPolicy?: { redact(data: unknown): unknown };
   /** Total token budget resolved context may consume. Default 8000 (Section 25). */
   readonly maxContextTokens?: number;
   readonly estimator?: TokenEstimator;
@@ -92,7 +94,7 @@ export function createContextEngine(options: ContextEngineOptions = {}): Context
       }
 
       try {
-        const serialized = serializer.serialize(item.value);
+        const serialized = serializer.serialize(options.dataPolicy ? options.dataPolicy.redact(item.value) : item.value);
         const text = formatContextItemBlock(item.name, item.scope, item.description, serialized.text);
         candidates.push({
           item,

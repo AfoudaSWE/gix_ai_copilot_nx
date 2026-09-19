@@ -45,6 +45,10 @@ export type {
   ToolCallStartedEvent,
   ToolCallCompletedEvent,
   ToolCallFailedEvent,
+  ApprovalRequestedEvent,
+  ApprovalApprovedEvent,
+  ApprovalRejectedEvent,
+  ApprovalExpiredEvent,
   CopilotEvent,
   CopilotEventType,
   UnknownCopilotEvent,
@@ -57,6 +61,13 @@ export type {
   ToolResult,
   ToolLifecycleEvent,
   ToolManifestEntry,
+  ToolActionRisk,
+  ToolActionReversibility,
+  ToolApprovalLevel,
+  DataClassification,
+  ToolSecurityManifest,
+  ToolChangePreview,
+  ToolActionPreview,
 } from './tool.js';
 
 export { parseEvent, serializeEvent } from './serialization.js';

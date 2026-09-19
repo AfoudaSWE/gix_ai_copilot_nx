@@ -4,7 +4,13 @@ import type { MessageRole, ContentPart } from './message.js';
 import type { Usage } from './usage.js';
 import type { PublicCopilotError } from './errors.js';
 import type { FinishReason } from './finish-reason.js';
-import type { ToolSource } from './tool.js';
+import type {
+  ToolActionPreview,
+  ToolActionRisk,
+  ToolActionReversibility,
+  ToolApprovalLevel,
+  ToolSource,
+} from './tool.js';
 
 /**
  * Naming convention (documented per the protocol-design skill's requirement to pick one
@@ -119,6 +125,53 @@ export interface ToolCallFailedEvent extends CopilotEventBase {
   readonly error: PublicCopilotError;
 }
 
+/**
+ * Human-in-the-loop approval lifecycle (Phase 7, Section 89). A paused run keeps its SSE
+ * connection open exactly the way a pending frontend tool call already does (Section 45) -
+ * `approval.requested` is the explicit "this run is now waiting for a human" signal Section 88
+ * asks for (in place of inventing a separate run-level state field: a client derives "waiting
+ * for approval" from having seen `approval.requested` with no subsequent resolution event for
+ * the same `approvalId`, and every resolution event closes that window unambiguously). A
+ * `deny` decision does NOT get its own event type - it reuses the existing `tool.failed` event
+ * with a Phase 7 error code (`PERMISSION_DENIED`, `POLICY_DENIED`, ...), per the action-
+ * firewall skill's "reuse existing run/tool events where appropriate."
+ */
+export interface ApprovalRequestedEvent extends CopilotEventBase {
+  readonly type: 'approval.requested';
+  readonly approvalId: string;
+  readonly toolCallId: ToolCallId;
+  readonly action: string;
+  readonly approvalLevel: ToolApprovalLevel;
+  readonly summary: string;
+  readonly risk?: ToolActionRisk;
+  readonly reversibility?: ToolActionReversibility;
+  readonly expiresAt?: string;
+  /** A dry-run preview (Section 48-51, 136), when the tool declares a `dryRun` capability -
+   * lets an Approval UI show "what would change" with no separate endpoint/round trip. */
+  readonly preview?: ToolActionPreview;
+}
+
+export interface ApprovalApprovedEvent extends CopilotEventBase {
+  readonly type: 'approval.approved';
+  readonly approvalId: string;
+  readonly toolCallId: ToolCallId;
+  readonly decidedBy?: string;
+}
+
+export interface ApprovalRejectedEvent extends CopilotEventBase {
+  readonly type: 'approval.rejected';
+  readonly approvalId: string;
+  readonly toolCallId: ToolCallId;
+  readonly decidedBy?: string;
+  readonly reason?: string;
+}
+
+export interface ApprovalExpiredEvent extends CopilotEventBase {
+  readonly type: 'approval.expired';
+  readonly approvalId: string;
+  readonly toolCallId: ToolCallId;
+}
+
 export type CopilotEvent =
   | RunStartedEvent
   | RunCompletedEvent
@@ -131,7 +184,11 @@ export type CopilotEvent =
   | ToolCallRequestedEvent
   | ToolCallStartedEvent
   | ToolCallCompletedEvent
-  | ToolCallFailedEvent;
+  | ToolCallFailedEvent
+  | ApprovalRequestedEvent
+  | ApprovalApprovedEvent
+  | ApprovalRejectedEvent
+  | ApprovalExpiredEvent;
 
 export type CopilotEventType = CopilotEvent['type'];
 

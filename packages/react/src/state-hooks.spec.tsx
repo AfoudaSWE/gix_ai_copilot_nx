@@ -15,6 +15,7 @@ function stubClient(): CopilotClient {
       return { cancel: vi.fn(), events: { async *[Symbol.asyncIterator]() {} } };
     },
     submitToolResult: vi.fn(() => Promise.resolve(undefined)),
+    decideApproval: vi.fn(() => Promise.resolve(undefined)),
   };
 }
 
