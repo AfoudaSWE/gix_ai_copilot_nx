@@ -1,0 +1,464 @@
+.gix-copilot {
+  --copilot-background: #ffffff;
+  --copilot-foreground: #202c40;
+  --copilot-surface: #f0f4fa;
+  --copilot-muted: #52617a;
+  --copilot-border: #d7dfeb;
+  --copilot-primary: #2457c6;
+  --copilot-on-primary: #ffffff;
+  --copilot-danger: #a32236;
+  --copilot-radius: 18px;
+  --copilot-font-family: 'Segoe UI', system-ui, sans-serif;
+  color-scheme: light;
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  inline-size: 100%;
+  block-size: 640px;
+  max-block-size: 100%;
+  font: 15px/1.6 var(--copilot-font-family);
+  color: var(--copilot-foreground);
+  background: var(--copilot-background);
+  border: 1px solid var(--copilot-border);
+  border-radius: var(--copilot-radius);
+  overflow: hidden;
+  text-align: start;
+  isolation: isolate;
+}
+.gix-copilot[data-theme='dark'] {
+  --copilot-background: #172235;
+  --copilot-foreground: #eef3fc;
+  --copilot-surface: #24334a;
+  --copilot-muted: #b5c3d9;
+  --copilot-border: #42536c;
+  --copilot-primary: #a6c4ff;
+  --copilot-on-primary: #142644;
+  --copilot-danger: #ffa7b5;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  .gix-copilot[data-theme='system'] {
+    --copilot-background: #172235;
+    --copilot-foreground: #eef3fc;
+    --copilot-surface: #24334a;
+    --copilot-muted: #b5c3d9;
+    --copilot-border: #42536c;
+    --copilot-primary: #a6c4ff;
+    --copilot-on-primary: #142644;
+    --copilot-danger: #ffa7b5;
+    color-scheme: dark;
+  }
+}
+.gix-copilot *,
+.gix-copilot *::before,
+.gix-copilot *::after {
+  box-sizing: border-box;
+}
+.gix-copilot button {
+  font: inherit;
+  cursor: pointer;
+  color: inherit;
+  background: var(--copilot-surface);
+  border: 1px solid var(--copilot-border);
+  border-radius: 9px;
+  padding: 8px 12px;
+  min-block-size: 40px;
+}
+.gix-copilot button:hover {
+  border-color: var(--copilot-primary);
+}
+.gix-copilot button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.gix-copilot :focus-visible,
+.gix-launcher:focus-visible,
+.gix-sidebar-toggle:focus-visible {
+  outline: 3px solid #4e84ec;
+  outline-offset: 3px;
+}
+.gix-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-block-end: 1px solid var(--copilot-border);
+  flex: 0 0 auto;
+}
+.gix-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-inline-size: 0;
+}
+.gix-header h2 {
+  font-size: 16px;
+  letter-spacing: -0.02em;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.gix-mark {
+  font-size: 24px;
+  color: var(--copilot-primary);
+}
+.gix-empty {
+  flex: 1;
+  min-block-size: 0;
+  overflow: auto;
+  padding: 30px 24px;
+}
+.gix-empty-mark {
+  display: block;
+  font-size: 40px;
+  color: var(--copilot-primary);
+  margin-block-end: 18px;
+}
+.gix-empty h3 {
+  font-size: 26px;
+  line-height: 1.2;
+  letter-spacing: -0.04em;
+  margin: 0 0 12px;
+}
+.gix-empty p {
+  color: var(--copilot-muted);
+  margin: 0 0 28px;
+}
+.gix-suggestions {
+  display: grid;
+  gap: 8px;
+}
+.gix-suggestions button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  text-align: start;
+  background: transparent;
+}
+[dir='rtl'] .gix-suggestions button > span,
+[dir='rtl'] .gix-primary > span {
+  display: inline-block;
+  transform: scaleX(-1);
+}
+.gix-history {
+  flex: 1;
+  min-block-size: 0;
+  position: relative;
+  display: flex;
+}
+.gix-message-list {
+  flex: 1;
+  min-inline-size: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 20px;
+}
+.gix-message {
+  margin-block-end: 26px;
+  overflow-wrap: anywhere;
+  min-inline-size: 0;
+}
+.gix-message-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--copilot-muted);
+  margin-block-end: 7px;
+}
+.gix-user {
+  margin-inline-start: 12%;
+}
+.gix-user .gix-message-label {
+  text-align: end;
+}
+.gix-user-text {
+  background: var(--copilot-surface);
+  padding: 12px 16px;
+  border-radius: 14px 14px 4px 14px;
+  white-space: pre-wrap;
+}
+[dir='rtl'] .gix-user-text {
+  border-radius: 14px 14px 14px 4px;
+}
+.gix-markdown {
+  min-inline-size: 0;
+}
+.gix-markdown > :first-child {
+  margin-block-start: 0;
+}
+.gix-markdown > :last-child {
+  margin-block-end: 0;
+}
+.gix-markdown p {
+  margin-block: 0 12px;
+}
+.gix-markdown h1,
+.gix-markdown h2,
+.gix-markdown h3 {
+  font-size: 1.15em;
+  line-height: 1.4;
+  margin-block: 18px 8px;
+}
+.gix-markdown a {
+  color: var(--copilot-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.gix-markdown ul,
+.gix-markdown ol {
+  padding-inline-start: 24px;
+}
+.gix-markdown blockquote {
+  border-inline-start: 3px solid var(--copilot-primary);
+  margin-inline: 0;
+  padding-inline-start: 14px;
+  color: var(--copilot-muted);
+}
+.gix-markdown code {
+  font:
+    13px/1.6 'Cascadia Code',
+    Consolas,
+    monospace;
+  padding: 2px 4px;
+  background: var(--copilot-surface);
+  border-radius: 4px;
+}
+.gix-code {
+  border: 1px solid var(--copilot-border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-block: 12px;
+}
+.gix-code-toolbar {
+  background: var(--copilot-surface);
+  padding: 4px 8px 4px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--copilot-muted);
+  font-size: 12px;
+}
+.gix-code-toolbar button {
+  font-size: 12px;
+  border: 0;
+}
+.gix-code pre {
+  overflow-x: auto;
+  margin: 0;
+  padding: 14px;
+  white-space: pre;
+}
+.gix-code pre code {
+  background: none;
+  padding: 0;
+}
+.gix-table-scroll {
+  overflow-x: auto;
+}
+.gix-markdown table {
+  border-collapse: collapse;
+  inline-size: 100%;
+}
+.gix-markdown th,
+.gix-markdown td {
+  border: 1px solid var(--copilot-border);
+  padding: 8px;
+  text-align: start;
+}
+.gix-typing,
+.gix-response-actions {
+  margin: 0;
+  padding: 8px 20px;
+  color: var(--copilot-muted);
+  font-size: 12px;
+}
+.gix-response-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.gix-response-actions button {
+  font-size: 12px;
+  background: transparent;
+}
+.gix-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 16px;
+  padding: 10px;
+  border: 1px solid var(--copilot-danger);
+  border-radius: 10px;
+  color: var(--copilot-danger);
+}
+.gix-composer {
+  padding: 12px 16px 16px;
+  border-block-start: 1px solid var(--copilot-border);
+  flex: 0 0 auto;
+}
+.gix-composer textarea {
+  resize: vertical;
+  min-block-size: 64px;
+  max-block-size: 150px;
+  inline-size: 100%;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  padding: 8px;
+}
+.gix-composer textarea::placeholder {
+  color: var(--copilot-muted);
+}
+.gix-composer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-block-start: 4px;
+}
+.gix-composer-footer small {
+  color: var(--copilot-muted);
+  font-size: 10px;
+}
+.gix-copilot .gix-primary {
+  background: var(--copilot-primary);
+  color: var(--copilot-on-primary);
+  border-color: transparent;
+  white-space: nowrap;
+}
+.gix-copilot .gix-jump {
+  position: absolute;
+  inset-block-end: 12px;
+  inset-inline-end: 20px;
+  box-shadow: 0 2px 14px #0002;
+}
+.gix-sr-only {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+.gix-stream-cursor {
+  display: inline-block;
+  inline-size: 6px;
+  block-size: 14px;
+  background: var(--copilot-primary);
+  animation: gix-pulse 1s ease-in-out infinite alternate;
+}
+@keyframes gix-pulse {
+  to {
+    opacity: 0.3;
+  }
+}
+.gix-launcher {
+  position: fixed;
+  inset-block-end: 24px;
+  inset-inline-end: 24px;
+  z-index: 100;
+  border: 1px solid #3561b5;
+  border-radius: 999px;
+  padding: 14px 20px;
+  background: #2457c6;
+  color: white;
+  font:
+    600 14px 'Segoe UI',
+    system-ui,
+    sans-serif;
+  cursor: pointer;
+  box-shadow: 0 6px 24px #183d7930;
+}
+.gix-launcher span {
+  margin-inline-end: 6px;
+}
+.gix-popup {
+  position: fixed;
+  inset: auto;
+  inset-inline-end: 24px;
+  inset-block-end: 24px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 18px;
+  inline-size: min(420px, calc(100vw - 32px));
+  max-inline-size: none;
+  block-size: min(680px, calc(100dvh - 48px));
+  max-block-size: none;
+  background: transparent;
+  box-shadow: 0 20px 80px #09183035;
+}
+.gix-popup::backdrop {
+  background: #14243a36;
+}
+.gix-popup .gix-copilot {
+  block-size: 100%;
+}
+.gix-popup-root[data-placement='start'] .gix-launcher,
+.gix-popup-root[data-placement='start'] .gix-popup {
+  inset-inline-end: auto;
+  inset-inline-start: 24px;
+}
+.gix-sidebar-root {
+  inline-size: min(400px, 100%);
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.gix-sidebar-root[data-placement='start'] {
+  order: -1;
+}
+.gix-sidebar-root aside {
+  min-block-size: 0;
+  flex: 1;
+}
+.gix-sidebar-root .gix-copilot {
+  block-size: 100%;
+  min-block-size: 420px;
+}
+.gix-sidebar-toggle {
+  align-self: flex-end;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+@media (max-width: 520px) {
+  .gix-popup,
+  .gix-popup-root[data-placement='start'] .gix-popup {
+    inset-inline: 8px;
+    inset-block-end: 8px;
+    inline-size: calc(100vw - 16px);
+    block-size: calc(100dvh - 16px);
+  }
+  .gix-message-list {
+    padding: 16px;
+  }
+  .gix-composer-footer small {
+    max-inline-size: 150px;
+  }
+  .gix-copilot button {
+    min-block-size: 44px;
+  }
+  .gix-sidebar-root {
+    inline-size: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gix-copilot * {
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}

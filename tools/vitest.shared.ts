@@ -11,6 +11,8 @@ import { fileURLToPath } from 'node:url';
 const workspaceRoot = fileURLToPath(new URL('..', import.meta.url));
 
 export const workspaceAliases = {
+  '@gixcopilot/react': `${workspaceRoot}packages/react/src/index.ts`,
+  '@gixcopilot/ui': `${workspaceRoot}packages/ui/src/index.ts`,
   '@gixcopilot/protocol': `${workspaceRoot}packages/protocol/src/index.ts`,
   '@gixcopilot/core': `${workspaceRoot}packages/core/src/index.ts`,
   '@gixcopilot/client': `${workspaceRoot}packages/client/src/index.ts`,

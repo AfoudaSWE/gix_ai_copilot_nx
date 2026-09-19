@@ -3,9 +3,10 @@
 A production-grade, TypeScript-first AI Copilot & Agent SDK. Framework-independent core,
 with React/Angular, Node.js server, and LLM provider adapters layered on top.
 
-> **Current status: Phase 2 — LLM Runtime & Streaming.** Phase 1 (foundation) and Phase 2
-> (a provider-independent model runtime) are complete. There is no agent runtime, no tools,
-> no RAG, and no UI yet. What exists: a transport-independent protocol, a
+> **Current status: Phase 3 — React Copilot UI COMPLETE.** Phases 1–3 are complete. Phase 3 adds
+> a headless React SDK and optional chat/popup/sidebar components, with credential-free
+> examples and browser tests. There is no agent runtime, tools, RAG or application context
+> engine. The foundation remains a transport-independent protocol, a
 > framework-independent core runtime, an HTTP/SSE server, a streaming client, and a real
 > model execution layer (retry, timeout, cancellation, usage, latency, normalized errors)
 > proven against both a deterministic mock provider and real OpenAI streaming. See
@@ -33,6 +34,9 @@ Client -> Server -> Core -> (default executor | Model Runtime -> Provider) -> SS
 - **`@gixcopilot/server`** — a Fastify HTTP/SSE adapter, routing a request to either the
   default executor or a named model.
 - **`@gixcopilot/client`** — a framework-independent streaming client (no React/Angular).
+- **`@gixcopilot/react`** — provider, headless chat hooks, streaming state and actions.
+- **`@gixcopilot/ui`** — chat/popup/sidebar, safe Markdown, accessible controls and themes.
+- **`examples/react-basic` / `examples/react-custom-ui`** — styled and headless React examples.
 - **`examples/protocol-demo`** — the Phase 1 proof (no AI), CLI + integration test.
 - **`examples/model-streaming`** — the Phase 2 proof (mock by default, optional real
   OpenAI), CLI + mandatory mock integration test + optional real-provider smoke test.
@@ -45,6 +49,8 @@ packages/
   core/                 @gixcopilot/core
   client/               @gixcopilot/client
   server/               @gixcopilot/server
+  react/                @gixcopilot/react (headless)
+  ui/                   @gixcopilot/ui (optional components + CSS)
   providers/
     provider-core/      @gixcopilot/provider
     mock/               @gixcopilot/provider-mock
@@ -52,10 +58,13 @@ packages/
 examples/
   protocol-demo/        Phase 1 end-to-end CLI demo + integration test
   model-streaming/       Phase 2 end-to-end CLI demo + integration test + optional OpenAI smoke test
+  react-basic/           Phase 3 interface lab + mock server + integration tests
+  react-custom-ui/       Phase 3 headless-only example
 docs/
   architecture/         architecture overview
   adr/                  architecture decision records
   phases/phase-02/      Phase 2's own documentation set
+  phases/phase-03/      Phase 3 API, validation, completion and handoff
   PROJECT_STATUS.md, DECISIONS.md, TECHNICAL_DEBT.md
 .claude/
   skills/               the engineering skill system this project is built against
@@ -64,9 +73,10 @@ docs/
 Dependency direction (enforced by `@nx/enforce-module-boundaries`, see `eslint.config.js`):
 
 ```text
-protocol  <-  core  <-  server  <-  provider
-protocol  <-  client
+protocol  <-  core  <-  server
+protocol  <-  client  <-  react  <-  ui
 protocol  <-  core  <-  provider  <-  provider-mock, provider-openai (never each other)
+provider  <-  server
 ```
 
 `protocol` depends on nothing else in the workspace. `core` depends only on `protocol` —
@@ -87,6 +97,8 @@ pnpm build          # nx run-many -t build
 pnpm validate       # all four, in one call
 
 pnpm demo           # run the Phase 1 end-to-end CLI demo
+pnpm demo:react      # after build: React examples on 5173/5174, mock server on 4318
+pnpm test:e2e        # builds examples and runs credential-free Chromium tests
 ```
 
 Each command also works scoped to a single project, e.g. `pnpm --filter @gixcopilot/core test`,
@@ -95,6 +107,28 @@ or via Nx directly: `npx nx run core:test`, `npx nx run-many -t test --projects=
 Run the Phase 2 model-streaming demo with `pnpm --filter @gixcopilot/model-streaming-demo run demo`
 (mock provider by default; set `OPENAI_API_KEY` and `MODEL_PROVIDER=openai` for real
 streaming — see [`examples/model-streaming/README.md`](examples/model-streaming/README.md)).
+
+For React, run `pnpm build && pnpm demo:react`, then open <http://127.0.0.1:5173>.
+The standalone headless example is on port 5174. Both use the existing runtime through
+HTTP/SSE. For browser tests, first run `pnpm exec playwright install chromium`.
+
+```tsx
+import { CopilotProvider } from '@gixcopilot/react';
+import { CopilotPopup } from '@gixcopilot/ui';
+import '@gixcopilot/ui/styles.css';
+
+export function App() {
+  return (
+    <CopilotProvider runtimeUrl="/api/copilot">
+      <CopilotPopup suggestions={['Explain SSE']} />
+    </CopilotProvider>
+  );
+}
+```
+
+The runtime URL is a base URL; requests go to `/api/copilot/runs`. See the
+[React API](docs/phases/phase-03/Phase_3_API.md) for custom clients and headless hooks.
+Packages remain private workspace packages; no npm release was performed.
 
 ## Testing
 

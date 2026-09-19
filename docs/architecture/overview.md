@@ -1,4 +1,36 @@
-# Architecture Overview — Phase 2
+# Architecture Overview — Phase 3
+
+Phase 3 adds the following client-side layers while preserving the Phase 1–2 flow below:
+
+```text
+                         Protocol
+                        /        \
+                    Client       Core
+                      ^          ^  ^
+                      |          |  Model Runtime <- Providers
+               @gixcopilot/react |       ^
+                   ^       ^     Server -+
+                   |       |
+               Custom UI   @gixcopilot/ui
+                             /   |   \
+                           Chat Popup Sidebar
+```
+
+Dependency arrows point toward consumers above: UI depends on React; React on Client and
+Protocol. Core still has no provider/framework dependency. The server composes the core
+and model-runtime interfaces; provider adapters implement those interfaces.
+
+`@gixcopilot/react` supplies an isolated provider, immutable local chat snapshots and narrow
+hooks. It consumes the client's public event stream and cancellation API.
+`@gixcopilot/ui` supplies composable views, safe Markdown, theming and accessibility, and
+depends only on React SDK workspace APIs. Custom UIs require no UI package. Nx enforces
+`scope:react` → react/client/protocol and `scope:ui` → ui/react. The two React examples
+compose this with the existing real HTTP/SSE stack and deterministic mock provider.
+
+Full state/lifecycle diagrams and tradeoffs:
+[Phase 3 Architecture](../phases/phase-03/Phase_3_Architecture.md),
+[ADR 0007](../adr/0007-headless-react-state-and-lifecycle.md),
+[ADR 0008](../adr/0008-copilot-ui-rendering-and-styling.md).
 
 ## Request Flow
 
@@ -98,7 +130,8 @@ Enforced two ways:
    Phase 1, `provider-mock -> provider-openai` in Phase 2) and confirming `eslint` rejects
    it, then reverting.
 
-This is the Phase 1+2 slice of the long-term target architecture:
+The backend above remains the Phase 1+2 slice of the long-term architecture. React is now
+implemented in Phase 3; Angular and subsequent capabilities remain unimplemented:
 
 ```text
 Framework SDKs (React, Angular)         <- Phase 3, 12

@@ -28,6 +28,12 @@
 
 ## Resolved
 
+Phase 3 review: the new React/UI package file lists exclude compiled specs from packing.
+The older package test-output cleanup in item 1 remains open. Phase 3 does not add a
+virtualization/throttling framework without measurements; long-history performance remains
+an explicit validation limit in `docs/phases/phase-03/Phase_3_Issues.md`, not a promised
+optimization. No Phase 4+ feature is tracked as Phase 3 debt.
+
 - ~~Server cancelled every run almost immediately due to listening for client-disconnect on
   the wrong stream (`request.raw` instead of `reply.raw`).~~ Fixed during Phase 1
   validation — see `docs/adr/0004-sse-as-initial-streaming-transport.md`.

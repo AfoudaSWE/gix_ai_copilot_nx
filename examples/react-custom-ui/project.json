@@ -1,0 +1,38 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "react-custom-ui",
+  "projectType": "application",
+  "sourceRoot": "examples/react-custom-ui/src",
+  "tags": ["scope:example", "type:app"],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run build",
+        "cwd": "examples/react-custom-ui"
+      },
+      "outputs": ["{projectRoot}/dist", "{projectRoot}/web-dist"]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run typecheck",
+        "cwd": "examples/react-custom-ui"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run test",
+        "cwd": "examples/react-custom-ui"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run lint",
+        "cwd": "examples/react-custom-ui"
+      }
+    }
+  }
+}

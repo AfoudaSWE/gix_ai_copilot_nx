@@ -1,0 +1,24 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "react-e2e",
+  "projectType": "application",
+  "sourceRoot": "tests/browser",
+  "tags": ["scope:example", "type:app"],
+  "implicitDependencies": ["react-basic", "react-custom-ui"],
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": { "command": "tsc -p tests/browser/tsconfig.json" }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": { "command": "eslint tests/browser/*.ts" }
+    },
+    "e2e": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": false,
+      "options": { "command": "playwright test" }
+    }
+  }
+}

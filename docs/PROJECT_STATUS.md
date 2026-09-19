@@ -11,7 +11,7 @@
 ```text
 Phase 01 - Foundation & Architecture           COMPLETE
 Phase 02 - LLM Runtime & Streaming             COMPLETE
-Phase 03 - React Copilot UI                    NOT STARTED / LOCKED
+Phase 03 - React Copilot UI                    COMPLETE
 Phase 04 - Application Context & State         NOT STARTED / LOCKED
 Phase 05 - Tools & Agent Actions               NOT STARTED / LOCKED
 Phase 06 - Generative UI & Shared State        NOT STARTED / LOCKED
@@ -44,7 +44,28 @@ phase is started without an explicit instruction naming it.
 - Full record: `docs/phases/phase-02/`, `docs/adr/0006-model-provider-abstraction.md`,
   `examples/model-streaming/`.
 
-## Validation (as of Phase 2 completion)
+## Phase 3 — React Copilot UI (COMPLETE)
+
+- Added `@gixcopilot/react`: provider, headless chat/message/status/thread hooks and stable
+  actions over the existing client. No React or UI dependencies added to core/client.
+- Added `@gixcopilot/ui`: composable chat/popup/sidebar, safe Markdown/code, themes,
+  responsive RTL layout, accessible focus/input/live-region behavior and customization.
+- Added styled/headless React examples, real-stack integration and Chromium browser tests.
+- Full record: [Phase 3 docs](phases/phase-03/Phase_3_Docs.md),
+  [completion report](phases/phase-03/Phase_3_Status.md), ADRs 0007–0008.
+- Phase 4 remains **LOCKED / NOT STARTED**.
+
+## Current Validation (Phase 3 completion)
+
+Fresh `nx run-many -t lint,typecheck,test,build --skip-nx-cache` passed the available targets
+across all 14 projects. **159 tests passed, 1 existing optional OpenAI smoke test skipped**
+without credentials. **6 Chromium E2E tests passed**, including mobile RTL/dark mode,
+keyboard/focus, streaming/stop/retry, headless UI and long-response scrolling. Node-only SSR,
+dependency-boundary rejection probes and package tarball inspection also passed. See the
+[completion report](phases/phase-03/Phase_3_Status.md) and
+[testing evidence](phases/phase-03/Phase_3_Testing.md).
+
+## Validation (historical Phase 2 completion)
 
 `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build` all pass across all 9 buildable
 projects (`protocol`, `core`, `client`, `server`, `provider`, `provider-mock`,

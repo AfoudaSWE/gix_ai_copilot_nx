@@ -15,7 +15,9 @@
     "lint": "nx run-many -t lint",
     "validate": "nx run-many -t lint,typecheck,test,build",
     "graph": "nx graph",
-    "demo": "pnpm --filter @gixcopilot/protocol-demo run demo"
+    "demo": "pnpm --filter @gixcopilot/protocol-demo run demo",
+    "demo:react": "node tools/dev-react.mjs",
+    "test:e2e": "nx run react-e2e:e2e"
   },
   "devDependencies": {
     "@nx/eslint-plugin": "21.6.11",
@@ -26,6 +28,8 @@
     "prettier": "3.9.8",
     "typescript": "5.9.3",
     "typescript-eslint": "8.70.0",
-    "vitest": "5.0.1"
+    "vitest": "5.0.1",
+    "@playwright/test": "1.63.0",
+    "axe-core": "4.13.0"
   }
 }

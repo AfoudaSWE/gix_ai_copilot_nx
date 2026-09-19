@@ -14,3 +14,8 @@
 | [0006](adr/0006-model-provider-abstraction.md)           | `@gixcopilot/provider` depends on `core` (not the reverse); `Executor` extended additively with `ExecutorCompletion`; `messages` replaces `message`; retry lives only in `ModelRuntime`, never in a provider adapter |
 
 Add a new row here whenever a new ADR is added under `docs/adr/`.
+
+| Phase 3 ADR | Decision |
+| --- | --- |
+| [0007](adr/0007-headless-react-state-and-lifecycle.md) | Headless React/UI split; scoped external store; one active run; cancellation, retry/regenerate and configuration lifecycle; React 19 peers |
+| [0008](adr/0008-copilot-ui-rendering-and-styling.md) | Exported CSS tokens/themes; native popup + Tab wrap/nonmodal sidebar; safe Markdown/GFM; component slots; examples instead of Storybook |

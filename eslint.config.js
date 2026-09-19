@@ -19,6 +19,9 @@ export default tseslint.config(
   {
     ignores: [
       '**/dist/**',
+      '**/web-dist/**',
+      '**/test-results/**',
+      '**/playwright-report/**',
       '**/coverage/**',
       '**/node_modules/**',
       '**/*.config.js',
@@ -47,6 +50,14 @@ export default tseslint.config(
           enforceBuildableLibDependency: true,
           allow: [],
           depConstraints: [
+            {
+              sourceTag: 'scope:react',
+              onlyDependOnLibsWithTags: ['scope:react', 'scope:client', 'scope:protocol'],
+            },
+            {
+              sourceTag: 'scope:ui',
+              onlyDependOnLibsWithTags: ['scope:ui', 'scope:react'],
+            },
             {
               sourceTag: 'scope:protocol',
               onlyDependOnLibsWithTags: ['scope:protocol'],
@@ -79,6 +90,8 @@ export default tseslint.config(
             {
               sourceTag: 'scope:example',
               onlyDependOnLibsWithTags: [
+                'scope:react',
+                'scope:ui',
                 'scope:protocol',
                 'scope:core',
                 'scope:client',

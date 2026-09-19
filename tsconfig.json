@@ -1,14 +1,44 @@
 {
   "files": [],
   "references": [
-    { "path": "packages/protocol" },
-    { "path": "packages/core" },
-    { "path": "packages/client" },
-    { "path": "packages/server" },
-    { "path": "packages/providers/provider-core" },
-    { "path": "packages/providers/mock" },
-    { "path": "packages/providers/openai" },
-    { "path": "examples/protocol-demo" },
-    { "path": "examples/model-streaming" }
+    {
+      "path": "packages/protocol"
+    },
+    {
+      "path": "packages/core"
+    },
+    {
+      "path": "packages/client"
+    },
+    {
+      "path": "packages/server"
+    },
+    {
+      "path": "packages/providers/provider-core"
+    },
+    {
+      "path": "packages/providers/mock"
+    },
+    {
+      "path": "packages/providers/openai"
+    },
+    {
+      "path": "examples/protocol-demo"
+    },
+    {
+      "path": "examples/model-streaming"
+    },
+    {
+      "path": "packages/react"
+    },
+    {
+      "path": "packages/ui"
+    },
+    {
+      "path": "examples/react-basic"
+    },
+    {
+      "path": "examples/react-custom-ui"
+    }
   ]
 }

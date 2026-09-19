@@ -1,0 +1,34 @@
+'use client';
+
+export {
+  CopilotChat,
+  ChatHeader,
+  MessageList,
+  UserMessage,
+  AssistantMessage,
+  ChatInput,
+  SendButton,
+  StopButton,
+  RetryButton,
+  RegenerateButton,
+  Suggestions,
+  EmptyState,
+  TypingIndicator,
+  ErrorMessage,
+} from './components.js';
+export type {
+  CopilotChatProps,
+  CopilotComponents,
+  ChatHeaderProps,
+  MessageProps,
+  MessageListProps,
+  ChatInputProps,
+  SuggestionsProps,
+  EmptyStateProps,
+} from './components.js';
+export { CopilotPopup, CopilotSidebar } from './panels.js';
+export type { CopilotPanelProps } from './panels.js';
+export { Markdown, CodeBlock } from './markdown.js';
+export type { MarkdownProps, CodeBlockProps } from './markdown.js';
+export { DEFAULT_LABELS } from './labels.js';
+export type { CopilotLabels } from './labels.js';

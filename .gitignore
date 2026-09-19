@@ -7,6 +7,9 @@ dist/
 
 # test coverage
 coverage/
+web-dist/
+playwright-report/
+test-results/
 
 # nx
 .nx/cache/
