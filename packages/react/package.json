@@ -27,7 +27,9 @@
   "dependencies": {
     "@gixcopilot/client": "workspace:*",
     "@gixcopilot/context": "workspace:*",
-    "@gixcopilot/protocol": "workspace:*"
+    "@gixcopilot/protocol": "workspace:*",
+    "@gixcopilot/tools": "workspace:*",
+    "zod": "4.6.5"
   },
   "peerDependencies": {
     "react": "^19.0.0"

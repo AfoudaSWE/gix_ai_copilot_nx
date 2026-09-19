@@ -1,4 +1,10 @@
-import type { ContentPart, CopilotEvent, MessageRole } from '@gixcopilot/protocol';
+import type {
+  ContentPart,
+  CopilotEvent,
+  MessageRole,
+  ToolManifestEntry,
+  ToolResult,
+} from '@gixcopilot/protocol';
 import type { ClientModelReference } from './client.js';
 
 export interface TransportMessageInput {
@@ -10,6 +16,8 @@ export interface TransportRunRequest {
   readonly threadId?: string;
   readonly model?: ClientModelReference;
   readonly messages: readonly TransportMessageInput[];
+  /** Added in Phase 5 - frontend tools registered for this run only (Section 45-46). */
+  readonly tools?: readonly ToolManifestEntry[];
   readonly signal?: AbortSignal;
 }
 
@@ -22,4 +30,7 @@ export interface TransportRunRequest {
 export interface CopilotTransport {
   run(request: TransportRunRequest): AsyncIterable<CopilotEvent>;
   cancel(runId: string): Promise<void>;
+  /** Added in Phase 5 (Section 50) - reports a frontend tool's outcome back to the server so
+   * a suspended Model -> Tool -> Model loop can resume. */
+  submitToolResult(runId: string, toolCallId: string, result: ToolResult): Promise<void>;
 }

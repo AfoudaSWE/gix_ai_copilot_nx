@@ -1,4 +1,5 @@
 import { CopilotError, type CopilotEvent, type PublicCopilotError } from '@gixcopilot/protocol';
+import type { ToolResult } from '@gixcopilot/protocol';
 import type { CopilotTransport, TransportRunRequest } from './transport.js';
 import { parseSseStream } from './sse-stream.js';
 
@@ -45,6 +46,9 @@ export function createSseTransport(options: SseTransportOptions): CopilotTranspo
             ...(request.threadId !== undefined ? { threadId: request.threadId } : {}),
             ...(request.model !== undefined ? { model: request.model } : {}),
             messages: request.messages,
+            ...(request.tools !== undefined && request.tools.length > 0
+              ? { tools: request.tools }
+              : {}),
           }),
           signal: request.signal,
         });
@@ -87,6 +91,22 @@ export function createSseTransport(options: SseTransportOptions): CopilotTranspo
       });
       if (!response.ok && response.status !== 404) {
         throw CopilotError.transport(`Cancel request failed with HTTP ${response.status}`);
+      }
+    },
+
+    async submitToolResult(runId: string, toolCallId: string, result: ToolResult): Promise<void> {
+      const response = await fetchImpl(
+        `${baseUrl}/runs/${encodeURIComponent(runId)}/tool-results`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ toolCallId, result }),
+        },
+      );
+      if (!response.ok) {
+        throw CopilotError.transport(
+          `Submitting the frontend tool result failed with HTTP ${response.status}`,
+        );
       }
     },
   };

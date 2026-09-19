@@ -40,6 +40,14 @@ function describeEventType(event: CopilotEvent): string {
       return `message ended (${event.content.length} parts)`;
     case 'error':
       return `error (${event.error.code})`;
+    case 'tool.requested':
+      return `tool requested (${event.name})`;
+    case 'tool.started':
+      return `tool started (${event.name})`;
+    case 'tool.completed':
+      return `tool completed (${event.name})`;
+    case 'tool.failed':
+      return `tool failed (${event.name})`;
     default: {
       const exhaustive: never = event;
       throw new Error(`Unhandled event type: ${JSON.stringify(exhaustive)}`);

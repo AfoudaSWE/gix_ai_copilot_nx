@@ -281,4 +281,58 @@ describe('createModelRuntime', () => {
     const completed = events.at(-1);
     expect(completed?.type === 'model.completed' && completed.usage).toBeUndefined();
   });
+
+  it('passes tools through to the provider request and forwards a tool_call.requested event', async () => {
+    let seenTools: unknown;
+    const provider: ModelProvider = {
+      id: 'mock',
+      async *stream(request) {
+        await Promise.resolve();
+        seenTools = request.tools;
+        yield {
+          type: 'tool_call.requested',
+          toolCall: { id: 'call-1', name: 'math.add', arguments: { a: 1, b: 2 } },
+        };
+        yield { type: 'model.completed', finishReason: 'tool_calls' };
+      },
+    };
+    const runtime = createModelRuntime({ providers: [provider] });
+    const tools = [{ name: 'math.add', description: 'Add', parameters: { type: 'object' } }];
+
+    const events = await collect(
+      runtime.stream({ model: { provider: 'mock', model: 'x' }, messages: [], tools }),
+    );
+
+    expect(seenTools).toEqual(tools);
+    expect(events.map((event) => event.type)).toEqual(['tool_call.requested', 'model.completed']);
+    const toolCallEvent = events.find((event) => event.type === 'tool_call.requested');
+    expect(toolCallEvent?.type === 'tool_call.requested' && toolCallEvent.toolCall.name).toBe(
+      'math.add',
+    );
+  });
+
+  it('does not retry after a tool call has already been emitted, even if the stream then fails', async () => {
+    let attempts = 0;
+    const provider: ModelProvider = {
+      id: 'mock',
+      async *stream() {
+        await Promise.resolve();
+        attempts += 1;
+        yield {
+          type: 'tool_call.requested',
+          toolCall: { id: 'call-1', name: 'math.add', arguments: {} },
+        };
+        yield {
+          type: 'model.failed',
+          error: CopilotError.provider('boom', undefined, true).toPublicJSON(),
+        };
+      },
+    };
+    const runtime = createModelRuntime({ providers: [provider] });
+    const events = await collect(
+      runtime.stream({ model: { provider: 'mock', model: 'x' }, messages: [] }),
+    );
+    expect(attempts).toBe(1);
+    expect(events.at(-1)?.type).toBe('model.failed');
+  });
 });

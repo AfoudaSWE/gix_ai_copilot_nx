@@ -4,7 +4,7 @@ import { renderToString } from 'react-dom/server';
 import { act, cleanup, render, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CopilotError, PROTOCOL_VERSION } from '@gixcopilot/protocol';
-import type { CopilotEvent, CopilotEventBase } from '@gixcopilot/protocol';
+import type { ContentPart, CopilotEvent, CopilotEventBase } from '@gixcopilot/protocol';
 import type { CopilotClient, RunOptions } from '@gixcopilot/client';
 import {
   CopilotProvider,
@@ -18,6 +18,10 @@ afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
 });
+
+function textOf(part: ContentPart | undefined): string {
+  return part?.type === 'text' ? part.text : '';
+}
 
 function fixture() {
   const runs: {
@@ -60,6 +64,7 @@ function fixture() {
         },
       };
     },
+    submitToolResult: vi.fn(() => Promise.resolve(undefined)),
   };
   const wrapper = ({ children }: { children: ReactNode }) => (
     <StrictMode>
@@ -105,6 +110,11 @@ function fixture() {
       case 'run.failed':
       case 'error':
         return { ...base, type, error: CopilotError.networkError('disconnected').toPublicJSON() };
+      case 'tool.requested':
+      case 'tool.started':
+      case 'tool.completed':
+      case 'tool.failed':
+        throw new Error(`This test fixture does not construct "${type}" events.`);
     }
   }
   async function push(index: number, type: CopilotEvent['type'], sequence: number, delta?: string) {
@@ -132,12 +142,12 @@ describe('headless React adapter', () => {
     await f.push(0, 'run.started', 1);
     await f.push(0, 'message.started', 2);
     await f.push(0, 'message.delta', 3, 'Hel');
-    expect(result.current.messages[1]?.content[0]?.text).toBe('Hel');
+    expect(textOf(result.current.messages[1]?.content[0])).toBe('Hel');
     expect(result.current.status).toBe('streaming');
     await f.push(0, 'message.delta', 3, 'duplicate');
     await f.push(0, 'message.delta', 4, 'lo');
     expect(result.current.messages).toHaveLength(2);
-    expect(result.current.messages[1]?.content[0]?.text).toBe('Hello');
+    expect(textOf(result.current.messages[1]?.content[0])).toBe('Hello');
     await f.push(0, 'message.end', 5);
     await f.push(0, 'run.completed', 6);
     expect(result.current.status).toBe('completed');
@@ -181,7 +191,7 @@ describe('headless React adapter', () => {
     });
     await f.push(1, 'message.started', 2);
     await f.push(1, 'message.delta', 3, 'new');
-    expect(result.current.messages.at(-1)?.content[0]?.text).toBe('new');
+    expect(textOf(result.current.messages.at(-1)?.content[0])).toBe('new');
     expect(JSON.stringify(result.current.messages)).not.toMatch(/OLD|FOREIGN/);
     f.runs.forEach((run) => run.end());
   });
@@ -231,12 +241,13 @@ describe('headless React adapter', () => {
       f.runs[0]?.end();
     });
     await waitFor(() => expect(result.current.status).toBe('error'));
-    expect(result.current.messages[0]?.content[0]?.text).toBe('retained');
+    expect(textOf(result.current.messages[0]?.content[0])).toBe('retained');
     unmount();
     const client: CopilotClient = {
       run() {
         throw new Error('private detail');
       },
+      submitToolResult: vi.fn(() => Promise.resolve(undefined)),
     };
     const hook = renderHook(useCopilotChat, {
       wrapper: ({ children }) => <CopilotProvider client={client}>{children}</CopilotProvider>,

@@ -88,6 +88,7 @@ function fixture(failFirst = false) {
         },
       };
     },
+    submitToolResult: vi.fn(() => Promise.resolve(undefined)),
   };
   return { client, cancel, attempts: () => attempts };
 }

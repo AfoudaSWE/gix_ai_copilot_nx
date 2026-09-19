@@ -17,7 +17,18 @@ export type CopilotErrorCode =
   | 'MODEL_NOT_FOUND'
   | 'CONTEXT_LIMIT_EXCEEDED'
   | 'TIMEOUT'
-  | 'NETWORK_ERROR';
+  | 'NETWORK_ERROR'
+  /**
+   * Added in Phase 5 (tools) - a provider-neutral tool-call error taxonomy alongside the
+   * model-error codes above. Argument/output shape problems reuse VALIDATION_ERROR rather
+   * than inventing parallel codes for the same failure class - see the tool-system skill.
+   */
+  | 'TOOL_NOT_FOUND'
+  | 'TOOL_DISABLED'
+  | 'TOOL_EXECUTION_ERROR'
+  | 'TOOL_OUTPUT_INVALID'
+  | 'TOOL_ITERATION_LIMIT_EXCEEDED'
+  | 'FRONTEND_TOOL_UNAVAILABLE';
 
 export type CopilotErrorMetadata = Readonly<Record<string, unknown>>;
 
@@ -122,5 +133,43 @@ export class CopilotError extends Error {
 
   static networkError(message: string, cause?: unknown): CopilotError {
     return new CopilotError('NETWORK_ERROR', message, { retryable: true, cause });
+  }
+
+  static toolNotFound(name: string): CopilotError {
+    return new CopilotError('TOOL_NOT_FOUND', `No tool is registered with the name "${name}".`, {
+      retryable: false,
+      metadata: { name },
+    });
+  }
+
+  static toolDisabled(name: string): CopilotError {
+    return new CopilotError('TOOL_DISABLED', `Tool "${name}" is currently disabled.`, {
+      retryable: false,
+      metadata: { name },
+    });
+  }
+
+  static toolExecutionError(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('TOOL_EXECUTION_ERROR', message, { retryable: false, metadata });
+  }
+
+  static toolOutputInvalid(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('TOOL_OUTPUT_INVALID', message, { retryable: false, metadata });
+  }
+
+  static toolIterationLimitExceeded(limit: number): CopilotError {
+    return new CopilotError(
+      'TOOL_ITERATION_LIMIT_EXCEEDED',
+      `The model requested more than ${limit} tool-calling round(s) in a single run.`,
+      { retryable: false, metadata: { limit } },
+    );
+  }
+
+  static frontendToolUnavailable(name: string): CopilotError {
+    return new CopilotError(
+      'FRONTEND_TOOL_UNAVAILABLE',
+      `Frontend tool "${name}" did not return a result (client disconnected or timed out).`,
+      { retryable: false, metadata: { name } },
+    );
   }
 }

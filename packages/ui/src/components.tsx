@@ -1,10 +1,23 @@
 import { Component, memo, useEffect, useId, useRef, useState } from 'react';
 import type { ComponentType, CSSProperties, ErrorInfo, ReactElement, ReactNode } from 'react';
-import { useCopilot, useCopilotChat, useCopilotStatus, useMessages } from '@gixcopilot/react';
-import type { CopilotChatResult, CopilotMessage } from '@gixcopilot/react';
+import { useCopilot, useCopilotChat, useCopilotStatus, useMessages, useToolCalls } from '@gixcopilot/react';
+import type { CopilotChatResult, CopilotMessage, ToolCallState } from '@gixcopilot/react';
 import { DEFAULT_LABELS } from './labels.js';
 import type { CopilotLabels } from './labels.js';
 import { Markdown } from './markdown.js';
+
+/**
+ * Text content only. A message may also carry `tool_call`/`tool_result` parts (Phase 5) -
+ * this default rendering intentionally shows only the text portion; tool activity is
+ * rendered separately (see `ToolActivity`) so raw tool arguments/results are never
+ * accidentally dumped into the chat transcript.
+ */
+function textOfContent(content: CopilotMessage['content']): string {
+  return content
+    .filter((part): part is Extract<typeof part, { type: 'text' }> => part.type === 'text')
+    .map((part) => part.text)
+    .join('');
+}
 
 /** Props shared by user, assistant, and custom message renderers. */
 export interface MessageProps {
@@ -30,6 +43,11 @@ export interface SuggestionsProps {
 export interface EmptyStateProps extends SuggestionsProps {
   readonly labels: CopilotLabels;
 }
+/** Props for the tool activity slot (Section 59-61, added in Phase 5). */
+export interface ToolActivityProps {
+  readonly toolCalls: readonly ToolCallState[];
+  readonly labels: CopilotLabels;
+}
 /** Consistent component slots for the major UI areas. */
 export interface CopilotComponents {
   readonly Header?: ComponentType<ChatHeaderProps>;
@@ -37,6 +55,7 @@ export interface CopilotComponents {
   readonly AssistantMessage?: ComponentType<MessageProps>;
   readonly Input?: ComponentType<ChatInputProps>;
   readonly EmptyState?: ComponentType<EmptyStateProps>;
+  readonly ToolActivity?: ComponentType<ToolActivityProps>;
 }
 /** Theme tokens live in the CSS export and can be overridden with className/style. */
 export interface CopilotChatProps {
@@ -75,7 +94,7 @@ export const UserMessage: ComponentType<MessageProps> = memo(function UserMessag
     <article className="gix-message gix-user">
       <span className="gix-message-label">{labels.user}</span>
       <div className="gix-user-text" dir="auto">
-        {message.content.map((part) => part.text).join('')}
+        {textOfContent(message.content)}
       </div>
     </article>
   );
@@ -90,7 +109,7 @@ export const AssistantMessage: ComponentType<MessageProps> = memo(function Assis
       <span className="gix-message-label">
         {message.role === 'assistant' ? labels.assistant : labels.system}
       </span>
-      <Markdown content={message.content.map((part) => part.text).join('')} labels={labels} />
+      <Markdown content={textOfContent(message.content)} labels={labels} />
       {message.status === 'streaming' ? (
         <span className="gix-stream-cursor" aria-hidden="true" />
       ) : null}
@@ -350,6 +369,42 @@ export function TypingIndicator({
   );
 }
 
+/**
+ * Generic tool activity rendering (Section 59-61), built on `useToolCalls()`'s headless
+ * state. Deliberately does not render raw `arguments`/`result` by default (Section 60,
+ * 62) - only the tool's `name` and lifecycle status, since a tool's inputs/outputs may
+ * contain data the host application does not want blindly dumped into the transcript. A
+ * host that wants richer per-tool rendering overrides this slot entirely via
+ * `components.ToolActivity`.
+ */
+export function ToolActivity({ toolCalls, labels }: ToolActivityProps): ReactElement | null {
+  if (toolCalls.length === 0) return null;
+  return (
+    <ul className="gix-tool-activity" aria-label={labels.conversation}>
+      {toolCalls.map((toolCall) => (
+        <li key={toolCall.id} className={`gix-tool-activity-item gix-tool-${toolCall.status}`}>
+          {toolCall.status === 'requested' || toolCall.status === 'running' ? (
+            <>
+              <span aria-hidden="true">● </span>
+              {labels.toolRunning} {toolCall.name}…
+            </>
+          ) : toolCall.status === 'succeeded' ? (
+            <>
+              <span aria-hidden="true">✓ </span>
+              {toolCall.name} {labels.toolCompleted}
+            </>
+          ) : (
+            <>
+              <span aria-hidden="true">✗ </span>
+              {toolCall.name} {labels.toolFailed}
+            </>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 /** Safe user-facing error copy; raw provider error messages are never rendered. */
 export function ErrorMessage({
   error,
@@ -386,7 +441,9 @@ function ChatContent({
   onRenderError?: CopilotChatProps['onRenderError'];
 }): ReactElement {
   const { status, error, messages } = useCopilotChat();
+  const toolCalls = useToolCalls();
   const Empty = components.EmptyState ?? EmptyState;
+  const Activity = components.ToolActivity ?? ToolActivity;
   const announcement =
     status === 'submitting'
       ? labels.submitting
@@ -394,10 +451,7 @@ function ChatContent({
         ? labels.streaming
         : status === 'completed'
           ? `${labels.completed}. ${
-              messages
-                .at(-1)
-                ?.content.map((part) => part.text)
-                .join('') ?? ''
+              messages.at(-1) ? textOfContent(messages.at(-1)?.content ?? []) : ''
             }`
           : status === 'stopped'
             ? labels.stopped
@@ -412,7 +466,10 @@ function ChatContent({
       <div className="gix-sr-only" role="status" aria-live="polite" aria-atomic="true">
         {announcement}
       </div>
-      {status === 'submitting' ? <TypingIndicator label={labels.submitting} /> : null}
+      <Activity toolCalls={toolCalls} labels={labels} />
+      {status === 'submitting' && toolCalls.length === 0 ? (
+        <TypingIndicator label={labels.submitting} />
+      ) : null}
       {error ? <ErrorMessage error={error} labels={labels} /> : null}
       {status === 'completed' || status === 'stopped' ? (
         <div className="gix-response-actions">

@@ -25,7 +25,8 @@
   },
   "dependencies": {
     "@gixcopilot/core": "workspace:*",
-    "@gixcopilot/protocol": "workspace:*"
+    "@gixcopilot/protocol": "workspace:*",
+    "zod": "4.6.5"
   },
   "devDependencies": {
     "vitest": "5.0.1"

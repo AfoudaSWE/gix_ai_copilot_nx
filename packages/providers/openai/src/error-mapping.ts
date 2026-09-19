@@ -65,9 +65,7 @@ export function mapFinishReason(reason: string | null | undefined): FinishReason
       return 'content_filter';
     case 'tool_calls':
     case 'function_call':
-      // Tool calling is Phase 5 - this build never requests it, so this case shouldn't
-      // occur in practice; if it does, "unknown" is safer than inventing a category.
-      return 'unknown';
+      return 'tool_calls';
     case null:
     case undefined:
       return 'unknown';

@@ -1,4 +1,10 @@
-import type { ContentPart, CopilotEvent, MessageRole } from '@gixcopilot/protocol';
+import type {
+  ContentPart,
+  CopilotEvent,
+  MessageRole,
+  ToolManifestEntry,
+  ToolResult,
+} from '@gixcopilot/protocol';
 import type { CopilotTransport } from './transport.js';
 import { createSseTransport } from './sse-transport.js';
 
@@ -24,6 +30,8 @@ export interface RunOptions {
   readonly model?: ClientModelReference;
   /** The full conversation so far, oldest first. */
   readonly messages: readonly ClientMessageInput[];
+  /** Added in Phase 5 - frontend tools registered for this run only (Section 45-46). */
+  readonly tools?: readonly ToolManifestEntry[];
   /** Cancels the run if aborted, in addition to the `cancel()` method on the returned run. */
   readonly signal?: AbortSignal;
 }
@@ -44,6 +52,9 @@ export interface CopilotClientOptions {
 
 export interface CopilotClient {
   run(options: RunOptions): ClientRun;
+  /** Added in Phase 5 (Section 50) - reports a frontend tool's outcome back to the server so
+   * a suspended Model -> Tool -> Model loop can resume. */
+  submitToolResult(runId: string, toolCallId: string, result: ToolResult): Promise<void>;
 }
 
 function linkExternalSignal(controller: AbortController, external: AbortSignal | undefined): void {
@@ -76,10 +87,13 @@ export function createCopilotClient(options: CopilotClientOptions): CopilotClien
           threadId: runOptions.threadId,
           model: runOptions.model,
           messages: runOptions.messages,
+          tools: runOptions.tools,
           signal: controller.signal,
         }),
         cancel: () => controller.abort(),
       };
     },
+    submitToolResult: (runId, toolCallId, result) =>
+      transport.submitToolResult(runId, toolCallId, result),
   };
 }

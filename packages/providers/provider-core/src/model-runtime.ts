@@ -3,6 +3,7 @@ import type { FinishReason, Usage } from '@gixcopilot/protocol';
 import type { ModelMessage } from './model-message.js';
 import type { ModelReference } from './model-reference.js';
 import type { ModelRequest } from './model-request.js';
+import type { ModelToolDefinition } from './model-tool.js';
 import type { ModelProvider } from './model-provider.js';
 import type { ModelStreamEvent } from './model-stream-event.js';
 import { createModelProviderRegistry, type ModelProviderRegistry } from './registry.js';
@@ -20,6 +21,8 @@ export interface ModelExecutionRequest {
   /** Overrides the runtime's configured default timeout for this request only. */
   readonly timeoutMs?: number;
   readonly signal?: AbortSignal;
+  /** Added in Phase 5 (tools) - see ModelRequest.tools. */
+  readonly tools?: readonly ModelToolDefinition[];
 }
 
 export interface ModelRuntimeDefaults {
@@ -109,6 +112,7 @@ export function createModelRuntime(options: CreateModelRuntimeOptions): ModelRun
         temperature: request.temperature,
         maxOutputTokens: request.maxOutputTokens,
         metadata: request.metadata,
+        tools: request.tools,
       };
 
       while (true) {
@@ -152,6 +156,10 @@ export function createModelRuntime(options: CreateModelRuntimeOptions): ModelRun
                 break;
               case 'usage.updated':
                 usage = event.usage;
+                yield event;
+                break;
+              case 'tool_call.requested':
+                hasEmittedContent = true;
                 yield event;
                 break;
               case 'model.completed':

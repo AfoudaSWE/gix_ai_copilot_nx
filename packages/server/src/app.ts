@@ -1,14 +1,31 @@
 import Fastify, { type FastifyInstance } from 'fastify';
 import { CopilotError, asRunId, asThreadId } from '@gixcopilot/protocol';
+import type { ToolResult } from '@gixcopilot/protocol';
 import { createRuntime, type Runtime } from '@gixcopilot/core';
 import { createModelExecutor, type ModelRuntime } from '@gixcopilot/provider';
+import { createDefaultToolResolver, createStaticToolResolver } from '@gixcopilot/tools';
+import type { ToolRegistry } from '@gixcopilot/tools';
 import { createRunRegistry } from './run-registry.js';
+import { createFrontendToolBridge, type FrontendToolBridge } from './frontend-tool-bridge.js';
+import { createToolCallingExecutor } from './tool-calling-executor.js';
 import { formatSseComment, formatSseFrame, SSE_RESPONSE_HEADERS } from './sse.js';
 import {
   cancelRunParamsSchema,
   createRunRequestSchema,
+  submitToolResultParamsSchema,
+  submitToolResultRequestSchema,
   type CreateRunRequestBody,
 } from './schemas.js';
+
+export interface ToolRuntimeDefaults {
+  /** Applied to a tool that declares no `metadata.timeoutMs` of its own. */
+  readonly defaultTimeoutMs?: number;
+  /** Hard cap on Model -> Tool -> Model rounds within one run (Section 40). Defaults to 8. */
+  readonly maxToolIterations?: number;
+  /** How long the server waits for a frontend tool result before FRONTEND_TOOL_UNAVAILABLE
+   * (Section 51). Omit for no timeout. */
+  readonly frontendToolTimeoutMs?: number;
+}
 
 export interface CreateServerOptions {
   /**
@@ -24,10 +41,21 @@ export interface CreateServerOptions {
    * that names a `model` on such a server gets a clear 400, not a crash.
    */
   readonly modelRuntime?: ModelRuntime;
+  /**
+   * Backend/native tools (Section 22, added in Phase 5) this server offers to the model.
+   * Optional - a server with no toolRegistry and a request with no frontend tools behaves
+   * exactly as it did before Phase 5 (plain `createModelExecutor`, no tool-calling loop).
+   */
+  readonly toolRegistry?: ToolRegistry;
+  readonly toolRuntimeDefaults?: ToolRuntimeDefaults;
   readonly logger?: boolean;
 }
 
-function buildRun(options: CreateServerOptions, body: CreateRunRequestBody) {
+function buildRun(
+  options: CreateServerOptions,
+  body: CreateRunRequestBody,
+  frontendToolBridge: FrontendToolBridge,
+) {
   const threadId = body.threadId !== undefined ? asThreadId(body.threadId) : undefined;
 
   if (!body.model) {
@@ -43,7 +71,24 @@ function buildRun(options: CreateServerOptions, body: CreateRunRequestBody) {
     };
   }
 
-  const executor = createModelExecutor({ runtime: options.modelRuntime, model: body.model });
+  const frontendTools = body.tools ?? [];
+  const usesTools = Boolean(options.toolRegistry) || frontendTools.length > 0;
+
+  const executor = usesTools
+    ? createToolCallingExecutor({
+        modelRuntime: options.modelRuntime,
+        model: body.model,
+        backendToolResolver: options.toolRegistry
+          ? createDefaultToolResolver(options.toolRegistry)
+          : createStaticToolResolver([]),
+        frontendTools,
+        frontendToolBridge,
+        maxToolIterations: options.toolRuntimeDefaults?.maxToolIterations,
+        frontendToolTimeoutMs: options.toolRuntimeDefaults?.frontendToolTimeoutMs,
+        toolTimeoutMs: options.toolRuntimeDefaults?.defaultTimeoutMs,
+      })
+    : createModelExecutor({ runtime: options.modelRuntime, model: body.model });
+
   return {
     ok: true as const,
     run: createRuntime({ executor }).run({ threadId, messages: body.messages }),
@@ -51,10 +96,11 @@ function buildRun(options: CreateServerOptions, body: CreateRunRequestBody) {
 }
 
 /**
- * Builds (but does not start listening on) a Fastify app exposing the Phase 1 HTTP API:
+ * Builds (but does not start listening on) a Fastify app exposing the HTTP API:
  *   GET  /health
- *   POST /runs                  - creates a run and streams its events back as SSE
- *   POST /runs/:runId/cancel    - cancels an in-flight run by id
+ *   POST /runs                        - creates a run and streams its events back as SSE
+ *   POST /runs/:runId/cancel          - cancels an in-flight run by id
+ *   POST /runs/:runId/tool-results    - submits a frontend tool's result (Phase 5, Section 50)
  *
  * See docs/adr/0004-sse-as-initial-streaming-transport.md for why run-creation and
  * streaming are combined into a single request/response instead of a separate
@@ -63,6 +109,7 @@ function buildRun(options: CreateServerOptions, body: CreateRunRequestBody) {
 export function createServer(options: CreateServerOptions): FastifyInstance {
   const app = Fastify({ logger: options.logger ?? false });
   const registry = createRunRegistry();
+  const frontendToolBridge = createFrontendToolBridge();
 
   app.get('/health', () => ({ status: 'ok' as const }));
 
@@ -76,7 +123,7 @@ export function createServer(options: CreateServerOptions): FastifyInstance {
       return;
     }
 
-    const built = buildRun(options, parsed.data);
+    const built = buildRun(options, parsed.data, frontendToolBridge);
     if (!built.ok) {
       await reply.status(400).send({ error: built.error.toPublicJSON() });
       return;
@@ -133,6 +180,44 @@ export function createServer(options: CreateServerOptions): FastifyInstance {
 
     run.cancel();
     await reply.status(202).send({ status: 'cancelling' as const });
+  });
+
+  app.post('/runs/:runId/tool-results', async (request, reply) => {
+    const parsedParams = submitToolResultParamsSchema.safeParse(request.params);
+    if (!parsedParams.success) {
+      const error = CopilotError.validation('Invalid runId path parameter');
+      await reply.status(400).send({ error: error.toPublicJSON() });
+      return;
+    }
+    const parsedBody = submitToolResultRequestSchema.safeParse(request.body);
+    if (!parsedBody.success) {
+      const error = CopilotError.validation('Invalid tool result body', {
+        issueCount: parsedBody.error.issues.length,
+      });
+      await reply.status(400).send({ error: error.toPublicJSON() });
+      return;
+    }
+
+    const runId = asRunId(parsedParams.data.runId);
+    // The parsed shape structurally matches ToolResult; `code` is a plain string on the wire
+    // (see schemas.ts) - the exact same "trust the boundary" convention as `asRunId`/
+    // `asThreadId` elsewhere in this file.
+    const accepted = frontendToolBridge.submitResult(
+      runId,
+      parsedBody.data.toolCallId,
+      parsedBody.data.result as ToolResult,
+    );
+    if (!accepted) {
+      const error = CopilotError.validation(
+        'No pending frontend tool call with that runId/toolCallId (it may have already been ' +
+          'resolved, timed out, or the run may have ended).',
+        { runId, toolCallId: parsedBody.data.toolCallId },
+      );
+      await reply.status(404).send({ error: error.toPublicJSON() });
+      return;
+    }
+
+    await reply.status(202).send({ status: 'accepted' as const });
   });
 
   app.setErrorHandler((error, request, reply) => {

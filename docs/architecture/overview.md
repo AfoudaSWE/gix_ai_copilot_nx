@@ -1,7 +1,8 @@
-# Architecture Overview — Phase 4
+# Architecture Overview — Phase 5
 
-Phase 3 added the following client-side layers on top of the Phase 1–2 flow below; Phase 4
-adds `@gixcopilot/context` beneath React (see the updated diagram and package table):
+Phase 3 added the client-side layers below the Phase 1–2 flow; Phase 4 added
+`@gixcopilot/context` beneath React; Phase 5 adds `@gixcopilot/tools` as a second leaf
+package (alongside `context`), consumed by both `server` and `react`:
 
 ```text
                          Protocol
@@ -10,9 +11,12 @@ adds `@gixcopilot/context` beneath React (see the updated diagram and package ta
                       ^          ^  ^
                       |          |  Model Runtime <- Providers
                @gixcopilot/react |       ^
-                   ^  ^    ^     Server -+
-                   |  |    |
+                   ^  ^    ^     Server -+---- @gixcopilot/tools (protocol only - no React/
+                   |  |    |       ^              Fastify/provider SDK)
+                   |  |    |       |
+                   |  |    @gixcopilot/tools (backend tools, via toolRegistry)
                    |  @gixcopilot/context (protocol only - no React)
+                   |  @gixcopilot/tools (frontend tools, via useFrontendTool)
                    |
                Custom UI   @gixcopilot/ui
                              /   |   \
@@ -20,13 +24,16 @@ adds `@gixcopilot/context` beneath React (see the updated diagram and package ta
 ```
 
 Dependency arrows point toward consumers above: UI depends on React; React on Client,
-Protocol, and (Phase 4) Context. Core still has no provider/framework dependency. The server
-composes the core and model-runtime interfaces; provider adapters implement those
-interfaces. `@gixcopilot/context` is framework-independent and has no dependency on React —
-see [Phase 4 Architecture](../phases/phase-04/Phase_4_Architecture.md) and
-[ADR 0009](../adr/0009-context-and-state-architecture.md) for its full pipeline and how
-resolved context reaches a model request (a leading `system` message built inside
-`@gixcopilot/react`, with no protocol/core/server change).
+Protocol, Context, and (Phase 5) Tools; Server on Core, Provider, Protocol, and (Phase 5)
+Tools. Core still has no provider/framework dependency, and gained only one additive,
+optional field (`ExecutorContext.onToolEvent`) — see
+[Phase 5 Architecture](../phases/phase-05/Phase_5_Architecture.md) and
+[ADR 0010](../adr/0010-canonical-tool-architecture.md). The server composes the core,
+model-runtime, and tool-runtime interfaces; provider adapters implement the model-runtime
+interface. `@gixcopilot/context` and `@gixcopilot/tools` are both framework-independent and
+have no dependency on React or each other — see
+[Phase 4 Architecture](../phases/phase-04/Phase_4_Architecture.md) and
+[ADR 0009](../adr/0009-context-and-state-architecture.md) for the context pipeline.
 
 `@gixcopilot/react` supplies an isolated provider, immutable local chat snapshots and narrow
 hooks. It consumes the client's public event stream and cancellation API.
@@ -108,25 +115,31 @@ shape, per `docs/adr/0002-framework-independent-core.md` and
 | `examples/protocol-demo`      | Proves the Phase 1 stack end to end with a deterministic executor                                                                               | — (may depend on everything above)                                                                                |
 | `examples/model-streaming`    | Proves the Phase 2 model runtime end to end, mock by default, optional real OpenAI                                                              | — (may depend on everything above)                                                                                |
 | `@gixcopilot/context`         | Framework-independent context registry/engine (scopes, priority, sensitivity, serialization, dedup, token budgeting/truncation) and shared state store | React, Angular, any provider SDK, `@gixcopilot/core`/`client`/`server`                                            |
-| `@gixcopilot/react`           | Headless chat hooks (Phase 3) plus `useCopilotContext`/`useCopilotState` (Phase 4), bridging resolved context into `client.run()` as a leading `system` message | any non-React/UI-adjacent business logic duplicated from `client`/`context`                                       |
+| `@gixcopilot/react`           | Headless chat hooks (Phase 3) plus `useCopilotContext`/`useCopilotState` (Phase 4) and `useFrontendTool`/`useToolCalls` (Phase 5), bridging resolved context/tools into `client.run()` | any non-React/UI-adjacent business logic duplicated from `client`/`context`/`tools`                               |
 | `examples/react-context`      | Proves Phase 4's context/state engine end to end with a deterministic, non-network context-aware provider                                       | — (may depend on everything above)                                                                                |
+| `@gixcopilot/tools`           | Framework-independent canonical tool architecture: `ToolDefinition`/`defineTool`, registry, discovery resolver, execution runtime (validate/timeout/cancel/execute/serialize) | React, Angular, Fastify, any provider SDK, `@gixcopilot/core`/`client`                                            |
+| `examples/react-tools`        | Proves Phase 5's backend/frontend tool loop, context + tool, tool error, and tool cancellation end to end with a deterministic, non-network provider | — (may depend on everything above)                                                                                |
 
 ## Dependency Direction
 
 ```text
                          @gixcopilot/protocol
-                         ^   ^    ^      ^
-                         |   |    |      |
-   @gixcopilot/client ----+   |    |      +---- @gixcopilot/provider
-                             |    |                ^        ^
-                     @gixcopilot/core                |        |
-                             ^                       |        |
-                             |                        |        |
-                       @gixcopilot/server -------------+        |
+                         ^   ^    ^      ^     ^
+                         |   |    |      |     |
+   @gixcopilot/client ----+   |    |      +---- @gixcopilot/provider    @gixcopilot/tools
+                             |    |                ^        ^                ^      ^
+                     @gixcopilot/core                |        |               |      |
+                             ^                       |        |               |      |
+                             |                        |        |               |      |
+                       @gixcopilot/server -------------+--------+---------------+      |
+                             |                                                          |
+                             +------------------------------------------------------------+
                                                                  |
                                         @gixcopilot/provider-mock, @gixcopilot/provider-openai
                                         (each depends on @gixcopilot/provider + protocol only,
                                          never on each other)
+
+   @gixcopilot/react ----> @gixcopilot/client, @gixcopilot/protocol, @gixcopilot/context, @gixcopilot/tools
 ```
 
 Enforced two ways:
@@ -136,14 +149,16 @@ Enforced two ways:
    module-resolution level.
 2. **By lint rule**, via `@nx/enforce-module-boundaries` in `eslint.config.js`, using tags
    (`scope:protocol`, `scope:core`, `scope:client`, `scope:server`, `scope:provider`,
-   `scope:provider-adapter`, `scope:example`) and explicit `depConstraints`. Verified
-   manually each phase by introducing a forbidden import (e.g. `protocol -> core` in
-   Phase 1, `provider-mock -> provider-openai` in Phase 2) and confirming `eslint` rejects
+   `scope:provider-adapter`, `scope:context`, `scope:tools`, `scope:react`, `scope:ui`,
+   `scope:example`) and explicit `depConstraints`. Verified manually each phase by
+   introducing a forbidden import (e.g. `protocol -> core` in Phase 1, `provider-mock ->
+   provider-openai` in Phase 2, `tools -> react` in Phase 5) and confirming `eslint` rejects
    it, then reverting.
 
 The backend above remains the Phase 1+2 slice of the long-term architecture. React is
-implemented (Phase 3); Context/state is implemented (Phase 4); Angular, Tools, Agents and
-subsequent capabilities remain unimplemented:
+implemented (Phase 3); Context/state is implemented (Phase 4); Tools is implemented
+(Phase 5); Angular, OpenAPI/MCP-derived tools, Agents, and subsequent capabilities remain
+unimplemented:
 
 ```text
 Framework SDKs (React, Angular)         <- Phase 3 (React), 12 (Angular)
@@ -156,7 +171,9 @@ Server                                  <- @gixcopilot/server
       |
 Core Runtime                            <- @gixcopilot/core
       |
-Agents / Context / Tools                <- @gixcopilot/context (Phase 4, this phase); Agents/Tools: Phase 5, 10
+Agents / Context / Tools                <- @gixcopilot/context (Phase 4); @gixcopilot/tools
+                                            (Phase 5, this phase - native + frontend sources
+                                            only; OpenAPI/MCP sources: Phase 8); Agents: Phase 10
       |
 Adapters (LLM providers, DB, MCP, ...)  <- @gixcopilot/provider(-mock|-openai) (Phase 2), Phase 8, 9
 ```

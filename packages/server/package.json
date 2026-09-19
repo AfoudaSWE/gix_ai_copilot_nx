@@ -27,6 +27,7 @@
     "@gixcopilot/core": "workspace:*",
     "@gixcopilot/protocol": "workspace:*",
     "@gixcopilot/provider": "workspace:*",
+    "@gixcopilot/tools": "workspace:*",
     "fastify": "5.12.5",
     "zod": "4.6.5"
   },

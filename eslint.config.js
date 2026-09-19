@@ -10,12 +10,14 @@ import eslintConfigPrettier from 'eslint-config-prettier';
  * `@nx/enforce-module-boundaries`, per the project-architecture and nx-monorepo skills:
  * protocol must not depend on anything else in the workspace; core may depend on protocol;
  * client may depend on protocol; server may depend on protocol + core + the provider
- * contract; the provider contract (`@gixcopilot/provider`) may depend on protocol + core;
- * provider adapters (mock, openai) may depend on protocol + core + the provider contract,
- * but never on each other; `@gixcopilot/context` (Phase 4) may depend only on protocol - it
- * must never depend on React; react may depend on protocol + client + context; examples may
- * depend on anything. This is the executable form of the dependency-direction diagram in
- * docs/architecture/overview.md.
+ * contract + tools; the provider contract (`@gixcopilot/provider`) may depend on protocol +
+ * core; provider adapters (mock, openai) may depend on protocol + core + the provider
+ * contract, but never on each other; `@gixcopilot/context` (Phase 4) may depend only on
+ * protocol - it must never depend on React; `@gixcopilot/tools` (Phase 5) may depend only on
+ * protocol - it is the framework-independent canonical tool package shared by server and
+ * react, and must never depend on React, Fastify, or a provider SDK; react may depend on
+ * protocol + client + context + tools; examples may depend on anything. This is the
+ * executable form of the dependency-direction diagram in docs/architecture/overview.md.
  */
 export default tseslint.config(
   {
@@ -59,6 +61,7 @@ export default tseslint.config(
                 'scope:client',
                 'scope:protocol',
                 'scope:context',
+                'scope:tools',
               ],
             },
             {
@@ -72,6 +75,10 @@ export default tseslint.config(
             {
               sourceTag: 'scope:context',
               onlyDependOnLibsWithTags: ['scope:protocol', 'scope:context'],
+            },
+            {
+              sourceTag: 'scope:tools',
+              onlyDependOnLibsWithTags: ['scope:protocol', 'scope:tools'],
             },
             {
               sourceTag: 'scope:core',
@@ -88,6 +95,7 @@ export default tseslint.config(
                 'scope:core',
                 'scope:server',
                 'scope:provider',
+                'scope:tools',
               ],
             },
             {
@@ -110,6 +118,7 @@ export default tseslint.config(
                 'scope:provider',
                 'scope:provider-adapter',
                 'scope:context',
+                'scope:tools',
                 'scope:example',
               ],
             },

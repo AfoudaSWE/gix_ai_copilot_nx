@@ -138,4 +138,75 @@ describe('createMockProvider', () => {
     expect(createMockProvider().id).toBe('mock');
     expect(createMockProvider({ id: 'mock-2' }).id).toBe('mock-2');
   });
+
+  describe('Phase 5 scripted tool calls', () => {
+    it('deterministically requests a tool call and completes with finishReason "tool_calls"', async () => {
+      const provider = createMockProvider({
+        scenario: {
+          toolCalls: [
+            { id: 'call-1', name: 'applications.getStatus', arguments: { applicationId: 'APP-1024' } },
+          ],
+        },
+      });
+      const events = await collect(provider);
+      expect(events.map((e) => e.type)).toEqual([
+        'model.started',
+        'tool_call.requested',
+        'model.completed',
+      ]);
+      const toolCallEvent = events.find((e) => e.type === 'tool_call.requested');
+      expect(toolCallEvent?.type === 'tool_call.requested' && toolCallEvent.toolCall).toEqual({
+        id: 'call-1',
+        name: 'applications.getStatus',
+        arguments: { applicationId: 'APP-1024' },
+      });
+      const completed = events.at(-1);
+      expect(completed?.type === 'model.completed' && completed.finishReason).toBe('tool_calls');
+    });
+
+    it('emits any scripted text chunks before the tool call(s)', async () => {
+      const provider = createMockProvider({
+        scenario: {
+          chunks: ['Checking...'],
+          toolCalls: [{ id: 'call-1', name: 'math.add', arguments: { a: 1, b: 2 } }],
+        },
+      });
+      const events = await collect(provider);
+      expect(events.map((e) => e.type)).toEqual([
+        'model.started',
+        'content.delta',
+        'tool_call.requested',
+        'model.completed',
+      ]);
+    });
+
+    it('supports multiple parallel tool calls in one scenario', async () => {
+      const provider = createMockProvider({
+        scenario: {
+          toolCalls: [
+            { id: 'call-1', name: 'applications.getStatus', arguments: { applicationId: 'APP-1' } },
+            { id: 'call-2', name: 'applications.getStatus', arguments: { applicationId: 'APP-2' } },
+          ],
+        },
+      });
+      const events = await collect(provider);
+      const toolCallEvents = events.filter((e) => e.type === 'tool_call.requested');
+      expect(toolCallEvents).toHaveLength(2);
+    });
+
+    it('stops emitting tool calls once aborted', async () => {
+      const controller = new AbortController();
+      const provider = createMockProvider({
+        scenario: {
+          toolCalls: [
+            { id: 'call-1', name: 'a', arguments: {} },
+            { id: 'call-2', name: 'b', arguments: {} },
+          ],
+        },
+      });
+      controller.abort();
+      const events = await collect(provider, controller.signal);
+      expect(events.map((e) => e.type)).toEqual(['model.started']);
+    });
+  });
 });

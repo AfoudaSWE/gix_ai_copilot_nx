@@ -184,6 +184,157 @@ describe('createRuntime', () => {
     expect(() => run.events[Symbol.asyncIterator]()).toThrow(/single-use/);
   });
 
+  it('suppresses an empty-string delta instead of emitting a no-op message.delta event', async () => {
+    const executor: Executor = {
+      async *execute() {
+        await Promise.resolve();
+        yield '';
+        yield 'real text';
+        return { finishReason: 'stop' };
+      },
+    };
+    const runtime = createRuntime({ executor });
+    const run = runtime.run({ messages: [userMessage('hi')] });
+    const events = await drain(run.events);
+
+    const deltas = events.filter((event) => event.type === 'message.delta');
+    expect(deltas).toHaveLength(1);
+    expect(deltas[0]?.type === 'message.delta' && deltas[0].delta).toBe('real text');
+    const end = events.find((event) => event.type === 'message.end');
+    expect(end?.type === 'message.end' && end.content).toEqual([
+      { type: 'text', text: 'real text' },
+    ]);
+  });
+
+  it('drains tool lifecycle events reported via ExecutorContext.onToolEvent into tool.* CopilotEvents, interleaved in order', async () => {
+    const toolExecutor: Executor = {
+      async *execute(_input, context) {
+        context.onToolEvent?.({
+          phase: 'requested',
+          toolCallId: 'call-1',
+          name: 'math.add',
+          arguments: { a: 1, b: 2 },
+          source: 'native',
+        });
+        context.onToolEvent?.({ phase: 'started', toolCallId: 'call-1', name: 'math.add' });
+        await Promise.resolve();
+        context.onToolEvent?.({
+          phase: 'completed',
+          toolCallId: 'call-1',
+          name: 'math.add',
+          result: { result: 3 },
+        });
+        yield 'The answer is 3.';
+        return { finishReason: 'stop' };
+      },
+    };
+    const runtime = createRuntime({ executor: toolExecutor });
+    const run = runtime.run({ messages: [userMessage('what is 1+2?')] });
+    const events = await drain(run.events);
+
+    expect(events.map((event) => event.type)).toEqual([
+      'run.started',
+      'message.started',
+      'tool.requested',
+      'tool.started',
+      'tool.completed',
+      'message.delta',
+      'message.end',
+      'run.completed',
+    ]);
+
+    const requested = events.find((event) => event.type === 'tool.requested');
+    expect(requested?.type === 'tool.requested' && requested.name).toBe('math.add');
+    expect(requested?.type === 'tool.requested' && requested.arguments).toEqual({ a: 1, b: 2 });
+    const completed = events.find((event) => event.type === 'tool.completed');
+    expect(completed?.type === 'tool.completed' && completed.result).toEqual({ result: 3 });
+
+    // Tool events share the same sequencer as text/message events - no separate numbering.
+    expect(events.map((event) => event.sequence)).toEqual(events.map((_, index) => index + 1));
+  });
+
+  it('never emits a tool.completed after cancellation - draining stops once the run is cancelled', async () => {
+    const toolExecutor: Executor = {
+      async *execute(_input, context) {
+        context.onToolEvent?.({
+          phase: 'requested',
+          toolCallId: 'call-1',
+          name: 'slow.tool',
+          arguments: {},
+          source: 'native',
+        });
+        yield 'partial';
+        // Cancellation happens between this yield and the next step (simulated by the test
+        // driving the iterator manually below); the executor must stop, and the runtime
+        // must not synthesize a later tool.completed for a call that never finished.
+        await new Promise(() => {
+          /* never resolves - the run is cancelled instead */
+        });
+        context.onToolEvent?.({
+          phase: 'completed',
+          toolCallId: 'call-1',
+          name: 'slow.tool',
+          result: {},
+        });
+        yield 'unreachable';
+      },
+    };
+    const runtime = createRuntime({ executor: toolExecutor });
+    const run = runtime.run({ messages: [userMessage('go')] });
+    const iterator = run.events[Symbol.asyncIterator]() as AsyncIterator<
+      CopilotEvent,
+      void,
+      undefined
+    >;
+
+    const types: string[] = [];
+    // run.started, message.started, tool.requested, message.delta("partial")
+    for (let i = 0; i < 4; i += 1) {
+      const step = await iterator.next();
+      if (step.value) types.push(step.value.type);
+    }
+    expect(types).toEqual(['run.started', 'message.started', 'tool.requested', 'message.delta']);
+
+    run.cancel();
+    let result = await iterator.next();
+    while (!result.done) {
+      types.push(result.value.type);
+      result = await iterator.next();
+    }
+
+    expect(types.at(-1)).toBe('run.cancelled');
+    expect(types).not.toContain('tool.completed');
+  });
+
+  it('drains pending tool events queued just before the executor throws, before emitting run.failed', async () => {
+    const toolExecutor: Executor = {
+      async *execute(_input, context) {
+        await Promise.resolve();
+        context.onToolEvent?.({
+          phase: 'requested',
+          toolCallId: 'call-1',
+          name: 'loop.tool',
+          arguments: {},
+          source: 'native',
+        });
+        // No `yield` occurs before the throw - the pending event above has never been
+        // drained by a prior successful `.next()` resolution, which is exactly the gap
+        // this regression test targets (a thrown rejection must not silently drop it).
+        throw new Error('iteration limit exceeded');
+      },
+    };
+    const runtime = createRuntime({ executor: toolExecutor });
+    const run = runtime.run({ messages: [userMessage('go')] });
+    const events = await drain(run.events);
+
+    expect(events.map((event) => event.type)).toEqual([
+      'run.started',
+      'message.started',
+      'tool.requested',
+      'run.failed',
+    ]);
+  });
+
   it('emits run.failed with a normalized error when the executor throws', async () => {
     const throwingExecutor: Executor = {
       async *execute() {

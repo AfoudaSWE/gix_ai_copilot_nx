@@ -1,4 +1,5 @@
 import type { ModelMessage } from './model-message.js';
+import type { ModelToolDefinition } from './model-tool.js';
 
 /**
  * The request shape a concrete `ModelProvider.stream()` receives. `model` is just the bare
@@ -13,4 +14,11 @@ export interface ModelRequest {
   readonly temperature?: number;
   readonly maxOutputTokens?: number;
   readonly metadata?: Readonly<Record<string, unknown>>;
+  /**
+   * Added in Phase 5 (tools) - additive and optional, so every Phase 2 call site keeps
+   * working unmodified. A provider adapter with no tool-calling support may simply ignore
+   * this field; `@gixcopilot/server`'s tool-calling executor only sends it to providers it
+   * knows can act on it.
+   */
+  readonly tools?: readonly ModelToolDefinition[];
 }

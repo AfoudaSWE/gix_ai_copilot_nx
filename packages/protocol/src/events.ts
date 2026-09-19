@@ -1,9 +1,10 @@
-import type { EventId, MessageId, RunId, ThreadId } from './ids.js';
+import type { EventId, MessageId, RunId, ThreadId, ToolCallId } from './ids.js';
 import type { ProtocolVersion } from './version.js';
 import type { MessageRole, ContentPart } from './message.js';
 import type { Usage } from './usage.js';
 import type { PublicCopilotError } from './errors.js';
 import type { FinishReason } from './finish-reason.js';
+import type { ToolSource } from './tool.js';
 
 /**
  * Naming convention (documented per the protocol-design skill's requirement to pick one
@@ -78,6 +79,46 @@ export interface ErrorEvent extends CopilotEventBase {
   readonly error: PublicCopilotError;
 }
 
+/**
+ * Tool lifecycle events, added in Phase 5 (see the tool-system skill). Emitted for every
+ * tool call regardless of origin so a client can render generic tool activity - see
+ * docs/phases/phase-05/Phase_5_Architecture.md. `tool.requested` is emitted once the model
+ * asks for a call; for a `source: 'frontend'` call, the client (not the server) is
+ * responsible for executing it and reporting the result back (Section 45).
+ */
+export interface ToolCallRequestedEvent extends CopilotEventBase {
+  readonly type: 'tool.requested';
+  readonly toolCallId: ToolCallId;
+  readonly name: string;
+  readonly arguments: Readonly<Record<string, unknown>>;
+  readonly source: ToolSource;
+}
+
+export interface ToolCallStartedEvent extends CopilotEventBase {
+  readonly type: 'tool.started';
+  readonly toolCallId: ToolCallId;
+  readonly name: string;
+}
+
+/**
+ * `result` is the tool's already-serialized, size-bounded output (see
+ * `@gixcopilot/tools`' result-serialization utility) - never an unbounded raw object, and
+ * never assumed safe to display without the consuming UI's own judgment (Section 60).
+ */
+export interface ToolCallCompletedEvent extends CopilotEventBase {
+  readonly type: 'tool.completed';
+  readonly toolCallId: ToolCallId;
+  readonly name: string;
+  readonly result: unknown;
+}
+
+export interface ToolCallFailedEvent extends CopilotEventBase {
+  readonly type: 'tool.failed';
+  readonly toolCallId: ToolCallId;
+  readonly name: string;
+  readonly error: PublicCopilotError;
+}
+
 export type CopilotEvent =
   | RunStartedEvent
   | RunCompletedEvent
@@ -86,7 +127,11 @@ export type CopilotEvent =
   | MessageStartEvent
   | MessageDeltaEvent
   | MessageEndEvent
-  | ErrorEvent;
+  | ErrorEvent
+  | ToolCallRequestedEvent
+  | ToolCallStartedEvent
+  | ToolCallCompletedEvent
+  | ToolCallFailedEvent;
 
 export type CopilotEventType = CopilotEvent['type'];
 

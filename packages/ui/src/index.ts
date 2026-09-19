@@ -15,6 +15,7 @@ export {
   EmptyState,
   TypingIndicator,
   ErrorMessage,
+  ToolActivity,
 } from './components.js';
 export type {
   CopilotChatProps,
@@ -25,6 +26,7 @@ export type {
   ChatInputProps,
   SuggestionsProps,
   EmptyStateProps,
+  ToolActivityProps,
 } from './components.js';
 export { CopilotPopup, CopilotSidebar } from './panels.js';
 export type { CopilotPanelProps } from './panels.js';

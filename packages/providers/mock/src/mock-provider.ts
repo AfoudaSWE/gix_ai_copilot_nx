@@ -10,6 +10,7 @@ import type {
   ModelProvider,
   ModelRequest,
   ModelStreamEvent,
+  ModelToolCall,
 } from '@gixcopilot/provider';
 
 export interface MockFailure {
@@ -27,6 +28,14 @@ export interface MockProviderScenario {
   readonly failBeforeFirstChunk?: MockFailure;
   /** Fails immediately after yielding this many chunks (1-based). */
   readonly failDuringStream?: MockFailure & { readonly afterChunks: number };
+  /**
+   * Added in Phase 5 (tools, Section 73): when set, the mock model deterministically
+   * requests these tool calls after any `chunks` have been emitted, then completes with
+   * `finishReason: 'tool_calls'` (overriding `finishReason` above) instead of `'stop'` - no
+   * external model or content-matching is involved, exactly like every other scripted field
+   * on this scenario.
+   */
+  readonly toolCalls?: readonly ModelToolCall[];
 }
 
 /**
@@ -129,6 +138,18 @@ export function createMockProvider(options: MockProviderOptions = {}): ModelProv
       if (scenario.usage) {
         yield { type: 'usage.updated', usage: scenario.usage };
       }
+
+      if (scenario.toolCalls && scenario.toolCalls.length > 0) {
+        for (const toolCall of scenario.toolCalls) {
+          if (isAborted(execOptions?.signal)) {
+            return;
+          }
+          yield { type: 'tool_call.requested', toolCall };
+        }
+        yield { type: 'model.completed', finishReason: 'tool_calls', usage: scenario.usage };
+        return;
+      }
+
       yield {
         type: 'model.completed',
         finishReason: scenario.finishReason ?? 'stop',

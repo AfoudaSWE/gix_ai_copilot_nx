@@ -19,6 +19,7 @@ function fakeEvent(type: CopilotEvent['type'], sequence: number): CopilotEvent {
 function createFakeTransport(events: readonly CopilotEvent[]) {
   let capturedRequest: TransportRunRequest | undefined;
   const cancel = vi.fn(() => Promise.resolve(undefined));
+  const submitToolResult = vi.fn(() => Promise.resolve(undefined));
   const transport: CopilotTransport = {
     async *run(request) {
       await Promise.resolve();
@@ -31,8 +32,9 @@ function createFakeTransport(events: readonly CopilotEvent[]) {
       }
     },
     cancel,
+    submitToolResult,
   };
-  return { transport, cancel, getCapturedRequest: () => capturedRequest };
+  return { transport, cancel, submitToolResult, getCapturedRequest: () => capturedRequest };
 }
 
 describe('createCopilotClient', () => {
@@ -120,5 +122,40 @@ describe('createCopilotClient', () => {
       collected.push(event);
     }
     expect(collected).toEqual([]);
+  });
+
+  it('forwards tools to the transport', async () => {
+    const { transport, getCapturedRequest } = createFakeTransport([fakeEvent('run.started', 1)]);
+    const client = createCopilotClient({ baseUrl: 'http://example.invalid', transport });
+    const tools = [
+      { name: 'nav.open', description: 'x', parameters: {}, executionLocation: 'client' as const },
+    ];
+
+    const run = client.run({
+      messages: [{ role: 'user', content: [{ type: 'text', text: 'hi' }] }],
+      tools,
+    });
+    for await (const _event of run.events) {
+      // drain
+    }
+
+    expect(getCapturedRequest()?.tools).toEqual(tools);
+  });
+
+  it('submitToolResult delegates to the transport', async () => {
+    const { transport, submitToolResult } = createFakeTransport([]);
+    const client = createCopilotClient({ baseUrl: 'http://example.invalid', transport });
+
+    await client.submitToolResult('run-1', 'call-1', {
+      status: 'success',
+      toolCallId: 'call-1',
+      data: {},
+    });
+
+    expect(submitToolResult).toHaveBeenCalledWith('run-1', 'call-1', {
+      status: 'success',
+      toolCallId: 'call-1',
+      data: {},
+    });
   });
 });

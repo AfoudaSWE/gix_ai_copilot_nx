@@ -10,6 +10,8 @@ export type ThreadId = string;
 export type RunId = string;
 export type MessageId = string;
 export type EventId = string;
+/** Added in Phase 5 (tools) - identifies one tool invocation across request/result/events. */
+export type ToolCallId = string;
 
 export function createThreadId(): ThreadId {
   return crypto.randomUUID();
@@ -24,6 +26,10 @@ export function createMessageId(): MessageId {
 }
 
 export function createEventId(): EventId {
+  return crypto.randomUUID();
+}
+
+export function createToolCallId(): ToolCallId {
   return crypto.randomUUID();
 }
 

@@ -67,4 +67,26 @@ describe('CopilotError', () => {
       expect(CopilotError.networkError('x').code).toBe('NETWORK_ERROR');
     });
   });
+
+  describe('Phase 5 tool error factories', () => {
+    it('assigns the correct code and non-retryable default to each new factory', () => {
+      expect(CopilotError.toolNotFound('applications.get').code).toBe('TOOL_NOT_FOUND');
+      expect(CopilotError.toolNotFound('applications.get').retryable).toBe(false);
+      expect(CopilotError.toolDisabled('applications.get').code).toBe('TOOL_DISABLED');
+      expect(CopilotError.toolExecutionError('boom').code).toBe('TOOL_EXECUTION_ERROR');
+      expect(CopilotError.toolOutputInvalid('bad output').code).toBe('TOOL_OUTPUT_INVALID');
+      expect(CopilotError.toolIterationLimitExceeded(8).code).toBe(
+        'TOOL_ITERATION_LIMIT_EXCEEDED',
+      );
+      expect(CopilotError.frontendToolUnavailable('nav.open').code).toBe(
+        'FRONTEND_TOOL_UNAVAILABLE',
+      );
+    });
+
+    it('includes the tool name in metadata for identification without parsing the message', () => {
+      expect(CopilotError.toolNotFound('applications.get').metadata).toEqual({
+        name: 'applications.get',
+      });
+    });
+  });
 });

@@ -12,6 +12,10 @@ import type {
   RunCompletedEvent,
   RunFailedEvent,
   RunStartedEvent,
+  ToolCallCompletedEvent,
+  ToolCallFailedEvent,
+  ToolCallRequestedEvent,
+  ToolCallStartedEvent,
   UnknownCopilotEvent,
 } from './events.js';
 
@@ -41,18 +45,45 @@ const publicCopilotErrorSchema = z.object({
     'CONTEXT_LIMIT_EXCEEDED',
     'TIMEOUT',
     'NETWORK_ERROR',
+    'TOOL_NOT_FOUND',
+    'TOOL_DISABLED',
+    'TOOL_EXECUTION_ERROR',
+    'TOOL_OUTPUT_INVALID',
+    'TOOL_ITERATION_LIMIT_EXCEEDED',
+    'FRONTEND_TOOL_UNAVAILABLE',
   ]),
   message: z.string(),
   retryable: z.boolean(),
   metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
-const contentPartSchema = z.object({
-  type: z.literal('text'),
-  text: z.string(),
-});
+const toolResultSchema = z.discriminatedUnion('status', [
+  z.object({ status: z.literal('success'), toolCallId: z.string().min(1), data: z.unknown() }),
+  z.object({
+    status: z.literal('error'),
+    toolCallId: z.string().min(1),
+    error: publicCopilotErrorSchema,
+  }),
+]);
+
+const contentPartSchema = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('text'), text: z.string() }),
+  z.object({
+    type: z.literal('tool_call'),
+    toolCallId: z.string().min(1),
+    name: z.string().min(1),
+    arguments: z.record(z.string(), z.unknown()),
+  }),
+  z.object({
+    type: z.literal('tool_result'),
+    toolCallId: z.string().min(1),
+    result: toolResultSchema,
+  }),
+]);
 
 const messageRoleSchema = z.enum(['system', 'user', 'assistant', 'tool']);
+
+const toolSourceSchema = z.enum(['native', 'frontend', 'openapi', 'mcp', 'agent']);
 
 const finishReasonSchema = z.enum([
   'stop',
@@ -61,6 +92,7 @@ const finishReasonSchema = z.enum([
   'cancelled',
   'error',
   'unknown',
+  'tool_calls',
 ]);
 
 /** Common fields present on every event, regardless of whether `type` is recognized. */
@@ -115,6 +147,34 @@ const errorEventSchema = copilotEventBaseSchema.extend({
   error: publicCopilotErrorSchema,
 });
 
+const toolCallRequestedEventSchema = copilotEventBaseSchema.extend({
+  type: z.literal('tool.requested'),
+  toolCallId: z.string().min(1),
+  name: z.string().min(1),
+  arguments: z.record(z.string(), z.unknown()),
+  source: toolSourceSchema,
+});
+
+const toolCallStartedEventSchema = copilotEventBaseSchema.extend({
+  type: z.literal('tool.started'),
+  toolCallId: z.string().min(1),
+  name: z.string().min(1),
+});
+
+const toolCallCompletedEventSchema = copilotEventBaseSchema.extend({
+  type: z.literal('tool.completed'),
+  toolCallId: z.string().min(1),
+  name: z.string().min(1),
+  result: z.unknown(),
+});
+
+const toolCallFailedEventSchema = copilotEventBaseSchema.extend({
+  type: z.literal('tool.failed'),
+  toolCallId: z.string().min(1),
+  name: z.string().min(1),
+  error: publicCopilotErrorSchema,
+});
+
 type EventSchemaFor<T extends CopilotEvent> = z.ZodType<T>;
 
 const eventSchemasByType: {
@@ -126,6 +186,10 @@ const eventSchemasByType: {
   'message.delta': EventSchemaFor<MessageDeltaEvent>;
   'message.end': EventSchemaFor<MessageEndEvent>;
   error: EventSchemaFor<ErrorEvent>;
+  'tool.requested': EventSchemaFor<ToolCallRequestedEvent>;
+  'tool.started': EventSchemaFor<ToolCallStartedEvent>;
+  'tool.completed': EventSchemaFor<ToolCallCompletedEvent>;
+  'tool.failed': EventSchemaFor<ToolCallFailedEvent>;
 } = {
   'run.started': runStartedEventSchema,
   'run.completed': runCompletedEventSchema,
@@ -135,6 +199,10 @@ const eventSchemasByType: {
   'message.delta': messageDeltaEventSchema,
   'message.end': messageEndEventSchema,
   error: errorEventSchema,
+  'tool.requested': toolCallRequestedEventSchema,
+  'tool.started': toolCallStartedEventSchema,
+  'tool.completed': toolCallCompletedEventSchema,
+  'tool.failed': toolCallFailedEventSchema,
 };
 
 function isKnownEventType(value: string): value is CopilotEventType {

@@ -32,6 +32,16 @@ same pre-existing pattern); its `files` field already excludes compiled specs, m
 Phase 3's own fix. No Phase 5+ feature (tools, RAG, agents, security firewall) is tracked
 here — see Section 85 of the phase brief and the phase-gate skill.
 
+Phase 5 review: no new debt was introduced. `@gixcopilot/tools` ships with the same
+per-package `*.spec.ts`-in-`dist/` characteristic as item 1 (its `files` field excludes
+compiled specs, matching prior packages). `@gixcopilot/server`'s new `FrontendToolBridge` is
+in-memory and process-local, exactly like the pre-existing run registry (item 3) — tracked
+there, not as new debt. Two real bugs (a tool-event drain gap on a thrown error, and a
+frontend-tool round-trip deadlock) were found and _fixed within this same phase_ via
+integration testing — see `docs/phases/phase-05/Phase_5_Issues.md` — so neither is carried
+forward as debt. No Phase 6+ feature (Generative UI, an Action Firewall, HITL, OpenAPI/MCP
+auto-tool-generation, RAG, agents) is tracked here.
+
 ## Resolved
 
 Phase 3 review: the new React/UI package file lists exclude compiled specs from packing.

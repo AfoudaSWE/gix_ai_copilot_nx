@@ -132,4 +132,24 @@ describe('createModelExecutor', () => {
     await expect(nextPromise).rejects.toMatchObject({ code: 'CANCELLED' });
     expect(observedSignal?.aborted).toBe(true);
   });
+
+  it('throws an internal error if a provider emits tool_call.requested when no tools were offered', async () => {
+    const runtime = createModelRuntime({
+      providers: [
+        scriptedProvider('mock', [
+          {
+            type: 'tool_call.requested',
+            toolCall: { id: 'call-1', name: 'math.add', arguments: { a: 1, b: 2 } },
+          },
+        ]),
+      ],
+    });
+    const executor = createModelExecutor({ runtime, model: { provider: 'mock', model: 'x' } });
+
+    const generator = executor.execute(
+      { threadId: createThreadId(), messages: [] },
+      executorContext(),
+    );
+    await expect(generator.next()).rejects.toMatchObject({ code: 'INTERNAL_ERROR' });
+  });
 });

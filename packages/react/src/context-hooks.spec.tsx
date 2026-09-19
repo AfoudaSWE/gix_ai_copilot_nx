@@ -19,6 +19,7 @@ function stubClient(): { client: CopilotClient; runs: RunOptions[] } {
         events: { async *[Symbol.asyncIterator]() {} },
       };
     },
+    submitToolResult: vi.fn(() => Promise.resolve(undefined)),
   };
   return { client, runs };
 }

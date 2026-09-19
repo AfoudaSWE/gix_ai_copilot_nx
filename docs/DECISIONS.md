@@ -23,3 +23,7 @@ Add a new row here whenever a new ADR is added under `docs/adr/`.
 | Phase 4 ADR | Decision |
 | --- | --- |
 | [0009](adr/0009-context-and-state-architecture.md) | `@gixcopilot/context` depends only on protocol; resolved context reaches the model as a leading `system` message built entirely in `@gixcopilot/react`, with a synchronous fast path when nothing is registered; state and context are separate stores, state exposure to the model is explicit opt-in only |
+
+| Phase 5 ADR | Decision |
+| --- | --- |
+| [0010](adr/0010-canonical-tool-architecture.md) | `@gixcopilot/tools` depends only on protocol; `ToolDefinition.execute` uses method shorthand for bivariant storage typing; duplicate registration rejected by default; `ToolResolver` is a mandatory discovery indirection; `ExecutorContext.onToolEvent` extends core additively instead of widening the yield type; the whole backend tool loop runs inside one `Executor.execute()` call; a frontend tool call suspends on a `FrontendToolBridge` promise rather than a new `RunStatus` |

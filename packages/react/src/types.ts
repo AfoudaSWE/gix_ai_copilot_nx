@@ -3,6 +3,8 @@ import type {
   Message,
   PublicCopilotError,
   Thread,
+  ToolCallId,
+  ToolSource,
   Usage,
   FinishReason,
 } from '@gixcopilot/protocol';
@@ -16,12 +18,32 @@ export interface CopilotMessage extends Message {
 /** Exactly one generation state is observable at a time. */
 export type ChatStatus = 'idle' | 'submitting' | 'streaming' | 'completed' | 'stopped' | 'error';
 
+/**
+ * Headless tool activity state (Section 59-61, added in Phase 5) - a generic timeline of
+ * every tool call in the current run, regardless of origin, for a custom/headless UI (or the
+ * default `CopilotChat` activity rendering) to display without parsing raw protocol events
+ * itself. `arguments`/`result` are present for an advanced consumer that explicitly wants
+ * them; the *default* UI intentionally does not render them (Section 60).
+ */
+export interface ToolCallState {
+  readonly id: ToolCallId;
+  readonly name: string;
+  readonly source: ToolSource;
+  readonly status: 'requested' | 'running' | 'succeeded' | 'failed';
+  readonly arguments: Readonly<Record<string, unknown>>;
+  readonly result?: unknown;
+  readonly error?: PublicCopilotError;
+}
+
 interface ChatSnapshotBase {
   readonly messages: readonly CopilotMessage[];
   readonly thread: Thread | null;
   readonly runId: string | null;
   readonly usage: Usage | undefined;
   readonly finishReason: FinishReason | undefined;
+  /** Cleared at the start of every new run (Section 59) - this is per-turn activity, not a
+   * persistent tool-call history across the whole conversation. */
+  readonly toolCalls: readonly ToolCallState[];
 }
 
 /** Immutable chat snapshot. Errors exist only in the error state. */

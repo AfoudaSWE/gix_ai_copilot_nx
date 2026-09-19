@@ -143,4 +143,78 @@ describe('createSseTransport', () => {
       method: 'POST',
     });
   });
+
+  describe('Phase 5 tool support', () => {
+    it('includes tools in the run request body only when non-empty', async () => {
+      const fetchImpl = vi.fn(() => sseResponse([]));
+      const transport = createSseTransport({
+        baseUrl: 'http://example.invalid',
+        fetchImpl: fetchImpl as unknown as typeof fetch,
+      });
+      const tools = [
+        {
+          name: 'navigation.open',
+          description: 'x',
+          parameters: {},
+          executionLocation: 'client' as const,
+        },
+      ];
+
+      await drain(
+        transport.run({
+          messages: [{ role: 'user', content: [{ type: 'text', text: 'hi' }] }],
+          tools,
+        }),
+      );
+
+      expect(fetchImpl).toHaveBeenCalledWith(
+        'http://example.invalid/runs',
+        expect.objectContaining({
+          body: JSON.stringify({
+            messages: [{ role: 'user', content: [{ type: 'text', text: 'hi' }] }],
+            tools,
+          }),
+        }),
+      );
+    });
+
+    it('submitToolResult POSTs the result to /runs/:runId/tool-results', async () => {
+      const fetchImpl = vi.fn(() => new Response(null, { status: 202 }));
+      const transport = createSseTransport({
+        baseUrl: 'http://example.invalid',
+        fetchImpl: fetchImpl as unknown as typeof fetch,
+      });
+
+      await transport.submitToolResult('run-1', 'call-1', {
+        status: 'success',
+        toolCallId: 'call-1',
+        data: { opened: true },
+      });
+
+      expect(fetchImpl).toHaveBeenCalledWith('http://example.invalid/runs/run-1/tool-results', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          toolCallId: 'call-1',
+          result: { status: 'success', toolCallId: 'call-1', data: { opened: true } },
+        }),
+      });
+    });
+
+    it('submitToolResult throws a transport error on a non-OK response', async () => {
+      const fetchImpl = vi.fn(() => new Response(null, { status: 404 }));
+      const transport = createSseTransport({
+        baseUrl: 'http://example.invalid',
+        fetchImpl: fetchImpl as unknown as typeof fetch,
+      });
+
+      await expect(
+        transport.submitToolResult('run-1', 'call-1', {
+          status: 'success',
+          toolCallId: 'call-1',
+          data: {},
+        }),
+      ).rejects.toMatchObject({ code: 'TRANSPORT_ERROR' });
+    });
+  });
 });

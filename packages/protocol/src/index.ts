@@ -6,10 +6,11 @@ export {
   createRunId,
   createMessageId,
   createEventId,
+  createToolCallId,
   asThreadId,
   asRunId,
 } from './ids.js';
-export type { ThreadId, RunId, MessageId, EventId } from './ids.js';
+export type { ThreadId, RunId, MessageId, EventId, ToolCallId } from './ids.js';
 
 export { CopilotError } from './errors.js';
 export type {
@@ -40,10 +41,23 @@ export type {
   MessageDeltaEvent,
   MessageEndEvent,
   ErrorEvent,
+  ToolCallRequestedEvent,
+  ToolCallStartedEvent,
+  ToolCallCompletedEvent,
+  ToolCallFailedEvent,
   CopilotEvent,
   CopilotEventType,
   UnknownCopilotEvent,
 } from './events.js';
+
+export type {
+  ToolSource,
+  ToolExecutionLocation,
+  ToolCall,
+  ToolResult,
+  ToolLifecycleEvent,
+  ToolManifestEntry,
+} from './tool.js';
 
 export { parseEvent, serializeEvent } from './serialization.js';
 export type { ParsedEvent } from './serialization.js';

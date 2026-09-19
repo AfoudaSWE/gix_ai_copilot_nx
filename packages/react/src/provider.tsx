@@ -6,8 +6,9 @@ import { createCopilotClient } from '@gixcopilot/client';
 import { CopilotError } from '@gixcopilot/protocol';
 import type { Thread } from '@gixcopilot/protocol';
 import { createContextEngine, createContextRegistry, createCopilotStateStore } from '@gixcopilot/context';
+import { createDefaultToolResolver, createToolRegistry, createToolRuntime, isToolEnabled, toToolManifest } from '@gixcopilot/tools';
 import { createChatStore } from './chat-store.js';
-import type { ResolveContextMessage } from './chat-store.js';
+import type { ResolveContextMessage, ResolveToolManifest } from './chat-store.js';
 import { CopilotInternalsContext } from './internals.js';
 import type { CopilotInternals } from './internals.js';
 import type {
@@ -16,6 +17,7 @@ import type {
   CopilotChatResult,
   CopilotMessage,
   CopilotProviderProps,
+  ToolCallState,
 } from './types.js';
 
 const StoreContext = createContext<ReturnType<typeof createChatStore> | null>(null);
@@ -42,15 +44,18 @@ export function CopilotProvider({
   // One isolated context/state universe per provider instance (Section 65) - never a
   // module-level singleton, so sibling/nested CopilotProviders never see each other's
   // context or state.
-  const internals: CopilotInternals = useMemo(
-    () => ({
+  const internals: CopilotInternals = useMemo(() => {
+    const toolRegistry = createToolRegistry();
+    return {
       registry: createContextRegistry(),
       engine: createContextEngine({ maxContextTokens }),
       stateStore: createCopilotStateStore(),
-    }),
-    [maxContextTokens],
-  );
+      toolRegistry,
+      toolRuntime: createToolRuntime({ resolver: createDefaultToolResolver(toolRegistry) }),
+    };
+  }, [maxContextTokens]);
   useEffect(() => () => internals.registry.clear(), [internals]);
+  useEffect(() => () => internals.toolRegistry.clear(), [internals]);
 
   const resolveContextMessage: ResolveContextMessage = useMemo(
     () => () => {
@@ -64,6 +69,17 @@ export function CopilotProvider({
     [internals],
   );
 
+  const resolveToolManifest: ResolveToolManifest = useMemo(
+    () => () => {
+      const enabledTools = internals.toolRegistry.list().filter(isToolEnabled);
+      // `undefined` (not an empty array) when nothing is registered, matching
+      // resolveContextMessage's "send exactly what Phase 4 always sent" convention -
+      // @gixcopilot/client omits the `tools` field entirely in that case (Section 64).
+      return enabledTools.length === 0 ? undefined : toToolManifest(enabledTools);
+    },
+    [internals],
+  );
+
   const store = useMemo(
     () =>
       createChatStore(
@@ -73,8 +89,10 @@ export function CopilotProvider({
           : undefined,
         threadId,
         resolveContextMessage,
+        resolveToolManifest,
+        internals.toolRuntime,
       ),
-    [client, provider, modelName, threadId, resolveContextMessage],
+    [client, provider, modelName, threadId, resolveContextMessage, resolveToolManifest, internals],
   );
   useEffect(() => {
     store.mount();
@@ -116,6 +134,20 @@ export function useMessages(): readonly CopilotMessage[] {
     store.subscribe,
     () => store.getSnapshot().messages,
     () => store.getServerSnapshot().messages,
+  );
+}
+
+/**
+ * Headless tool activity for the current run (Section 61, added in Phase 5) - a generic
+ * timeline any custom UI can render without parsing raw `tool.*` protocol events itself.
+ * `CopilotChat`'s default rendering (see `@gixcopilot/ui`) is built on this same state.
+ */
+export function useToolCalls(): readonly ToolCallState[] {
+  const store = useStore();
+  return useSyncExternalStore(
+    store.subscribe,
+    () => store.getSnapshot().toolCalls,
+    () => store.getServerSnapshot().toolCalls,
   );
 }
 

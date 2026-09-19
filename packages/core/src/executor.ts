@@ -4,6 +4,7 @@ import type {
   MessageRole,
   RunId,
   ThreadId,
+  ToolLifecycleEvent,
   Usage,
 } from '@gixcopilot/protocol';
 
@@ -25,6 +26,16 @@ export interface ExecutorContext {
   readonly runId: RunId;
   /** Aborts when the run is cancelled. Implementations must stop yielding promptly. */
   readonly signal: AbortSignal;
+  /**
+   * Added in Phase 5 (tools), additive per the same pattern that added `usage`/
+   * `finishReason` to ExecutorCompletion in Phase 2: an Executor that performs its own
+   * tool-calling loop internally (e.g. `@gixcopilot/server`'s tool-calling executor) can
+   * report tool lifecycle notifications mid-stream by calling this instead of the yield
+   * channel staying text-only. Optional so a Phase 1/2-style text-only Executor (like
+   * `createEchoExecutor`) needs no changes at all. `@gixcopilot/core`'s runtime drains
+   * these into `tool.*` CopilotEvents interleaved with the executor's text deltas.
+   */
+  readonly onToolEvent?: (event: ToolLifecycleEvent) => void;
 }
 
 /**

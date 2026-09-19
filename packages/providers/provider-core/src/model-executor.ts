@@ -49,6 +49,17 @@ export function createModelExecutor(options: CreateModelExecutorOptions): Execut
           case 'usage.updated':
             usage = event.usage;
             break;
+          case 'tool_call.requested':
+            // createModelExecutor never sends `tools` on its request (Section 25's plain
+            // text-only Executor bridge - see the module doc comment), so a spec-compliant
+            // provider should never produce this event here. Fail loudly rather than
+            // silently dropping a tool call the caller would otherwise never see -
+            // `@gixcopilot/server`'s tool-calling executor is the intended integration point
+            // for a request that actually offers tools to the model.
+            throw CopilotError.internal(
+              'Received an unexpected tool_call.requested event from a model executor that ' +
+                'did not offer any tools. Use a tool-calling executor instead.',
+            );
           case 'model.completed':
             usage = event.usage ?? usage;
             finishReason = event.finishReason;

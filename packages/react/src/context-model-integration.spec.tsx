@@ -1,11 +1,16 @@
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { CopilotClient, RunOptions } from '@gixcopilot/client';
+import type { ContentPart } from '@gixcopilot/protocol';
 import { CopilotProvider, useCopilotChat, useCopilotContext } from './index.js';
 
 afterEach(() => {
   cleanup();
 });
+
+function textOf(part: ContentPart | undefined): string {
+  return part?.type === 'text' ? part.text : '';
+}
 
 function stubClient(): { client: CopilotClient; runs: RunOptions[] } {
   const runs: RunOptions[] = [];
@@ -14,6 +19,7 @@ function stubClient(): { client: CopilotClient; runs: RunOptions[] } {
       runs.push(options);
       return { cancel: vi.fn(), events: { async *[Symbol.asyncIterator]() {} } };
     },
+    submitToolResult: vi.fn(() => Promise.resolve(undefined)),
   };
   return { client, runs };
 }
@@ -50,7 +56,7 @@ describe('resolved application context reaches the model request', () => {
     expect(runs).toHaveLength(1);
     const messages = runs[0]?.messages ?? [];
     expect(messages[0]?.role).toBe('system');
-    const systemText = messages[0]?.content[0]?.text ?? '';
+    const systemText = textOf(messages[0]?.content[0]);
     expect(systemText).toContain('[Context: selectedApplication]');
     expect(systemText).toContain('APP-1024');
     expect(messages[1]?.role).toBe('user');
@@ -85,7 +91,7 @@ describe('resolved application context reaches the model request', () => {
       await Promise.resolve();
       await Promise.resolve();
     });
-    expect(runs[0]?.messages[0]?.content[0]?.text).toContain('APP-1001');
+    expect(textOf(runs[0]?.messages[0]?.content[0])).toContain('APP-1001');
 
     rerender({ selected: 'APP-1003' });
     act(() => {
@@ -96,7 +102,7 @@ describe('resolved application context reaches the model request', () => {
       await Promise.resolve();
       await Promise.resolve();
     });
-    expect(runs[1]?.messages[0]?.content[0]?.text).toContain('APP-1003');
-    expect(runs[1]?.messages[0]?.content[0]?.text).not.toContain('APP-1001');
+    expect(textOf(runs[1]?.messages[0]?.content[0])).toContain('APP-1003');
+    expect(textOf(runs[1]?.messages[0]?.content[0])).not.toContain('APP-1001');
   });
 });

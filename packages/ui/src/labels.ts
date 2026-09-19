@@ -31,6 +31,12 @@ export interface CopilotLabels {
   readonly rateLimitError: string;
   readonly jumpToLatest: string;
   readonly renderError: string;
+  /** Tool activity (Section 59-61, added in Phase 5) - generic, name-agnostic phrasing since
+   * a tool's own `description` (not surfaced here by default - Section 60) is the only
+   * source of anything tool-specific. */
+  readonly toolRunning: string;
+  readonly toolCompleted: string;
+  readonly toolFailed: string;
 }
 
 /** English defaults, centralized rather than embedded throughout the components. */
@@ -66,4 +72,7 @@ export const DEFAULT_LABELS: CopilotLabels = {
   rateLimitError: 'Too many requests. Wait a moment, then try again.',
   jumpToLatest: 'Jump to latest',
   renderError: 'This message could not be displayed.',
+  toolRunning: 'Running',
+  toolCompleted: 'completed',
+  toolFailed: 'failed',
 };

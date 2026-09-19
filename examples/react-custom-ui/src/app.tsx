@@ -1,6 +1,15 @@
 import { useState } from 'react';
 import type { ReactElement } from 'react';
 import { CopilotProvider, useCopilotChat } from '@gixcopilot/react';
+import type { CopilotMessage } from '@gixcopilot/react';
+
+/** Text content only - a message may also carry Phase 5 tool_call/tool_result parts. */
+function textOfContent(content: CopilotMessage['content']): string {
+  return content
+    .filter((part): part is Extract<typeof part, { type: 'text' }> => part.type === 'text')
+    .map((part) => part.text)
+    .join('');
+}
 
 /** Entirely custom interface: no import or dependency on @gixcopilot/ui. */
 export function CustomChat(): ReactElement {
@@ -22,7 +31,7 @@ export function CustomChat(): ReactElement {
           {messages.map((message) => (
             <li key={message.id}>
               <strong>{message.role === 'user' ? 'You' : 'Copilot'}</strong>
-              <p>{message.content.map((part) => part.text).join('')}</p>
+              <p>{textOfContent(message.content)}</p>
             </li>
           ))}
         </ol>

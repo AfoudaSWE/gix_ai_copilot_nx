@@ -5,7 +5,9 @@ import type {
   ModelProvider,
   ModelRequest,
   ModelStreamEvent,
+  ModelToolDefinition,
 } from '@gixcopilot/provider';
+import { ToolCallAssembler } from '@gixcopilot/provider';
 import { toOpenAIMessages } from './message-mapping.js';
 import { mapFinishReason, toNormalizedError } from './error-mapping.js';
 
@@ -36,6 +38,20 @@ function createClient(options: CreateOpenAIProviderOptions): OpenAI {
   });
 }
 
+function toOpenAITools(
+  tools: readonly ModelToolDefinition[] | undefined,
+): OpenAI.ChatCompletionTool[] | undefined {
+  if (!tools || tools.length === 0) return undefined;
+  return tools.map((tool) => ({
+    type: 'function',
+    function: {
+      name: tool.name,
+      description: tool.description,
+      parameters: tool.parameters,
+    },
+  }));
+}
+
 function toUsage(usage: OpenAI.CompletionUsage | null | undefined): Usage | undefined {
   if (!usage) {
     return undefined;
@@ -49,9 +65,9 @@ function toUsage(usage: OpenAI.CompletionUsage | null | undefined): Usage | unde
 
 /**
  * The first real (non-mock) ModelProvider (Section 13/43). Only this package may depend on
- * the `openai` SDK - see docs/adr/0006-model-provider-abstraction.md. Text streaming only;
- * no tool/function calls, no assistants API, no vector stores, no hosted retrieval (all
- * explicitly out of Phase 2's scope).
+ * the `openai` SDK - see docs/adr/0006-model-provider-abstraction.md. Text streaming plus
+ * Phase 5 tool calling (mapped to/from OpenAI's own function-calling shape); no assistants
+ * API, no vector stores, no hosted retrieval (still out of scope).
  */
 export function createOpenAIProvider(options: CreateOpenAIProviderOptions = {}): ModelProvider {
   const client = createClient(options);
@@ -76,6 +92,7 @@ export function createOpenAIProvider(options: CreateOpenAIProviderOptions = {}):
             ...(request.maxOutputTokens !== undefined
               ? { max_completion_tokens: request.maxOutputTokens }
               : {}),
+            ...(toOpenAITools(request.tools) ? { tools: toOpenAITools(request.tools) } : {}),
           },
           { signal: execOptions?.signal },
         );
@@ -86,6 +103,9 @@ export function createOpenAIProvider(options: CreateOpenAIProviderOptions = {}):
 
       let finishReason: FinishReason = 'unknown';
       let usage: Usage | undefined;
+      // Assembles fragmented tool-call argument deltas (Section 38) - OpenAI streams a
+      // function call's arguments as incremental JSON string chunks, never in one piece.
+      const toolCallAssembler = new ToolCallAssembler();
 
       try {
         for await (const chunk of chunks) {
@@ -93,6 +113,14 @@ export function createOpenAIProvider(options: CreateOpenAIProviderOptions = {}):
           const delta = choice?.delta.content;
           if (delta) {
             yield { type: 'content.delta', delta };
+          }
+          for (const toolCallDelta of choice?.delta.tool_calls ?? []) {
+            toolCallAssembler.push({
+              index: toolCallDelta.index,
+              id: toolCallDelta.id,
+              name: toolCallDelta.function?.name ?? undefined,
+              argumentsDelta: toolCallDelta.function?.arguments,
+            });
           }
           if (choice?.finish_reason) {
             finishReason = mapFinishReason(choice.finish_reason);
@@ -106,6 +134,19 @@ export function createOpenAIProvider(options: CreateOpenAIProviderOptions = {}):
       } catch (error) {
         yield { type: 'model.failed', error: toNormalizedError(error).toPublicJSON() };
         return;
+      }
+
+      if (!toolCallAssembler.isEmpty) {
+        let toolCalls;
+        try {
+          toolCalls = toolCallAssembler.finalize();
+        } catch (error) {
+          yield { type: 'model.failed', error: toNormalizedError(error).toPublicJSON() };
+          return;
+        }
+        for (const toolCall of toolCalls) {
+          yield { type: 'tool_call.requested', toolCall };
+        }
       }
 
       yield { type: 'model.completed', finishReason, usage };

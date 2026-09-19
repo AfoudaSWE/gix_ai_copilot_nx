@@ -13,7 +13,7 @@ Phase 01 - Foundation & Architecture           COMPLETE
 Phase 02 - LLM Runtime & Streaming             COMPLETE
 Phase 03 - React Copilot UI                    COMPLETE
 Phase 04 - Application Context & State         COMPLETE
-Phase 05 - Tools & Agent Actions               NOT STARTED / LOCKED
+Phase 05 - Tools & Agent Actions               COMPLETE
 Phase 06 - Generative UI & Shared State        NOT STARTED / LOCKED
 Phase 07 - Enterprise Security & HITL          NOT STARTED / LOCKED
 Phase 08 - OpenAPI + MCP + Integrations        NOT STARTED / LOCKED
@@ -69,9 +69,46 @@ phase is started without an explicit instruction naming it.
 - Full record: [Phase 4 docs](phases/phase-04/Phase_4_Docs.md),
   [completion report](phases/phase-04/Phase_4_Status.md),
   [ADR 0009](adr/0009-context-and-state-architecture.md).
-- Phase 5 remains **LOCKED / NOT STARTED**.
 
-## Current Validation (Phase 4 completion)
+## Phase 5 — Tools & Agent Actions (COMPLETE)
+
+- Added `@gixcopilot/tools`: a framework-independent canonical tool architecture —
+  `ToolDefinition`/`defineTool`, a registry, a discovery resolver, and an execution runtime
+  (validate → middleware → timeout/cancellation → execute → validate output → normalize) —
+  depends only on `@gixcopilot/protocol`, no React/Fastify/provider-SDK dependency.
+- Extended the protocol additively: `ToolCall`/`ToolResult`/`ToolManifestEntry` types, two new
+  `ContentPart` variants, four new `tool.*` `CopilotEvent`s, a new `FinishReason` value, and
+  six new `CopilotErrorCode`s. Extended `@gixcopilot/core`'s `ExecutorContext` with an
+  optional `onToolEvent` callback rather than widening `Executor.execute()`'s yield type —
+  every Phase 1/2 `Executor` is untouched.
+- Extended `@gixcopilot/provider` (provider-core), `-mock`, and `-openai` with provider-neutral
+  tool calling (`ModelRequest.tools`, `tool_call.requested` streaming, a fragmented-argument
+  assembler) and a new `generateObject()` structured-output API, distinct from tool calling.
+- Extended `@gixcopilot/server` with a real Model → Tool → Model loop
+  (`createToolCallingExecutor`), a backend `toolRegistry` option, and a
+  `POST /runs/:runId/tool-results` route + `FrontendToolBridge` for frontend tool round trips.
+- Extended `@gixcopilot/client` (`submitToolResult`) and `@gixcopilot/react`
+  (`useFrontendTool`, `useToolCalls`, per-provider frontend tool registry/runtime) and
+  `@gixcopilot/ui` (a generic, overridable `ToolActivity` component).
+- Added `examples/react-tools`: demonstrates backend tool, frontend tool, context + tool,
+  tool error, and tool cancellation end to end, using a deterministic, non-network provider.
+- Full record: [Phase 5 docs](phases/phase-05/Phase_5_Docs.md),
+  [completion report](phases/phase-05/Phase_5_Status.md),
+  [ADR 0010](adr/0010-canonical-tool-architecture.md).
+- Phase 6 remains **LOCKED / NOT STARTED**.
+
+## Current Validation (Phase 5 completion)
+
+Fresh `pnpm lint && pnpm typecheck && pnpm test && pnpm build` passed across all 18
+lint/typecheck projects and all 17 buildable/testable projects. **350 Vitest tests passed, 1
+existing optional OpenAI smoke test skipped** without credentials, zero failures — including
+every Phase 1–4 test (with a disclosed, mechanical, behavior-preserving narrowing fix at five
+call sites required by the additive `ContentPart` union — see
+[Phase 5 Issues](phases/phase-05/Phase_5_Issues.md)). The Chromium/Playwright browser suite
+was not re-run this session (no Phase 5 UI surface was added to it; its lint/typecheck
+targets were re-run and pass); see [Phase 5 Testing](phases/phase-05/Phase_5_Testing.md).
+
+## Validation (historical Phase 4 completion)
 
 Fresh `pnpm lint && pnpm typecheck && pnpm test && pnpm build` passed across all 16
 lint/typecheck projects and all 15 buildable/testable projects. **228 Vitest tests passed, 1

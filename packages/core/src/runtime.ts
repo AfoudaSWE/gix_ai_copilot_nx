@@ -14,6 +14,7 @@ import type {
   MessageRole,
   RunId,
   ThreadId,
+  ToolLifecycleEvent,
 } from '@gixcopilot/protocol';
 import { cancellable } from './cancellable-iteration.js';
 import { RunLifecycle } from './lifecycle.js';
@@ -97,6 +98,12 @@ export function createRuntime(options: CreateRuntimeOptions): Runtime {
         const assistantMessageId = createMessageId();
         let aggregatedText = '';
 
+        // Populated synchronously by ExecutorContext.onToolEvent while the executor's own
+        // async function runs during an `await deltaIterator.next()` below (Phase 5) - see
+        // executor.ts's doc comment. Drained into real tool.* events on the generator's own
+        // turn, in the order they were reported.
+        const pendingToolEvents: ToolLifecycleEvent[] = [];
+
         try {
           yield {
             ...envelope(),
@@ -106,7 +113,13 @@ export function createRuntime(options: CreateRuntimeOptions): Runtime {
           };
 
           const executorInput = { threadId, messages: runOptions.messages };
-          const executorContext = { runId, signal: abortController.signal };
+          const executorContext = {
+            runId,
+            signal: abortController.signal,
+            onToolEvent: (event: ToolLifecycleEvent) => {
+              pendingToolEvents.push(event);
+            },
+          };
 
           // Driven manually (not `for await`) so the executor's own return value
           // (ExecutorCompletion - usage/finishReason) is captured once it finishes, rather
@@ -118,9 +131,26 @@ export function createRuntime(options: CreateRuntimeOptions): Runtime {
           let completion: ExecutorCompletion | undefined;
           while (true) {
             const step = await deltaIterator.next();
+
+            while (pendingToolEvents.length > 0) {
+              const toolEvent = pendingToolEvents.shift();
+              if (toolEvent) {
+                yield toCopilotToolEvent(envelope(), toolEvent);
+              }
+            }
+
             if (step.done) {
               completion = step.value ?? undefined;
               break;
+            }
+            // An empty delta carries no information for a client - it is also how a Phase 5
+            // tool-calling Executor forces this loop to drain `pendingToolEvents` and flush
+            // them to the wire before a blocking await (e.g. a frontend tool's round trip;
+            // see @gixcopilot/server's tool-calling-executor.ts) without ever needing to
+            // widen this generic Executor's yield type. Suppressing it here keeps that an
+            // internal implementation detail, invisible to protocol consumers.
+            if (step.value.length === 0) {
+              continue;
             }
             aggregatedText += step.value;
             yield {
@@ -150,6 +180,18 @@ export function createRuntime(options: CreateRuntimeOptions): Runtime {
               : {}),
           };
         } catch (error) {
+          // Drain any tool events reported just before the throw (e.g. a 'requested'
+          // notification for the call whose execution then pushed the executor past its
+          // iteration limit) - otherwise they would be silently lost, since the executor
+          // rejected instead of resolving its next `step` (see the drain point above, which
+          // only runs after a successful `.next()`).
+          while (pendingToolEvents.length > 0) {
+            const toolEvent = pendingToolEvents.shift();
+            if (toolEvent) {
+              yield toCopilotToolEvent(envelope(), toolEvent);
+            }
+          }
+
           if (abortController.signal.aborted) {
             lifecycle.transitionTo('cancelled');
             yield { ...envelope(), type: 'run.cancelled' };
@@ -191,6 +233,42 @@ function linkExternalSignal(controller: AbortController, external: AbortSignal |
     return;
   }
   external.addEventListener('abort', () => controller.abort(), { once: true });
+}
+
+function toCopilotToolEvent(base: CopilotEventBase, event: ToolLifecycleEvent): CopilotEvent {
+  switch (event.phase) {
+    case 'requested':
+      return {
+        ...base,
+        type: 'tool.requested',
+        toolCallId: event.toolCallId,
+        name: event.name,
+        arguments: event.arguments,
+        source: event.source,
+      };
+    case 'started':
+      return { ...base, type: 'tool.started', toolCallId: event.toolCallId, name: event.name };
+    case 'completed':
+      return {
+        ...base,
+        type: 'tool.completed',
+        toolCallId: event.toolCallId,
+        name: event.name,
+        result: event.result,
+      };
+    case 'failed':
+      return {
+        ...base,
+        type: 'tool.failed',
+        toolCallId: event.toolCallId,
+        name: event.name,
+        error: event.error,
+      };
+    default: {
+      const exhaustive: never = event;
+      throw new Error(`Unhandled tool lifecycle phase: ${JSON.stringify(exhaustive)}`);
+    }
+  }
 }
 
 function toCopilotError(error: unknown): CopilotError {

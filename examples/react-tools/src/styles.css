@@ -1,0 +1,69 @@
+:root {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: #202c40;
+  background: #edf2f9;
+  font-synthesis: none;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+button,
+select {
+  font: inherit;
+  cursor: pointer;
+}
+:focus-visible {
+  outline: 3px solid #3972df;
+  outline-offset: 3px;
+}
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 24px;
+  min-height: 100vh;
+  padding: 24px;
+}
+.applications {
+  background: #fff;
+  border: 1px solid #d0daea;
+  border-radius: 12px;
+  padding: 20px;
+}
+.applications-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th,
+td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid #e4eaf3;
+}
+tr.row-selected {
+  background: #eaf1ff;
+}
+.applications-hint {
+  margin-top: 12px;
+  color: #55607a;
+}
+.opened-banner {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #e8f7ee;
+  border: 1px solid #b7e4c7;
+  color: #1f6b3a;
+}
+.chat-pane {
+  min-width: 0;
+  height: calc(100vh - 48px);
+}

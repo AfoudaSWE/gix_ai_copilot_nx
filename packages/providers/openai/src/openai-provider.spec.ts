@@ -178,7 +178,7 @@ describe('createOpenAIProvider', () => {
     expect(failed?.type === 'model.failed' && failed.error.retryable).toBe(true);
   });
 
-  it('rejects a tool-role message before ever calling the API', async () => {
+  it('rejects a tool-role message with no tool_result content part before ever calling the API', async () => {
     const fakeFetch = vi.fn();
     const provider = createOpenAIProvider({
       apiKey: 'test-key',
@@ -195,6 +195,124 @@ describe('createOpenAIProvider', () => {
     const failed = events.at(-1);
     expect(failed?.type === 'model.failed' && failed.error.code).toBe('VALIDATION_ERROR');
     expect(fakeFetch).not.toHaveBeenCalled();
+  });
+
+  describe('Phase 5 tool calling', () => {
+    it('sends the request tools mapped to OpenAI function-calling shape', async () => {
+      const fakeFetch = vi.fn(() => sseResponse('data: [DONE]\n\n'));
+      const provider = createOpenAIProvider({
+        apiKey: 'test-key',
+        fetch: fakeFetch as unknown as typeof fetch,
+      });
+
+      await collect(
+        provider.stream({
+          model: 'gpt-4o-mini',
+          messages: [],
+          tools: [
+            {
+              name: 'applications.getStatus',
+              description: 'Get status',
+              parameters: { type: 'object', properties: {} },
+            },
+          ],
+        }),
+      );
+
+      const call = fakeFetch.mock.calls[0] as [string, { body?: string }] | undefined;
+      const body = call?.[1]?.body ? (JSON.parse(call[1].body) as Record<string, unknown>) : {};
+      expect(body['tools']).toEqual([
+        {
+          type: 'function',
+          function: {
+            name: 'applications.getStatus',
+            description: 'Get status',
+            parameters: { type: 'object', properties: {} },
+          },
+        },
+      ]);
+    });
+
+    it('omits the tools field entirely when no tools are supplied', async () => {
+      const fakeFetch = vi.fn(() => sseResponse('data: [DONE]\n\n'));
+      const provider = createOpenAIProvider({
+        apiKey: 'test-key',
+        fetch: fakeFetch as unknown as typeof fetch,
+      });
+      await collect(provider.stream({ model: 'gpt-4o-mini', messages: [] }));
+      const call = fakeFetch.mock.calls[0] as [string, { body?: string }] | undefined;
+      const body = call?.[1]?.body ? (JSON.parse(call[1].body) as Record<string, unknown>) : {};
+      expect(body).not.toHaveProperty('tools');
+    });
+
+    it('assembles fragmented streamed tool-call argument deltas into a single tool_call.requested event', async () => {
+      const body =
+        sseChunk({
+          id: 'x',
+          object: 'chat.completion.chunk',
+          created: 1,
+          model: 'gpt-4o-mini',
+          choices: [
+            {
+              index: 0,
+              delta: {
+                tool_calls: [
+                  { index: 0, id: 'call_1', type: 'function', function: { name: 'math.add', arguments: '' } },
+                ],
+              },
+              finish_reason: null,
+            },
+          ],
+        }) +
+        sseChunk({
+          id: 'x',
+          object: 'chat.completion.chunk',
+          created: 1,
+          model: 'gpt-4o-mini',
+          choices: [
+            {
+              index: 0,
+              delta: { tool_calls: [{ index: 0, function: { arguments: '{"a":1,' } }] },
+              finish_reason: null,
+            },
+          ],
+        }) +
+        sseChunk({
+          id: 'x',
+          object: 'chat.completion.chunk',
+          created: 1,
+          model: 'gpt-4o-mini',
+          choices: [
+            {
+              index: 0,
+              delta: { tool_calls: [{ index: 0, function: { arguments: '"b":2}' } }] },
+              finish_reason: 'tool_calls',
+            },
+          ],
+        }) +
+        'data: [DONE]\n\n';
+
+      const fakeFetch = vi.fn(() => sseResponse(body));
+      const provider = createOpenAIProvider({
+        apiKey: 'test-key',
+        fetch: fakeFetch as unknown as typeof fetch,
+      });
+
+      const events = await collect(provider.stream({ model: 'gpt-4o-mini', messages: [] }));
+      expect(events.map((e) => e.type)).toEqual([
+        'model.started',
+        'tool_call.requested',
+        'model.completed',
+      ]);
+      const toolCallEvent = events.find((e) => e.type === 'tool_call.requested');
+      expect(toolCallEvent?.type === 'tool_call.requested' && toolCallEvent.toolCall).toEqual({
+        id: 'call_1',
+        name: 'math.add',
+        arguments: { a: 1, b: 2 },
+      });
+      const completed = events.at(-1);
+      expect(completed?.type === 'model.completed' && completed.finishReason).toBe('tool_calls');
+    });
   });
 
   it('propagates the abort signal to the underlying fetch call', async () => {

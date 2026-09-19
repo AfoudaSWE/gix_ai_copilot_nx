@@ -32,6 +32,18 @@ function printEvent(event: CopilotEvent): void {
     case 'error':
       console.error(`Protocol error: ${event.error.code} - ${event.error.message}`);
       break;
+    case 'tool.requested':
+      console.log(`\n[tool] requested ${event.name}`);
+      break;
+    case 'tool.started':
+      console.log(`[tool] started ${event.name}`);
+      break;
+    case 'tool.completed':
+      console.log(`[tool] completed ${event.name}`);
+      break;
+    case 'tool.failed':
+      console.log(`[tool] failed ${event.name}: ${event.error.code}`);
+      break;
     default: {
       const exhaustive: never = event;
       throw new Error(`Unhandled event type: ${JSON.stringify(exhaustive)}`);
