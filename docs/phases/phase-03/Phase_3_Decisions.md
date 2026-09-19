@@ -13,7 +13,7 @@
   This avoids unhandled promise rejection paths in event handlers and preserves submitted
   text on failures. It does not replace the client's own async-iterable run API.
 - No breaking changes to Phase 1–2 public APIs or protocol events. New APIs are additive,
-  version 0.1.0 and private, with no npm publication or git commits performed in this task.
+  version 0.1.0 and private, with no npm publication performed in this task.
 - API base URL semantics are explicit: `/api/copilot` becomes `/api/copilot/runs` using the
   existing transport. Examples solve same-origin routing with a development proxy.
 - A closed UI panel preserves the provider's conversation and active request; applications

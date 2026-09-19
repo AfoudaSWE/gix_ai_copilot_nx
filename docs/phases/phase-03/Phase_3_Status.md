@@ -63,9 +63,8 @@ Dependency additions and rationale are in [Implementation](Phase_3_Implementatio
 public APIs are in [API](Phase_3_API.md); complete inventory is in [Files](Phase_3_Files.md).
 
 Architecture decisions: ADR 0007 (headless state/lifecycle), ADR 0008 (UI/rendering/styling).
-Commits: **none created**. Deployment/publication: **none**. Changes are available in the
-working tree. Existing Phase 1–2 technical debt remains; long-history rendering has no
-load benchmark yet and is documented rather than claimed optimized.
+Deployment/publication: **none**. Existing Phase 1–2 technical debt remains; long-history
+rendering has no load benchmark yet and is documented rather than claimed optimized.
 
 Remaining Phase 3 work: **None**. Source, manifests, exports, dependency graph, working-tree
 diff and generated package contents reviewed. Known non-blocking limits remain explicitly
