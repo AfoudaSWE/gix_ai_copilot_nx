@@ -1,3 +1,10 @@
+// @vitest-environment node
+//
+// This suite starts a real server (fastify + a real `openai` client) and talks to it over
+// real HTTP - it must run under Node, not this project's default jsdom environment (needed
+// for `integration.spec.tsx`'s React rendering). The `openai` SDK actively refuses to
+// initialize under a browser-like global scope (Section 14's API-key-safety guard) - jsdom
+// trips that guard even though nothing here ever runs in an actual browser.
 import { afterEach, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
 import { createCopilotClient } from '@gixcopilot/client';

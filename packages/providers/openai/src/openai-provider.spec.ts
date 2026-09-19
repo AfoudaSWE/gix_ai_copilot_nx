@@ -225,7 +225,9 @@ describe('createOpenAIProvider', () => {
         {
           type: 'function',
           function: {
-            name: 'applications.getStatus',
+            // OpenAI rejects dots in function names (`^[a-zA-Z0-9_-]+$`); the canonical
+            // dot-separated name is encoded for the wire - see tool-name-mapping.ts.
+            name: 'applications_getStatus',
             description: 'Get status',
             parameters: { type: 'object', properties: {} },
           },
@@ -257,7 +259,9 @@ describe('createOpenAIProvider', () => {
               index: 0,
               delta: {
                 tool_calls: [
-                  { index: 0, id: 'call_1', type: 'function', function: { name: 'math.add', arguments: '' } },
+                  // A real OpenAI response can only ever send back the encoded wire name
+                  // (`math_add`), never the canonical dotted one - see tool-name-mapping.ts.
+                  { index: 0, id: 'call_1', type: 'function', function: { name: 'math_add', arguments: '' } },
                 ],
               },
               finish_reason: null,

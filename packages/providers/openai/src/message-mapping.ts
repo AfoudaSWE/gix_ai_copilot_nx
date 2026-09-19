@@ -1,6 +1,7 @@
 import { CopilotError } from '@gixcopilot/protocol';
 import type { ModelMessage } from '@gixcopilot/provider';
 import type OpenAI from 'openai';
+import { toOpenAIToolName } from './tool-name-mapping.js';
 
 function textOf(message: ModelMessage): string {
   return message.content
@@ -33,7 +34,7 @@ export function toOpenAIMessage(message: ModelMessage): OpenAI.ChatCompletionMes
         tool_calls: toolCallParts.map((part) => ({
           id: part.toolCallId,
           type: 'function',
-          function: { name: part.name, arguments: JSON.stringify(part.arguments) },
+          function: { name: toOpenAIToolName(part.name), arguments: JSON.stringify(part.arguments) },
         })),
       };
     }

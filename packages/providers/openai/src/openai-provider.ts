@@ -10,6 +10,7 @@ import type {
 import { ToolCallAssembler } from '@gixcopilot/provider';
 import { toOpenAIMessages } from './message-mapping.js';
 import { mapFinishReason, toNormalizedError } from './error-mapping.js';
+import { fromOpenAIToolName, toOpenAIToolName } from './tool-name-mapping.js';
 
 export interface CreateOpenAIProviderOptions {
   readonly id?: string;
@@ -45,7 +46,7 @@ function toOpenAITools(
   return tools.map((tool) => ({
     type: 'function',
     function: {
-      name: tool.name,
+      name: toOpenAIToolName(tool.name),
       description: tool.description,
       parameters: tool.parameters,
     },
@@ -118,7 +119,9 @@ export function createOpenAIProvider(options: CreateOpenAIProviderOptions = {}):
             toolCallAssembler.push({
               index: toolCallDelta.index,
               id: toolCallDelta.id,
-              name: toolCallDelta.function?.name ?? undefined,
+              name: toolCallDelta.function?.name
+                ? fromOpenAIToolName(toolCallDelta.function.name)
+                : undefined,
               argumentsDelta: toolCallDelta.function?.arguments,
             });
           }

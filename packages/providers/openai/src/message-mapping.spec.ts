@@ -32,7 +32,10 @@ describe('toOpenAIMessage', () => {
           id: 'call-1',
           type: 'function',
           function: {
-            name: 'applications.getStatus',
+            // OpenAI's function-calling API rejects dots in names (`^[a-zA-Z0-9_-]+$`); the
+            // canonical dot-separated name is encoded for the wire and decoded back on the
+            // way in - see tool-name-mapping.ts.
+            name: 'applications_getStatus',
             arguments: JSON.stringify({ applicationId: 'APP-1024' }),
           },
         },
