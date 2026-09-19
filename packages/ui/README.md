@@ -67,6 +67,26 @@ renderers are trusted application code and must preserve this security boundary.
 
 Native keyboard controls, IME-safe input, focus containment/restoration, reduced motion,
 completion announcements, and reader-aware scrolling are included. The transcript is not
-announced token by token. See [API](../../docs/phases/phase-03/Phase_3_API.md) and
+announced token by token. See [Phase 3 API](../../docs/phases/phase-03/Phase_3_API.md) and
 [browser testing evidence](../../docs/phases/phase-03/Phase_3_Testing.md). Modern browsers
 with `<dialog>.showModal()` are required; no legacy browser polyfill is bundled.
+
+## Tool activity and generative UI (Phase 5–6)
+
+`CopilotChat` automatically renders a generic tool-activity row for every in-flight or
+completed tool call from `@gixcopilot/react`'s `useToolCalls()` — showing only the tool's
+name and lifecycle status by default, never raw arguments/results. Override the whole slot
+via `components.ToolActivity`, or let a registered `useGenerativeComponent` /
+`useToolRenderer` (both `@gixcopilot/react`, Phase 6) resolve automatically: each activity
+row is wrapped in its own render-error boundary, so one throwing renderer degrades to a safe
+fallback for that row only, never the whole chat.
+
+```tsx
+<CopilotChat components={{ ToolActivity: MyToolActivity }} />
+```
+
+`MyToolActivity` receives `{ toolCalls, labels, resolveRenderer?, onRenderError? }`
+(`ToolActivityProps`) if it wants to keep automatic generative-UI/custom-renderer
+resolution; a fully custom slot can ignore `resolveRenderer` and render `toolCalls` itself.
+See [Phase 5 API](../../docs/phases/phase-05/Phase_5_API.md) and
+[Phase 6 API](../../docs/phases/phase-06/Phase_6_API.md).

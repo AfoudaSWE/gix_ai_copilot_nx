@@ -14,7 +14,7 @@ Phase 02 - LLM Runtime & Streaming             COMPLETE
 Phase 03 - React Copilot UI                    COMPLETE
 Phase 04 - Application Context & State         COMPLETE
 Phase 05 - Tools & Agent Actions               COMPLETE
-Phase 06 - Generative UI & Shared State        NOT STARTED / LOCKED
+Phase 06 - Generative UI & Shared State        COMPLETE
 Phase 07 - Enterprise Security & HITL          NOT STARTED / LOCKED
 Phase 08 - OpenAPI + MCP + Integrations        NOT STARTED / LOCKED
 Phase 09 - Knowledge + RAG + Memory            NOT STARTED / LOCKED
@@ -95,9 +95,47 @@ phase is started without an explicit instruction naming it.
 - Full record: [Phase 5 docs](phases/phase-05/Phase_5_Docs.md),
   [completion report](phases/phase-05/Phase_5_Status.md),
   [ADR 0010](adr/0010-canonical-tool-architecture.md).
-- Phase 6 remains **LOCKED / NOT STARTED**.
 
-## Current Validation (Phase 5 completion)
+## Phase 6 — Generative UI & Shared State (COMPLETE)
+
+- Added `@gixcopilot/generative-ui`: a framework-independent trusted component registry,
+  the reserved-tool bridge (`ui.render.<component>`) that carries a "structured UI request"
+  entirely over the canonical Phase 5 tool-calling pipeline, the state-patch tool bridge
+  (`state.patch.<id>`), and a progress-step mapping utility — depends only on protocol/tools/
+  context, no React dependency.
+- Extended `@gixcopilot/context`'s existing `CopilotStateStore` in place: `modelWritable`,
+  per-slot `revision`, and a validated, non-throwing `applyPatch()` pipeline (conflict/
+  rejection handling) — no new package for shared state.
+- Extended `@gixcopilot/react` with `useGenerativeComponent`, `useToolRenderer`,
+  `useResolveToolRenderer`, `useGenerativeUIRequests`, `useInvokeTool`, and
+  `useCopilotState`'s new `modelWritable` option, all wired into every `CopilotProvider`
+  automatically.
+- Extended `@gixcopilot/ui`'s `ToolActivity` with per-row render-error isolation and a
+  `resolveRenderer` hook-up, so a registered generative component or custom tool renderer
+  appears automatically in the default `CopilotChat` UI.
+- **No file under `protocol`, `core`, `client`, `server`, or any provider package was
+  modified** — generative UI rendering and AI-writable state patching both reuse the exact
+  frontend-tool round trip Phase 5 already built.
+- Added `examples/react-generative-ui`: component rendering (single/multiple), an unknown-id
+  fallback, a direct interactive action, a valid AI state patch, and the stale-revision
+  conflict path, all verified end to end.
+- Full record: [Phase 6 docs](phases/phase-06/Phase_6_Docs.md),
+  [completion report](phases/phase-06/Phase_6_Status.md),
+  [ADR 0011](adr/0011-generative-ui-and-state-patch-architecture.md).
+- Phase 7 remains **LOCKED / NOT STARTED**.
+
+## Current Validation (Phase 6 completion)
+
+Fresh `pnpm lint && pnpm typecheck && pnpm test && pnpm build` passed across all 20
+lint/typecheck projects and all 19 buildable/testable projects. **407 Vitest tests passed, 1
+existing optional OpenAI smoke test skipped** without credentials, zero failures — including
+every Phase 1–5 test, unmodified. The Chromium/Playwright browser suite was not re-run this
+session (no Phase 6 UI surface was added to it; its lint/typecheck targets were re-run and
+pass); see [Phase 6 Testing](phases/phase-06/Phase_6_Testing.md) and
+[Phase 6 Issues](phases/phase-06/Phase_6_Issues.md) (two real bugs found and fixed during
+implementation: a tool-name sanitization crash and a render-error-isolation gap).
+
+## Validation (historical Phase 5 completion)
 
 Fresh `pnpm lint && pnpm typecheck && pnpm test && pnpm build` passed across all 18
 lint/typecheck projects and all 17 buildable/testable projects. **350 Vitest tests passed, 1

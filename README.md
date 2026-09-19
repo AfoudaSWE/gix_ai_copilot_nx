@@ -3,12 +3,15 @@
 A production-grade, TypeScript-first AI Copilot & Agent SDK. Framework-independent core,
 with React/Angular, Node.js server, and LLM provider adapters layered on top.
 
-> **Current status: Phase 4 — Application Context & State COMPLETE.** Phases 1–4 are
-> complete. Phase 4 adds a framework-independent context/state engine
-> (`@gixcopilot/context`) and its React adapter (`useCopilotContext`/`useCopilotState`),
-> letting the Copilot understand the application around the conversation. There is still no
-> agent runtime, tool calling, RAG, or persistent memory. The foundation remains a
-> transport-independent protocol, a
+> **Current status: Phase 6 — Generative UI & Shared State COMPLETE.** Phases 1–6 are
+> complete. Phase 4 added a framework-independent context/state engine
+> (`@gixcopilot/context`); Phase 5 added a canonical tool architecture
+> (`@gixcopilot/tools`) with backend/frontend tool calling; Phase 6 lets the model safely
+> drive UI (a trusted component registry, `@gixcopilot/generative-ui`) and propose
+> AI-writable state changes with revision/conflict handling — both carried entirely over
+> Phase 5's existing tool-calling pipeline, with no protocol/core/server/client/provider
+> change. There is still no Action Firewall, RBAC/HITL, OpenAPI/MCP integration, RAG, or
+> agents. The foundation remains a transport-independent protocol, a
 > framework-independent core runtime, an HTTP/SSE server, a streaming client, and a real
 > model execution layer (retry, timeout, cancellation, usage, latency, normalized errors)
 > proven against both a deterministic mock provider and real OpenAI streaming. See
@@ -37,13 +40,24 @@ Client -> Server -> Core -> (default executor | Model Runtime -> Provider) -> SS
   default executor or a named model.
 - **`@gixcopilot/client`** — a framework-independent streaming client (no React/Angular).
 - **`@gixcopilot/react`** — provider, headless chat hooks, streaming state and actions, plus
-  `useCopilotContext`/`useCopilotState` application-context/shared-state hooks.
-- **`@gixcopilot/ui`** — chat/popup/sidebar, safe Markdown, accessible controls and themes.
+  `useCopilotContext`/`useCopilotState` (Phase 4), `useFrontendTool`/`useToolCalls`
+  (Phase 5), and `useGenerativeComponent`/`useToolRenderer`/`useInvokeTool` (Phase 6) hooks.
+- **`@gixcopilot/ui`** — chat/popup/sidebar, safe Markdown, accessible controls and themes,
+  with automatic generative-component/custom tool-result rendering (Phase 6).
 - **`@gixcopilot/context`** — framework-independent application context registry/engine
   (scopes, priority, sensitivity, serialization, token budgeting/truncation, deduplication)
-  and a shared typed state store; depends only on `@gixcopilot/protocol`.
+  and a shared typed state store, extended in Phase 6 with `modelWritable`/revision/
+  `applyPatch`; depends only on `@gixcopilot/protocol`.
+- **`@gixcopilot/tools`** — framework-independent canonical tool architecture
+  (`ToolDefinition`/`defineTool`, registry, resolver, execution runtime) shared by backend
+  and frontend tools; depends only on `@gixcopilot/protocol`.
+- **`@gixcopilot/generative-ui`** — framework-independent trusted component registry and the
+  reserved-tool bridge that carries a model-selected component/state patch entirely over the
+  canonical tool-calling pipeline; depends only on protocol/tools/context, never React.
 - **`examples/react-basic` / `examples/react-custom-ui`** — styled and headless React examples.
 - **`examples/react-context`** — application-aware chat example (Phase 4).
+- **`examples/react-tools`** — backend/frontend tool calling example (Phase 5).
+- **`examples/react-generative-ui`** — generative UI + AI-writable state example (Phase 6).
 - **`examples/protocol-demo`** — the Phase 1 proof (no AI), CLI + integration test.
 - **`examples/model-streaming`** — the Phase 2 proof (mock by default, optional real
   OpenAI), CLI + mandatory mock integration test + optional real-provider smoke test.
@@ -59,6 +73,8 @@ packages/
   react/                @gixcopilot/react (headless)
   ui/                   @gixcopilot/ui (optional components + CSS)
   context/              @gixcopilot/context (framework-independent context/state engine)
+  tools/                @gixcopilot/tools (framework-independent canonical tool architecture)
+  generative-ui/        @gixcopilot/generative-ui (framework-independent generative UI/state-patch bridge)
   providers/
     provider-core/      @gixcopilot/provider
     mock/               @gixcopilot/provider-mock
@@ -69,12 +85,16 @@ examples/
   react-basic/           Phase 3 interface lab + mock server + integration tests
   react-custom-ui/       Phase 3 headless-only example
   react-context/         Phase 4 application-context example + mock server + integration test
+  react-tools/           Phase 5 backend/frontend tool example + mock server + integration tests
+  react-generative-ui/   Phase 6 generative-UI/state-patch example + mock server + integration tests
 docs/
   architecture/         architecture overview
   adr/                  architecture decision records
   phases/phase-02/      Phase 2's own documentation set
   phases/phase-03/      Phase 3 API, validation, completion and handoff
   phases/phase-04/      Phase 4 API, validation, completion and handoff
+  phases/phase-05/      Phase 5 API, validation, completion and handoff
+  phases/phase-06/      Phase 6 API, validation, completion and handoff
   PROJECT_STATUS.md, DECISIONS.md, TECHNICAL_DEBT.md
 .claude/
   skills/               the engineering skill system this project is built against
@@ -86,6 +106,8 @@ Dependency direction (enforced by `@nx/enforce-module-boundaries`, see `eslint.c
 protocol  <-  core  <-  server
 protocol  <-  client  <-  react  <-  ui
 protocol  <-  context  <-  react
+protocol  <-  tools  <-  react, server
+protocol, tools, context  <-  generative-ui  <-  react
 protocol  <-  core  <-  provider  <-  provider-mock, provider-openai (never each other)
 provider  <-  server
 ```

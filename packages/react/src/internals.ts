@@ -1,9 +1,21 @@
 'use client';
 
 import { createContext, useContext } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import { CopilotError } from '@gixcopilot/protocol';
+import type { PublicCopilotError } from '@gixcopilot/protocol';
 import type { ContextEngine, ContextRegistry, CopilotStateStore } from '@gixcopilot/context';
 import type { ToolRegistry, ToolRuntime } from '@gixcopilot/tools';
+import type { GenerativeComponentRegistry } from '@gixcopilot/generative-ui';
+
+/** What `useToolRenderer`'s `render` callback receives (Section 27-31). */
+export interface ToolRenderState {
+  readonly status: 'requested' | 'running' | 'succeeded' | 'failed';
+  readonly arguments: Readonly<Record<string, unknown>>;
+  readonly result?: unknown;
+  readonly error?: PublicCopilotError;
+}
+export type ToolRenderFn = (state: ToolRenderState) => ReactNode;
 
 /**
  * Per-`CopilotProvider` instance context/state universe (Section 65 - isolated, not a
@@ -23,6 +35,20 @@ export interface CopilotInternals {
   readonly stateStore: CopilotStateStore;
   readonly toolRegistry: ToolRegistry;
   readonly toolRuntime: ToolRuntime;
+  /**
+   * Generative UI (Phase 6). `generativeComponentRegistry` holds the framework-independent
+   * `GenerativeComponentDefinition`s (name/description/propsSchema/metadata) -
+   * `useGenerativeComponent` also registers a matching reserved tool into `toolRegistry`
+   * above (see `generative-ui-hooks.tsx`), so "the model renders a component" reuses the
+   * exact same frontend-tool round trip `useFrontendTool` already established. `componentRenderers`
+   * is the plain React-only half a framework-independent registry can never hold: the actual
+   * `ComponentType` reference to render once a request resolves. `toolRenderers` backs
+   * `useToolRenderer` (Section 27-31) - a custom renderer for *any* tool's activity,
+   * independent of whether that tool happens to be generative-UI-related.
+   */
+  readonly generativeComponentRegistry: GenerativeComponentRegistry;
+  readonly componentRenderers: Map<string, ComponentType<Record<string, unknown>>>;
+  readonly toolRenderers: Map<string, ToolRenderFn>;
 }
 
 export const CopilotInternalsContext = createContext<CopilotInternals | null>(null);

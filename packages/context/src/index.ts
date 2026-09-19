@@ -57,3 +57,10 @@ export type {
   StateValidator,
 } from './state-store.js';
 export { createCopilotStateStore } from './state-store.js';
+
+export type {
+  StatePatch,
+  StatePatchOp,
+  StatePatchRejectionReason,
+  StatePatchResult,
+} from './state-patch.js';

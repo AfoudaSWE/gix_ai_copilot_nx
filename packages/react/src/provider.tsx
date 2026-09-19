@@ -7,6 +7,7 @@ import { CopilotError } from '@gixcopilot/protocol';
 import type { Thread } from '@gixcopilot/protocol';
 import { createContextEngine, createContextRegistry, createCopilotStateStore } from '@gixcopilot/context';
 import { createDefaultToolResolver, createToolRegistry, createToolRuntime, isToolEnabled, toToolManifest } from '@gixcopilot/tools';
+import { createGenerativeComponentRegistry } from '@gixcopilot/generative-ui';
 import { createChatStore } from './chat-store.js';
 import type { ResolveContextMessage, ResolveToolManifest } from './chat-store.js';
 import { CopilotInternalsContext } from './internals.js';
@@ -52,10 +53,14 @@ export function CopilotProvider({
       stateStore: createCopilotStateStore(),
       toolRegistry,
       toolRuntime: createToolRuntime({ resolver: createDefaultToolResolver(toolRegistry) }),
+      generativeComponentRegistry: createGenerativeComponentRegistry(),
+      componentRenderers: new Map(),
+      toolRenderers: new Map(),
     };
   }, [maxContextTokens]);
   useEffect(() => () => internals.registry.clear(), [internals]);
   useEffect(() => () => internals.toolRegistry.clear(), [internals]);
+  useEffect(() => () => internals.generativeComponentRegistry.clear(), [internals]);
 
   const resolveContextMessage: ResolveContextMessage = useMemo(
     () => () => {

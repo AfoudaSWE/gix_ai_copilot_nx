@@ -14,6 +14,9 @@
       "path": "packages/context"
     },
     {
+      "path": "packages/generative-ui"
+    },
+    {
       "path": "packages/client"
     },
     {
@@ -51,6 +54,9 @@
     },
     {
       "path": "examples/react-tools"
+    },
+    {
+      "path": "examples/react-generative-ui"
     }
   ]
 }

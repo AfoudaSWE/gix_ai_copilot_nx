@@ -27,6 +27,7 @@
   "dependencies": {
     "@gixcopilot/client": "workspace:*",
     "@gixcopilot/context": "workspace:*",
+    "@gixcopilot/generative-ui": "workspace:*",
     "@gixcopilot/protocol": "workspace:*",
     "@gixcopilot/tools": "workspace:*",
     "zod": "4.6.5"

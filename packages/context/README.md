@@ -24,7 +24,9 @@ Angular, or a specific LLM provider.
   plus `inspect()` for debugging what was included/excluded and why.
 - `createCopilotStateStore()` — a small, typed, subscribable shared-state store. State is a
   distinct concept from context (see "State vs Context" below) and is never automatically
-  exposed to a model.
+  exposed to a model. Extended in Phase 6 with a per-slot `revision`, an opt-in
+  `modelWritable` capability flag, and a validated, non-throwing `applyPatch()` pipeline
+  (`'applied' | 'conflict' | 'rejected'`) — see "AI-writable state" below.
 
 ## Public API
 
@@ -89,3 +91,23 @@ state.register({ id: 'filters', name: 'applicationFilters', initialValue: { stat
 state.subscribe('filters', (value) => console.log('filters changed', value));
 state.update('filters', (previous) => ({ ...previous, status: 'pending' }));
 ```
+
+## AI-writable state (Phase 6)
+
+A slot registered with `modelWritable: true` accepts a validated, revision-checked patch —
+never a direct, untrusted write:
+
+```ts
+state.register({ id: 'filters', name: 'applicationFilters', initialValue: { status: 'all' }, modelWritable: true });
+
+const result = state.applyPatch('filters', { op: 'set', value: { status: 'pending' } }, state.getRevision('filters')!);
+// { status: 'applied', revision: 1, value: { status: 'pending' } }
+//   | { status: 'conflict', currentRevision: number }   <- baseRevision was stale
+//   | { status: 'rejected', reason: '...', detail?: string }
+```
+
+`revision` increments on **every** successful `set`/`update`/`applyPatch`, so a UI-driven
+change also invalidates a stale AI-proposed `baseRevision` — see
+`docs/adr/0011-generative-ui-and-state-patch-architecture.md`. `@gixcopilot/generative-ui`
+bridges a `modelWritable` slot into a reserved tool a model calls to propose a patch;
+`@gixcopilot/react`'s `useCopilotState({ modelWritable: true })` wires this up automatically.

@@ -30,6 +30,20 @@ export type { ExposeStateToModel, UseCopilotStateOptions } from './state-hooks.j
 export { useFrontendTool } from './frontend-tool-hooks.js';
 export type { UseFrontendToolOptions } from './frontend-tool-hooks.js';
 
+export {
+  useGenerativeComponent,
+  useGenerativeUIRequests,
+  useInvokeTool,
+  useResolveToolRenderer,
+  useToolRenderer,
+} from './generative-ui-hooks.js';
+export type {
+  GenerativeUIRequestState,
+  UseGenerativeComponentOptions,
+  UseToolRendererOptions,
+} from './generative-ui-hooks.js';
+export type { ToolRenderFn, ToolRenderState } from './internals.js';
+
 // Re-exported so a consumer of the React SDK never needs a direct `@gixcopilot/context`
 // dependency just to type a `useCopilotContext`/`useCopilotState` call (Section 63).
 export type {
@@ -39,6 +53,7 @@ export type {
   ContextScope,
   ContextSensitivity,
   ResolvedContext,
+  StatePatchResult,
   StateScope,
   StateValidationResult,
   StateValidator,
@@ -48,3 +63,7 @@ export type {
 // `@gixcopilot/tools` dependency just to type a `useFrontendTool`/`useToolCalls` call.
 export type { ToolExecutionContext, ToolMetadata } from '@gixcopilot/tools';
 export type { ToolResult, ToolSource } from '@gixcopilot/protocol';
+
+// Re-exported (Phase 6) so a consumer never needs a direct `@gixcopilot/generative-ui`
+// dependency just to type a `useGenerativeComponent` call.
+export type { GenerativeComponentMetadata } from '@gixcopilot/generative-ui';

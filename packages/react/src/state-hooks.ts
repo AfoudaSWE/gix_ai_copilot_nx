@@ -1,7 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useId, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useId, useRef, useSyncExternalStore } from 'react';
 import type { ContextPriority, ContextSensitivity, StateScope, StateValidator } from '@gixcopilot/context';
+import { toStatePatchToolDefinition } from '@gixcopilot/generative-ui';
 import { useCopilotContext } from './context-hooks.js';
 import { useCopilotInternals } from './internals.js';
 
@@ -31,6 +32,14 @@ export interface UseCopilotStateOptions<T> {
   readonly onChange?: (value: T) => void;
   /** Off by default - state is never sent to the model unless explicitly exposed. */
   readonly exposeToModel?: ExposeStateToModel;
+  /**
+   * Off by default (Section 38-39, added in Phase 6) - allows a validated AI-proposed patch
+   * to change this slot's value, by auto-registering a reserved frontend tool
+   * (`state.patch.<id>`, see `@gixcopilot/generative-ui`). Independent of `exposeToModel`:
+   * a slot can be readable, writable, both, or neither - "read-only state" (Section 39) is
+   * simply `exposeToModel` set without `modelWritable`.
+   */
+  readonly modelWritable?: boolean;
 }
 
 type SetCopilotState<T> = (next: T | ((previous: T) => T)) => void;
@@ -53,7 +62,7 @@ function resolveExposeConfig(expose: ExposeStateToModel | undefined): {
  * consumers" case) rather than each owning a private copy.
  */
 export function useCopilotState<T>(options: UseCopilotStateOptions<T>): readonly [T, SetCopilotState<T>] {
-  const { stateStore } = useCopilotInternals();
+  const { stateStore, toolRegistry } = useCopilotInternals();
   const reactId = useId();
   const id = options.id ?? reactId;
   const isControlled = options.value !== undefined && options.onChange !== undefined;
@@ -67,7 +76,24 @@ export function useCopilotState<T>(options: UseCopilotStateOptions<T>): readonly
     initialValue: isControlled ? options.value : options.initialValue,
     scope: options.scope,
     validate: options.validate,
+    modelWritable: options.modelWritable,
   });
+
+  const nameRef = useRef(options.name);
+  nameRef.current = options.name;
+  const modelWritable = options.modelWritable ?? false;
+
+  useEffect(() => {
+    if (!modelWritable) return;
+    const tool = toStatePatchToolDefinition(stateStore, id, {
+      name: nameRef.current,
+      description: `Propose a change to the "${nameRef.current}" application state.`,
+    });
+    const registration = toolRegistry.register(tool, { replace: true });
+    return () => registration.dispose();
+    // Identity is (toolRegistry, stateStore, id, modelWritable) only - the tool description
+    // is read once at registration time, mirroring useFrontendTool's own documented tradeoff.
+  }, [toolRegistry, stateStore, id, modelWritable]);
 
   const subscribe = useCallback(
     (listener: () => void) => stateStore.subscribe<T>(id, () => listener()),

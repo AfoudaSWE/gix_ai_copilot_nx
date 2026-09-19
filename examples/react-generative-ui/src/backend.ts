@@ -1,0 +1,236 @@
+import { createRuntime } from '@gixcopilot/core';
+import { createServer } from '@gixcopilot/server';
+import { createToolRegistry, defineTool } from '@gixcopilot/tools';
+import { createModelExecutor, createModelRuntime } from '@gixcopilot/provider';
+import type { ModelMessage, ModelProvider, ModelToolCall } from '@gixcopilot/provider';
+import { z } from 'zod';
+import { APPLICATIONS, findApplication } from './applications.js';
+
+/** Only `applications.getStatus` is a real backend tool in this example - rendering and
+ * state patching both ride the reserved-tool mechanism the React layer builds automatically
+ * (see `app.tsx`'s `useGenerativeComponent`/`useCopilotState`). */
+export function createBackendToolRegistry() {
+  const registry = createToolRegistry();
+  registry.register(
+    defineTool({
+      name: 'applications.getStatus',
+      description: 'Get the current status of an application by its id.',
+      input: z.object({ applicationId: z.string() }),
+      output: z.object({ applicationId: z.string(), status: z.string() }),
+      metadata: { readOnly: true, category: 'applications' },
+      execute({ applicationId }) {
+        const application = findApplication(applicationId);
+        return Promise.resolve({ applicationId, status: application?.status ?? 'unknown' });
+      },
+    }),
+  );
+  return registry;
+}
+
+function newToolCall(name: string, args: Record<string, unknown>): ModelToolCall {
+  return { id: crypto.randomUUID(), name, arguments: args };
+}
+
+function lastUserText(messages: readonly ModelMessage[]): string | undefined {
+  const last = [...messages].reverse().find((message) => message.role === 'user');
+  if (!last) return undefined;
+  return last.content
+    .filter((part) => part.type === 'text')
+    .map((part) => part.text)
+    .join(' ');
+}
+
+/**
+ * Every `tool_call` part seen anywhere in history, keyed by its `toolCallId` - lets the
+ * trailing-tool-result branch below identify *which* reserved tool a result belongs to,
+ * exactly the way a real model reads its own prior turns back out of the conversation.
+ */
+function toolNameById(messages: readonly ModelMessage[]): Map<string, string> {
+  const names = new Map<string, string>();
+  for (const message of messages) {
+    for (const part of message.content) {
+      if (part.type === 'tool_call') names.set(part.toolCallId, part.name);
+    }
+  }
+  return names;
+}
+
+/**
+ * Section 46's conflict scenario needs the mock model to propose a `baseRevision` the way a
+ * real LLM would: by reading the *last* successful patch outcome it can see in its own
+ * conversation history, not by tracking hidden server-side state of its own. If the UI
+ * changed the filter in between (via its own `set()`, bumping the revision further), this
+ * naturally goes stale and the state-patch tool call returns `{status:'conflict', ...}`.
+ */
+function lastKnownFilterRevision(messages: readonly ModelMessage[]): number {
+  const names = toolNameById(messages);
+  let revision = 0;
+  for (const message of messages) {
+    for (const part of message.content) {
+      if (part.type !== 'tool_result') continue;
+      if (names.get(part.toolCallId) !== 'state.patch.applicationFilters') continue;
+      if (part.result.status !== 'success') continue;
+      const data = part.result.data;
+      if (
+        typeof data === 'object' &&
+        data !== null &&
+        'status' in data &&
+        data['status'] === 'applied' &&
+        'revision' in data &&
+        typeof data['revision'] === 'number'
+      ) {
+        revision = data['revision'];
+      }
+    }
+  }
+  return revision;
+}
+
+function trailingToolResultAnswer(messages: readonly ModelMessage[]): string | undefined {
+  const last = messages.at(-1);
+  if (last?.role !== 'tool') return undefined;
+  const names = toolNameById(messages);
+  const parts: string[] = [];
+  for (const part of last.content) {
+    if (part.type !== 'tool_result') continue;
+    const name = names.get(part.toolCallId);
+    if (name === 'applications.getStatus') {
+      const data = part.result.status === 'success' ? (part.result.data as Record<string, unknown>) : undefined;
+      parts.push(
+        data
+          ? `${String(data['applicationId'])} is currently ${String(data['status'])}.`
+          : `Sorry, I could not check that status: ${part.result.status === 'error' ? part.result.error.message : 'unknown error'}`,
+      );
+    } else if (name === 'state.patch.applicationFilters') {
+      const data = part.result.status === 'success' ? (part.result.data as Record<string, unknown>) : undefined;
+      if (data?.['status'] === 'applied') {
+        parts.push('Filter updated.');
+      } else if (data?.['status'] === 'conflict') {
+        parts.push('The filter changed elsewhere just now - please ask again with the latest value.');
+      } else {
+        parts.push("I wasn't able to update the filter.");
+      }
+    } else if (name?.startsWith('ui.render.')) {
+      // No extra trailing text needed - the rendered card speaks for itself.
+      continue;
+    }
+  }
+  return parts.length > 0 ? parts.join(' ') : 'Done.';
+}
+
+function chunk(text: string): string[] {
+  return text.match(/\S+|\s+/g) ?? [text];
+}
+
+/**
+ * A deterministic, non-network `ModelProvider` (Section 15, 71, like
+ * `@gixcopilot/provider-mock`) that requests the reserved generative-UI/state-patch tool
+ * calls `@gixcopilot/react` auto-registers (`ui.render.applicationCard`,
+ * `state.patch.applicationFilters`) exactly like it would request any ordinary tool -
+ * proving Section 66's "structured UI without a [developer-defined] tool" end to end through
+ * the real Model -> Tool Runtime pipeline, no real LLM anywhere in this demo.
+ */
+function createGenerativeUiAwareProvider(): ModelProvider {
+  return {
+    id: 'generative-ui-aware',
+    async *stream(request) {
+      await Promise.resolve();
+      yield { type: 'model.started' };
+
+      const trailingAnswer = trailingToolResultAnswer(request.messages);
+      if (trailingAnswer !== undefined) {
+        for (const word of chunk(trailingAnswer)) yield { type: 'content.delta', delta: word };
+        yield { type: 'model.completed', finishReason: 'stop' };
+        return;
+      }
+
+      const text = lastUserText(request.messages) ?? '';
+
+      if (/show (all|every|these)( applications)? as cards/i.test(text)) {
+        for (const word of chunk("Here's the full list:")) yield { type: 'content.delta', delta: word };
+        for (const application of APPLICATIONS) {
+          yield {
+            type: 'tool_call.requested',
+            toolCall: newToolCall('ui.render.applicationCard', {
+              applicationId: application.id,
+              applicantName: application.applicantName,
+              status: application.status,
+            }),
+          };
+        }
+        yield { type: 'model.completed', finishReason: 'tool_calls' };
+        return;
+      }
+
+      const showMatch = /show(?:\s+me)?\s+(app-[\w-]+)/i.exec(text);
+      if (showMatch?.[1]) {
+        const id = showMatch[1].toUpperCase();
+        const application = findApplication(id);
+        for (const word of chunk(application ? `Here's ${id}:` : `I couldn't find ${id}.`)) {
+          yield { type: 'content.delta', delta: word };
+        }
+        if (application) {
+          yield {
+            type: 'tool_call.requested',
+            toolCall: newToolCall('ui.render.applicationCard', {
+              applicationId: application.id,
+              applicantName: application.applicantName,
+              status: application.status,
+            }),
+          };
+          yield { type: 'model.completed', finishReason: 'tool_calls' };
+        } else {
+          yield { type: 'model.completed', finishReason: 'stop' };
+        }
+        return;
+      }
+
+      const statusMatch = /status of\s+(app-[\w-]+)/i.exec(text);
+      if (statusMatch?.[1]) {
+        yield {
+          type: 'tool_call.requested',
+          toolCall: newToolCall('applications.getStatus', { applicationId: statusMatch[1].toUpperCase() }),
+        };
+        yield { type: 'model.completed', finishReason: 'tool_calls' };
+        return;
+      }
+
+      const filterMatch = /(?:filter(?:ed)?\s+to|show only)\s+(pending|approved|rejected)/i.exec(text);
+      if (filterMatch?.[1]) {
+        yield {
+          type: 'tool_call.requested',
+          toolCall: newToolCall('state.patch.applicationFilters', {
+            op: 'set',
+            value: { status: filterMatch[1].toLowerCase() },
+            baseRevision: lastKnownFilterRevision(request.messages),
+          }),
+        };
+        yield { type: 'model.completed', finishReason: 'tool_calls' };
+        return;
+      }
+
+      const fallback =
+        'I can show an application, list them all as cards, look up a status, or update the filter - just ask.';
+      for (const word of chunk(fallback)) yield { type: 'content.delta', delta: word };
+      yield { type: 'model.completed', finishReason: 'stop' };
+    },
+  };
+}
+
+/** Credential-free, deterministic demo backend for the generative-UI example. */
+export function createDemoServer(): ReturnType<typeof createServer> {
+  const toolRegistry = createBackendToolRegistry();
+  const provider = createGenerativeUiAwareProvider();
+  const modelRuntime = createModelRuntime({
+    providers: [provider],
+    defaults: { retry: { maxAttempts: 1, baseDelayMs: 0, maxDelayMs: 0 } },
+  });
+  return createServer({
+    modelRuntime,
+    toolRegistry,
+    toolRuntimeDefaults: { frontendToolTimeoutMs: 30_000, maxToolIterations: 6 },
+    runtime: createRuntime({
+      executor: createModelExecutor({ runtime: modelRuntime, model: { provider: provider.id, model: 'demo' } }),
+    }),
+  });
+}

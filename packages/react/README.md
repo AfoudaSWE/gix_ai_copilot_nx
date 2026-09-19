@@ -1,8 +1,9 @@
 # @gixcopilot/react
 
-Headless React 19 adapter over `@gixcopilot/client` and `@gixcopilot/context`. It owns local
-chat presentation state and the React bindings for application context/shared state, not the
-protocol, transport, model runtime, or providers.
+Headless React 19 adapter over `@gixcopilot/client`, `@gixcopilot/context`,
+`@gixcopilot/tools`, and `@gixcopilot/generative-ui`. It owns local chat presentation state
+and the React bindings for application context/shared state, tool calling, and generative
+UI/AI-writable state — not the protocol, transport, model runtime, or providers.
 
 Packages are workspace-private and have not been published. From this repository run
 `pnpm install && pnpm build`; an application package can depend on
@@ -55,9 +56,10 @@ and cancels the old run. Keep injected clients stable. Initial render starts no 
 Unmount cleans up the active run. Closing a UI panel does not unmount the provider.
 
 Exports: `CopilotProvider`, `useCopilot`, `useCopilotChat`, `useCopilotStatus`, `useMessages`,
-`useThread`, plus their explicit public types. No UI package, stylesheet, or state library
-is required. All hooks require a provider. Imports and empty initial rendering are SSR
-safe; the public entry has a `use client` directive for client-component consumers.
+`useThread`, `useToolCalls`, plus their explicit public types. No UI package, stylesheet, or
+state library is required. All hooks require a provider. Imports and empty initial
+rendering are SSR safe; the public entry has a `use client` directive for client-component
+consumers.
 
 ## Application context and shared state (Phase 4)
 
@@ -90,7 +92,85 @@ Resolved context reaches every run as a leading `system` message; a provider wit
 registered behaves exactly as it did in Phase 3. `useCopilotContextDebug()` gives low-level
 access to `resolve()`/`inspect()` for debugging what would be sent.
 
-See the [full API](../../docs/phases/phase-04/Phase_4_API.md),
+See the [Phase 4 API](../../docs/phases/phase-04/Phase_4_API.md),
 [architecture](../../docs/phases/phase-04/Phase_4_Architecture.md),
 [ADR 0009](../../docs/adr/0009-context-and-state-architecture.md), and the
 [application-context example](../../examples/react-context/README.md).
+
+## Tool calling (Phase 5)
+
+```tsx
+import { useFrontendTool } from '@gixcopilot/react';
+import { z } from 'zod';
+
+function useOpenApplicationTool(onOpen: (id: string) => void) {
+  useFrontendTool({
+    name: 'navigation.openApplication',
+    description: 'Open an application details view by its id.',
+    input: z.object({ applicationId: z.string() }),
+    execute({ applicationId }) {
+      onOpen(applicationId);
+      return Promise.resolve({ opened: true, applicationId });
+    },
+  });
+}
+```
+
+`useFrontendTool` registers a browser-executed tool for the lifetime of the calling
+component, validated by the same `@gixcopilot/tools` `ToolRuntime` pipeline a backend tool
+uses. `useToolCalls()` exposes the current run's tool activity timeline headlessly; the
+default `CopilotChat` UI (`@gixcopilot/ui`) renders it automatically.
+
+See the [Phase 5 API](../../docs/phases/phase-05/Phase_5_API.md),
+[architecture](../../docs/phases/phase-05/Phase_5_Architecture.md),
+[ADR 0010](../../docs/adr/0010-canonical-tool-architecture.md), and the
+[tools example](../../examples/react-tools/README.md).
+
+## Generative UI and AI-writable shared state (Phase 6)
+
+```tsx
+import { useCopilotState, useGenerativeComponent, useInvokeTool, useToolRenderer } from '@gixcopilot/react';
+
+function ApplicationCard({ applicationId, status }: { applicationId: string; status: string }) {
+  const invoke = useInvokeTool();
+  return (
+    <div>
+      {applicationId}: {status}
+      <button onClick={() => invoke('navigation.openApplication', { applicationId })}>Open</button>
+    </div>
+  );
+}
+
+useGenerativeComponent({
+  name: 'ApplicationCard',
+  description: 'Displays a compact application summary',
+  props: z.object({ applicationId: z.string(), status: z.string() }),
+  component: ApplicationCard,
+});
+
+useToolRenderer({
+  tool: 'applications.getStatus',
+  render: ({ status, result }) => status === 'succeeded' ? <StatusBadge {...result} /> : null,
+});
+
+const [filters, setFilters] = useCopilotState({
+  name: 'applicationFilters',
+  initialValue: { status: 'all' },
+  exposeToModel: { description: 'Current application filters' },
+  modelWritable: true,
+});
+```
+
+`useGenerativeComponent` registers a trusted, model-selectable component — the model can
+only ever select it by name and supply schema-validated props (via the same
+`ToolRuntime` pipeline `useFrontendTool` uses); it never generates executable code.
+`useToolRenderer` attaches a custom renderer to any tool's activity, generative or not.
+`useInvokeTool` lets a rendered component's own event handler call a registered tool
+*directly*, with no additional model round trip. `useCopilotState`'s `modelWritable` option
+lets a validated AI-proposed patch update a shared state slot, with revision-based conflict
+detection — a stale patch is safely rejected, never silently overwriting a newer value.
+
+See the [Phase 6 API](../../docs/phases/phase-06/Phase_6_API.md),
+[architecture](../../docs/phases/phase-06/Phase_6_Architecture.md),
+[ADR 0011](../../docs/adr/0011-generative-ui-and-state-patch-architecture.md), and the
+[generative-UI example](../../examples/react-generative-ui/README.md).

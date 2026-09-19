@@ -42,6 +42,18 @@ integration testing — see `docs/phases/phase-05/Phase_5_Issues.md` — so neit
 forward as debt. No Phase 6+ feature (Generative UI, an Action Firewall, HITL, OpenAPI/MCP
 auto-tool-generation, RAG, agents) is tracked here.
 
+Phase 6 review: no new debt was introduced. `@gixcopilot/generative-ui` ships with the same
+per-package `*.spec.ts`-in-`dist/` characteristic as item 1 (its `files` field excludes
+compiled specs, matching every prior package). Two real bugs (a tool-name-sanitization crash
+for kebab-case/snake_case ids, and a render-error-isolation gap that let a throwing custom
+renderer take down the whole chat instead of one row) were found and _fixed within this same
+phase_ via unit/integration testing — see `docs/phases/phase-06/Phase_6_Issues.md` — so
+neither is carried forward as debt. The state-patch contract intentionally supports only
+`'set'`/`'merge'` (no array/nested-path operations) — a deliberate, documented scope
+decision (Section 42's "avoid an excessively powerful expression language"), not debt. No
+Phase 7+ feature (Action Firewall, RBAC/ABAC, approval/HITL, OpenAPI/MCP, RAG, agents) is
+tracked here.
+
 ## Resolved
 
 Phase 3 review: the new React/UI package file lists exclude compiled specs from packing.

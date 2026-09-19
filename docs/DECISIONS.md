@@ -27,3 +27,7 @@ Add a new row here whenever a new ADR is added under `docs/adr/`.
 | Phase 5 ADR | Decision |
 | --- | --- |
 | [0010](adr/0010-canonical-tool-architecture.md) | `@gixcopilot/tools` depends only on protocol; `ToolDefinition.execute` uses method shorthand for bivariant storage typing; duplicate registration rejected by default; `ToolResolver` is a mandatory discovery indirection; `ExecutorContext.onToolEvent` extends core additively instead of widening the yield type; the whole backend tool loop runs inside one `Executor.execute()` call; a frontend tool call suspends on a `FrontendToolBridge` promise rather than a new `RunStatus` |
+
+| Phase 6 ADR | Decision |
+| --- | --- |
+| [0011](adr/0011-generative-ui-and-state-patch-architecture.md) | A "structured UI request" is a call to a reserved, SDK-generated tool per registered component (`ui.render.<name>`), not a new protocol content part; tool-result rendering (`useToolRenderer`) is a separate mechanism; interactive component actions route through a new `useInvokeTool` directly to the Tool Runtime, never back through the model; shared AI-writable state extends `@gixcopilot/context`'s existing store in place (`modelWritable`/`revision`/`applyPatch`) rather than a new package; no protocol/core/server/client/provider file was modified |

@@ -15,9 +15,11 @@ import eslintConfigPrettier from 'eslint-config-prettier';
  * contract, but never on each other; `@gixcopilot/context` (Phase 4) may depend only on
  * protocol - it must never depend on React; `@gixcopilot/tools` (Phase 5) may depend only on
  * protocol - it is the framework-independent canonical tool package shared by server and
- * react, and must never depend on React, Fastify, or a provider SDK; react may depend on
- * protocol + client + context + tools; examples may depend on anything. This is the
- * executable form of the dependency-direction diagram in docs/architecture/overview.md.
+ * react, and must never depend on React, Fastify, or a provider SDK; `@gixcopilot/generative-ui`
+ * (Phase 6) may depend on protocol + tools + context - it must never depend on React; react
+ * may depend on protocol + client + context + tools + generative-ui; examples may depend on
+ * anything. This is the executable form of the dependency-direction diagram in
+ * docs/architecture/overview.md.
  */
 export default tseslint.config(
   {
@@ -62,6 +64,7 @@ export default tseslint.config(
                 'scope:protocol',
                 'scope:context',
                 'scope:tools',
+                'scope:generative-ui',
               ],
             },
             {
@@ -79,6 +82,15 @@ export default tseslint.config(
             {
               sourceTag: 'scope:tools',
               onlyDependOnLibsWithTags: ['scope:protocol', 'scope:tools'],
+            },
+            {
+              sourceTag: 'scope:generative-ui',
+              onlyDependOnLibsWithTags: [
+                'scope:protocol',
+                'scope:tools',
+                'scope:context',
+                'scope:generative-ui',
+              ],
             },
             {
               sourceTag: 'scope:core',
@@ -119,6 +131,7 @@ export default tseslint.config(
                 'scope:provider-adapter',
                 'scope:context',
                 'scope:tools',
+                'scope:generative-ui',
                 'scope:example',
               ],
             },

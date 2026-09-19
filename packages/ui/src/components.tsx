@@ -1,6 +1,13 @@
 import { Component, memo, useEffect, useId, useRef, useState } from 'react';
 import type { ComponentType, CSSProperties, ErrorInfo, ReactElement, ReactNode } from 'react';
-import { useCopilot, useCopilotChat, useCopilotStatus, useMessages, useToolCalls } from '@gixcopilot/react';
+import {
+  useCopilot,
+  useCopilotChat,
+  useCopilotStatus,
+  useMessages,
+  useResolveToolRenderer,
+  useToolCalls,
+} from '@gixcopilot/react';
 import type { CopilotChatResult, CopilotMessage, ToolCallState } from '@gixcopilot/react';
 import { DEFAULT_LABELS } from './labels.js';
 import type { CopilotLabels } from './labels.js';
@@ -47,6 +54,14 @@ export interface EmptyStateProps extends SuggestionsProps {
 export interface ToolActivityProps {
   readonly toolCalls: readonly ToolCallState[];
   readonly labels: CopilotLabels;
+  /**
+   * Resolves one tool call to custom content - a rendered generative-UI component or a
+   * `useToolRenderer` override (Section 27-31, 59, added in Phase 6) - or `undefined` to
+   * fall back to the generic row below. Optional so a custom `ToolActivity` slot
+   * (`components.ToolActivity`) keeps working unmodified if it does not accept this prop.
+   */
+  readonly resolveRenderer?: (toolCall: ToolCallState) => ReactNode | undefined;
+  readonly onRenderError?: CopilotChatProps['onRenderError'];
 }
 /** Consistent component slots for the major UI areas. */
 export interface CopilotComponents {
@@ -375,30 +390,72 @@ export function TypingIndicator({
  * 62) - only the tool's `name` and lifecycle status, since a tool's inputs/outputs may
  * contain data the host application does not want blindly dumped into the transcript. A
  * host that wants richer per-tool rendering overrides this slot entirely via
- * `components.ToolActivity`.
+ * `components.ToolActivity`, or resolves individual tool calls via `useGenerativeComponent`/
+ * `useToolRenderer` (Section 27-31, 59-61, added in Phase 6) and lets this default renderer
+ * pick it up through `resolveRenderer`. Each resolved item is wrapped in its own
+ * `RenderBoundary` (Section 56) - one generative component or custom renderer throwing
+ * degrades to a safe fallback row, not a crashed chat.
  */
-export function ToolActivity({ toolCalls, labels }: ToolActivityProps): ReactElement | null {
+/**
+ * A distinct child component, deliberately: `resolveRenderer(toolCall)` may invoke a
+ * host-supplied callback (a generative component's own render, or a `useToolRenderer`
+ * function) that can throw *synchronously while called*, not just while its returned JSX is
+ * later rendered. React only catches an error boundary's *descendant's* render failures -
+ * calling `resolveRenderer` directly inside `ToolActivity`'s own body would throw past any
+ * boundary placed underneath it, up to whatever wraps `<ToolActivity>` itself (taking down
+ * the whole chat, not just one row). Giving each row its own component means that call
+ * happens during *this* component's render, which the `RenderBoundary` wrapped around it
+ * from `ToolActivity` (its parent, not itself) correctly isolates (Section 56).
+ */
+function ToolActivityRow({
+  toolCall,
+  labels,
+  resolveRenderer,
+}: {
+  readonly toolCall: ToolCallState;
+  readonly labels: CopilotLabels;
+  readonly resolveRenderer: ToolActivityProps['resolveRenderer'];
+}): ReactElement {
+  const custom = resolveRenderer?.(toolCall);
+  if (custom !== undefined) return <>{custom}</>;
+  if (toolCall.status === 'requested' || toolCall.status === 'running') {
+    return (
+      <>
+        <span aria-hidden="true">● </span>
+        {labels.toolRunning} {toolCall.name}…
+      </>
+    );
+  }
+  if (toolCall.status === 'succeeded') {
+    return (
+      <>
+        <span aria-hidden="true">✓ </span>
+        {toolCall.name} {labels.toolCompleted}
+      </>
+    );
+  }
+  return (
+    <>
+      <span aria-hidden="true">✗ </span>
+      {toolCall.name} {labels.toolFailed}
+    </>
+  );
+}
+
+export function ToolActivity({
+  toolCalls,
+  labels,
+  resolveRenderer,
+  onRenderError,
+}: ToolActivityProps): ReactElement | null {
   if (toolCalls.length === 0) return null;
   return (
     <ul className="gix-tool-activity" aria-label={labels.conversation}>
       {toolCalls.map((toolCall) => (
         <li key={toolCall.id} className={`gix-tool-activity-item gix-tool-${toolCall.status}`}>
-          {toolCall.status === 'requested' || toolCall.status === 'running' ? (
-            <>
-              <span aria-hidden="true">● </span>
-              {labels.toolRunning} {toolCall.name}…
-            </>
-          ) : toolCall.status === 'succeeded' ? (
-            <>
-              <span aria-hidden="true">✓ </span>
-              {toolCall.name} {labels.toolCompleted}
-            </>
-          ) : (
-            <>
-              <span aria-hidden="true">✗ </span>
-              {toolCall.name} {labels.toolFailed}
-            </>
-          )}
+          <RenderBoundary fallback={labels.renderError} onError={onRenderError}>
+            <ToolActivityRow toolCall={toolCall} labels={labels} resolveRenderer={resolveRenderer} />
+          </RenderBoundary>
         </li>
       ))}
     </ul>
@@ -442,6 +499,7 @@ function ChatContent({
 }): ReactElement {
   const { status, error, messages } = useCopilotChat();
   const toolCalls = useToolCalls();
+  const resolveRenderer = useResolveToolRenderer();
   const Empty = components.EmptyState ?? EmptyState;
   const Activity = components.ToolActivity ?? ToolActivity;
   const announcement =
@@ -466,7 +524,12 @@ function ChatContent({
       <div className="gix-sr-only" role="status" aria-live="polite" aria-atomic="true">
         {announcement}
       </div>
-      <Activity toolCalls={toolCalls} labels={labels} />
+      <Activity
+        toolCalls={toolCalls}
+        labels={labels}
+        resolveRenderer={resolveRenderer}
+        onRenderError={onRenderError}
+      />
       {status === 'submitting' && toolCalls.length === 0 ? (
         <TypingIndicator label={labels.submitting} />
       ) : null}
