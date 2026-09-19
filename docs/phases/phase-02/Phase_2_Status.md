@@ -90,3 +90,12 @@ assumed.
 **STATUS: COMPLETE.** The one unchecked item (`CHANGELOG_PHASES`) is unchecked because no
 such file exists in this repository and it is not among Section 55's explicitly required
 Phase 2 files — noted honestly rather than silently invented.
+
+## Addendum (non-phase task, later session)
+
+The "Use Real OpenAI Model in Example Application" task (not a new phase — see
+[docs/guides/REAL_OPENAI_EXAMPLE.md](../../guides/REAL_OPENAI_EXAMPLE.md)) exercised this
+phase's provider-swap architecture end to end in `examples/react-generative-ui`, confirming
+`createOpenAIProvider` drops into `createServer()` in place of a mock provider with zero
+changes to `@gixcopilot/provider`, `@gixcopilot/server`, or `@gixcopilot/core`. This is a
+validation note, not a revision of the findings above.

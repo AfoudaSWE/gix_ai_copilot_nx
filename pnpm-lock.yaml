@@ -256,6 +256,9 @@ importers:
       '@gixcopilot/provider':
         specifier: workspace:*
         version: link:../../packages/providers/provider-core
+      '@gixcopilot/provider-openai':
+        specifier: workspace:*
+        version: link:../../packages/providers/openai
       '@gixcopilot/react':
         specifier: workspace:*
         version: link:../../packages/react

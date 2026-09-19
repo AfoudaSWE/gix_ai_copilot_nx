@@ -3,6 +3,7 @@ import type { ReactElement } from 'react';
 import { z } from 'zod';
 import {
   CopilotProvider,
+  useCopilotContext,
   useCopilotState,
   useFrontendTool,
   useGenerativeComponent,
@@ -10,15 +11,51 @@ import {
   useToolRenderer,
 } from '@gixcopilot/react';
 import { CopilotChat } from '@gixcopilot/ui';
+import { OPENAI_DEFAULT_MODEL } from './model-config.js';
 import { APPLICATIONS } from './applications.js';
 import type { Application } from './applications.js';
 
 export const suggestions = [
+  'Explain what this application does.',
   'Show APP-1024',
   'Show all applications as cards',
   'What is the status of APP-2048?',
+  'Get APP-1024 and show me the details.',
+  'Open the application I’m currently viewing.',
   'Filter to approved',
 ];
+
+/**
+ * Non-secret (Section 4, 9): only the *model name* crosses into the browser bundle, via
+ * `vite.config.ts`'s `loadEnv` forwarding of `OPENAI_MODEL` -> `VITE_OPENAI_MODEL`.
+ * `OPENAI_API_KEY` is never read by, defined for, or reachable from client code - see
+ * `examples/react-generative-ui/README.md`'s security section.
+ */
+const OPENAI_MODEL = import.meta.env.VITE_OPENAI_MODEL || OPENAI_DEFAULT_MODEL;
+
+/**
+ * Global context (Section 9 of the Phase 4 brief allows application-wide instructions here)
+ * guiding a *real* model's behavior - the SDK-side alternative to hardcoded prompt-matching
+ * (Section 37, 56): improve what the model is told, never special-case what it says.
+ */
+function useAssistantInstructions(): void {
+  useCopilotContext({
+    id: 'assistant-instructions',
+    name: 'assistantInstructions',
+    description: 'How the assistant should help in this application',
+    scope: 'global',
+    priority: 'critical',
+    value: {
+      role: 'You help reviewers work with loan/visa applications in this demo application.',
+      guidance:
+        'Use the available tools and the registered ApplicationCard component when they ' +
+        'help answer the question. Prefer showing an ApplicationCard over describing an ' +
+        'application in prose when the user wants to see it. Only call ' +
+        'navigation.openApplication or a state.patch.* tool when the user actually asks ' +
+        'for that action.',
+    },
+  });
+}
 
 interface ApplicationCardProps {
   readonly applicationId: string;
@@ -108,6 +145,7 @@ interface Filters {
 
 export function ApplicationsPage(): ReactElement {
   const [openedId, setOpenedId] = useState<string | null>(null);
+  useAssistantInstructions();
   useRegisterApplicationCard();
   useRegisterStatusRenderer();
   useOpenApplicationTool(setOpenedId);
@@ -177,7 +215,7 @@ export function ApplicationsPage(): ReactElement {
 
 export function App(): ReactElement {
   return (
-    <CopilotProvider runtimeUrl="/api/copilot" model={{ provider: 'generative-ui-aware', model: 'demo' }}>
+    <CopilotProvider runtimeUrl="/api/copilot" model={{ provider: 'openai', model: OPENAI_MODEL }}>
       <div className="layout">
         <ApplicationsPage />
         <aside className="chat-pane">

@@ -5,7 +5,7 @@ import type { FastifyInstance } from 'fastify';
 import { CopilotProvider } from '@gixcopilot/react';
 import { CopilotChat } from '@gixcopilot/ui';
 import { ApplicationsPage, suggestions } from './app.js';
-import { createDemoServer } from './backend.js';
+import { createMockDemoServer } from './backend.js';
 
 const apps: FastifyInstance[] = [];
 afterEach(async () => {
@@ -13,8 +13,11 @@ afterEach(async () => {
   await Promise.all(apps.splice(0).map((app) => app.close()));
 });
 
+/** This suite always uses the deterministic mock backend - never real OpenAI - so `pnpm
+ * test` stays fast, free, and credential-free (Section 39). See `openai-smoke.spec.ts` for
+ * the optional real-provider check. */
 async function mountApp(): Promise<void> {
-  const app = createDemoServer();
+  const app = createMockDemoServer();
   apps.push(app);
   const url = await app.listen({ host: '127.0.0.1', port: 0 });
   render(

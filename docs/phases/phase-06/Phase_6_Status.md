@@ -100,3 +100,14 @@ explicitly preserved the mandatory future insertion point: `Generated UI/State A
 Registered Tool → Tool Runtime → [Phase 7 Action Firewall] → Tool Executor` — every
 consequential action in this phase (rendering, direct invocation, state patching) already
 flows through `ToolRuntimeMiddleware`, the exact seam Phase 7 will wrap.
+
+## Addendum (non-phase task, later session)
+
+The "Use Real OpenAI Model in Example Application" task (not a new phase — see
+[docs/guides/REAL_OPENAI_EXAMPLE.md](../../guides/REAL_OPENAI_EXAMPLE.md)) exercised this
+phase's reserved-tool generative-UI/state-patch mechanism against a real OpenAI model in
+`examples/react-generative-ui`, including the generative-component rendering, direct
+frontend-tool invocation, and AI-writable state paths described above. No changes were made
+to `@gixcopilot/generative-ui`, `@gixcopilot/react`, or the reserved-tool mechanism itself;
+the example's own deterministic mock provider (used only by its test suite) was kept
+unchanged. This is a validation note, not a revision of the findings above.

@@ -97,3 +97,13 @@ diff were reviewed against this phase's acceptance checklist before this report.
 
 Next phase: **Phase 06 — Generative UI & Shared State: LOCKED / NOT STARTED.** Waiting for
 explicit user authorization; no Phase 6 code, config, or scaffolding was introduced.
+
+## Addendum (non-phase task, later session)
+
+The "Use Real OpenAI Model in Example Application" task (not a new phase — see
+[docs/guides/REAL_OPENAI_EXAMPLE.md](../../guides/REAL_OPENAI_EXAMPLE.md)) exercised this
+phase's frontend/backend tool-calling pipeline against a real OpenAI model in
+`examples/react-generative-ui`, including a real tool-calling round trip
+(`applications.getStatus`) in an optional, key-gated smoke test. No changes were needed in
+`@gixcopilot/tools` or the Tool Runtime. This is a validation note, not a revision of the
+findings above.
