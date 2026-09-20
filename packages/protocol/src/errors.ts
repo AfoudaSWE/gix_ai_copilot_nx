@@ -42,7 +42,23 @@ export type CopilotErrorCode =
   | 'PII_POLICY_DENIED'
   | 'APPROVAL_REQUIRED'
   | 'APPROVAL_REJECTED'
-  | 'APPROVAL_EXPIRED';
+  | 'APPROVAL_EXPIRED'
+  /**
+   * Added in Phase 9 (knowledge/RAG/memory) - a normalized taxonomy for the ingestion and
+   * retrieval pipeline (Section 129). ACL/tenant denial deliberately reuses the existing
+   * PERMISSION_DENIED/TENANT_MISMATCH codes above rather than adding a duplicate ACCESS_DENIED
+   * code for the same failure class - see the dependency-policy skill's "avoid duplication"
+   * rule.
+   */
+  | 'SOURCE_LOAD_FAILED'
+  | 'PARSE_FAILED'
+  | 'CHUNK_FAILED'
+  | 'EMBEDDING_FAILED'
+  | 'VECTOR_STORE_FAILED'
+  | 'INDEX_FAILED'
+  | 'RETRIEVAL_FAILED'
+  | 'MEMORY_WRITE_DENIED'
+  | 'MEMORY_READ_DENIED';
 
 export type CopilotErrorMetadata = Readonly<Record<string, unknown>>;
 
@@ -229,5 +245,49 @@ export class CopilotError extends Error {
 
   static approvalExpired(message = 'The approval request expired before a decision was made.'): CopilotError {
     return new CopilotError('APPROVAL_EXPIRED', message, { retryable: false });
+  }
+
+  static sourceLoadFailed(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('SOURCE_LOAD_FAILED', message, { retryable: true, metadata });
+  }
+
+  static parseFailed(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('PARSE_FAILED', message, { retryable: false, metadata });
+  }
+
+  static chunkFailed(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('CHUNK_FAILED', message, { retryable: false, metadata });
+  }
+
+  static embeddingFailed(
+    message: string,
+    metadata?: CopilotErrorMetadata,
+    retryable = true,
+  ): CopilotError {
+    return new CopilotError('EMBEDDING_FAILED', message, { retryable, metadata });
+  }
+
+  static vectorStoreFailed(
+    message: string,
+    metadata?: CopilotErrorMetadata,
+    retryable = true,
+  ): CopilotError {
+    return new CopilotError('VECTOR_STORE_FAILED', message, { retryable, metadata });
+  }
+
+  static indexFailed(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('INDEX_FAILED', message, { retryable: false, metadata });
+  }
+
+  static retrievalFailed(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('RETRIEVAL_FAILED', message, { retryable: true, metadata });
+  }
+
+  static memoryWriteDenied(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('MEMORY_WRITE_DENIED', message, { retryable: false, metadata });
+  }
+
+  static memoryReadDenied(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('MEMORY_READ_DENIED', message, { retryable: false, metadata });
   }
 }

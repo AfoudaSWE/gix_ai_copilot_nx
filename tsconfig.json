@@ -23,6 +23,18 @@
       "path": "packages/integrations"
     },
     {
+      "path": "packages/knowledge"
+    },
+    {
+      "path": "packages/rag"
+    },
+    {
+      "path": "packages/vectorstores/pgvector"
+    },
+    {
+      "path": "packages/memory"
+    },
+    {
       "path": "packages/context"
     },
     {
@@ -72,6 +84,9 @@
     },
     {
       "path": "examples/react-enterprise"
+    },
+    {
+      "path": "examples/react-rag"
     }
   ]
 }

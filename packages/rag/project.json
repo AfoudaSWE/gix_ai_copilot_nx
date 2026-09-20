@@ -1,0 +1,14 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "rag",
+  "projectType": "library",
+  "sourceRoot": "packages/rag/src",
+  "tags": ["scope:rag", "type:lib"],
+  "implicitDependencies": ["protocol", "security", "knowledge"],
+  "targets": {
+    "build": { "executor": "nx:run-commands", "options": { "command": "pnpm run build", "cwd": "packages/rag" } },
+    "typecheck": { "executor": "nx:run-commands", "options": { "command": "pnpm run typecheck", "cwd": "packages/rag" } },
+    "test": { "executor": "nx:run-commands", "options": { "command": "pnpm run test", "cwd": "packages/rag" } },
+    "lint": { "executor": "nx:run-commands", "options": { "command": "pnpm run lint", "cwd": "packages/rag" } }
+  }
+}

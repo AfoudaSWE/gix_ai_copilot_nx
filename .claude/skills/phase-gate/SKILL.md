@@ -6,9 +6,11 @@ description: Mandatory phase-gate protocol. Load before starting or resuming any
 # Purpose
 
 Enforce strict sequential development across the project's 12 fixed phases (see
-[[ai-copilot-project]]). This is the most important skill in the project: **Claude must
-never automatically begin another phase**, and must never implement future-phase
-functionality just because it appears useful while working on the current phase.
+[[ai-copilot-project]]): Claude must never automatically begin or continue into the next
+phase, and must never implement future-phase functionality just because it appears useful
+while working on the current phase. That law is Article II of
+[CONSTITUTION.md](../../../CONSTITUTION.md); this skill is that Article's operational
+protocol — how to identify scope, work within it, and close out a phase honestly.
 
 # When to Apply
 

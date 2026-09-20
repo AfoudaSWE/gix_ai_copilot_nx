@@ -1,0 +1,162 @@
+{
+  "status": "PASS",
+  "date": "2026-09-20T14:41:59.135Z",
+  "provider": "openai",
+  "model": "gpt-4o-mini",
+  "embeddingModel": "text-embedding-3-small",
+  "indexingMs": 986.2107000000001,
+  "flows": [
+    "real embeddings -> pgvector -> permission filter -> ContextEngine -> OpenAI -> citations",
+    "viewer denied restricted answer",
+    "admin authorized restricted answer",
+    "current Arabic instruction overrides English memory",
+    "memory deletion"
+  ],
+  "measurements": [
+    {
+      "stage": "chunk",
+      "durationMs": 0.49529999999981555,
+      "status": "success"
+    },
+    {
+      "stage": "embed.documents",
+      "durationMs": 452.4339,
+      "status": "success"
+    },
+    {
+      "stage": "index.store",
+      "durationMs": 12.195300000000088,
+      "status": "success"
+    },
+    {
+      "stage": "chunk",
+      "durationMs": 0.1716999999998734,
+      "status": "success"
+    },
+    {
+      "stage": "embed.documents",
+      "durationMs": 256.33460000000014,
+      "status": "success"
+    },
+    {
+      "stage": "index.store",
+      "durationMs": 8.490800000000036,
+      "status": "success"
+    },
+    {
+      "stage": "chunk",
+      "durationMs": 0.08249999999998181,
+      "status": "success"
+    },
+    {
+      "stage": "embed.documents",
+      "durationMs": 206.75059999999985,
+      "status": "success"
+    },
+    {
+      "stage": "index.store",
+      "durationMs": 7.817600000000311,
+      "status": "success"
+    },
+    {
+      "stage": "embed.query",
+      "durationMs": 322.01279999999997,
+      "status": "success"
+    },
+    {
+      "stage": "vector.search",
+      "durationMs": 5.54989999999998,
+      "status": "success"
+    },
+    {
+      "stage": "rerank",
+      "durationMs": 0.04499999999961801,
+      "status": "success"
+    },
+    {
+      "stage": "memory.search",
+      "durationMs": 276.68319999999994,
+      "status": "success"
+    },
+    {
+      "stage": "context.resolve",
+      "durationMs": 0.7755000000001928,
+      "status": "success"
+    },
+    {
+      "stage": "embed.query",
+      "durationMs": 482.9863000000005,
+      "status": "success"
+    },
+    {
+      "stage": "vector.search",
+      "durationMs": 28.985999999999876,
+      "status": "success"
+    },
+    {
+      "stage": "rerank",
+      "durationMs": 0.005400000000008731,
+      "status": "success"
+    },
+    {
+      "stage": "memory.search",
+      "durationMs": 298.64370000000054,
+      "status": "success"
+    },
+    {
+      "stage": "context.resolve",
+      "durationMs": 0.0650999999998021,
+      "status": "success"
+    },
+    {
+      "stage": "embed.query",
+      "durationMs": 237.4882000000007,
+      "status": "success"
+    },
+    {
+      "stage": "vector.search",
+      "durationMs": 105.20740000000023,
+      "status": "success"
+    },
+    {
+      "stage": "rerank",
+      "durationMs": 0.020799999999326246,
+      "status": "success"
+    },
+    {
+      "stage": "memory.search",
+      "durationMs": 235.39269999999942,
+      "status": "success"
+    },
+    {
+      "stage": "context.resolve",
+      "durationMs": 0.16849999999976717,
+      "status": "success"
+    },
+    {
+      "stage": "embed.query",
+      "durationMs": 405.4301999999998,
+      "status": "success"
+    },
+    {
+      "stage": "vector.search",
+      "durationMs": 4.506800000000112,
+      "status": "success"
+    },
+    {
+      "stage": "rerank",
+      "durationMs": 0.006000000000312866,
+      "status": "success"
+    },
+    {
+      "stage": "memory.search",
+      "durationMs": 208.02160000000003,
+      "status": "success"
+    },
+    {
+      "stage": "context.resolve",
+      "durationMs": 0.24479999999948632,
+      "status": "success"
+    }
+  ]
+}

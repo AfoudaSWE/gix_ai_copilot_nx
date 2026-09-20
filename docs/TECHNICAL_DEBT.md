@@ -94,3 +94,20 @@ optimization. No Phase 4+ feature is tracked as Phase 3 debt.
 ## Phase 8 completion-review limits
 
 MCP resource/prompt discovery currently returns one page and resource reads return the first text item. Custom MCP clients without state subscriptions require explicit host cleanup. The OpenAPI converter supports a documented subset and rejects unsupported constructs; no full conformance claim is made. Concrete security defects found in review were fixed, rather than carried forward as debt. See [Phase 8 issues](phases/phase-08/Phase_8_Issues.md) for scope and operational limits. Planned Phase 9 capabilities remain outside this debt list.
+
+## Phase 9 completion-review limits
+
+One baseline reranker ships (`createSimilarityReranker`); the `Reranker` interface supports a
+cross-encoder/LLM/provider reranker, but none is implemented. No hybrid keyword+vector search
+and no query rewriting/expansion are implemented — deterministic vector-only retrieval is the
+Phase 9 baseline. Memory's default per-type retention (1h/24h/90d/90d) is a documented default an
+explicit `expiresAt` always overrides, not a regulatory-compliance-grade retention product.
+`createMemoryService`'s audit write is best-effort (a sink failure does not block the underlying
+operation), matching Phase 7's own audit-sink tradeoff. No S3/Azure Blob/GCS-specific
+object-storage adapter and no natural-language-to-SQL database source were implemented — both are
+explicitly out of Phase 9's scope (Section 22/23), not deferred work. Concrete defects found in
+review (a broken `pnpm-workspace.yaml` install scaffold, an entirely-unimplemented
+`@gixcopilot/memory` package, a real pgvector SQL operator-precedence bug) were fixed rather than
+carried forward as debt. See [Phase 9 issues](phases/phase-09/Phase_9_Issues.md) for the complete
+scope and operational limits. Planned Phase 10+ capabilities (agents, multi-agent orchestration,
+DevTools, Angular, an enterprise management platform) remain outside this debt list.

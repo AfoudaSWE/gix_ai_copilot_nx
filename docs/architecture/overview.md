@@ -191,7 +191,12 @@ Agents / Context / Tools / Generative UI <- @gixcopilot/context (Phase 4); @gixc
                                             @gixcopilot/generative-ui (Phase 6, this phase);
                                             Agents: Phase 10
       |
-Adapters (LLM providers, DB, MCP, ...)  <- @gixcopilot/provider(-mock|-openai) (Phase 2), Phase 8, 9
+Adapters (LLM providers, DB, MCP, ...)  <- @gixcopilot/provider(-mock|-openai) (Phase 2);
+                                            @gixcopilot/openapi, @gixcopilot/mcp,
+                                            @gixcopilot/integrations (Phase 8);
+                                            @gixcopilot/knowledge, @gixcopilot/rag,
+                                            @gixcopilot/vectorstore-pgvector,
+                                            @gixcopilot/memory (Phase 9)
 ```
 
 ## Module Resolution & Build Strategy
@@ -236,3 +241,20 @@ Disclosed rather than hidden, per the code-review skill:
 ## Phase 8 integration boundary
 
 OpenAPI and MCP now generate canonical tools into the existing registry/runtime. They depend on tools/protocol, never on React, the server, each other or the security implementation. Host authentication, the Action Firewall and approval/data policies govern external execution; server calls fail closed without the firewall. The integration catalog is a separate host-owned metadata registry. See [Phase 8 architecture](../phases/phase-08/Phase_8_Architecture.md) for the current diagrams and supported boundaries; older phase snapshots above describe their implementation-time scope.
+
+## Phase 9 integration boundary
+
+`@gixcopilot/knowledge` (source/document/loader contracts; depends on protocol + mcp) ->
+`@gixcopilot/rag` (chunking, embeddings, the storage-agnostic `VectorStore` contract,
+permission-aware retrieval, reranking, citations; depends on protocol + security + knowledge,
+never PostgreSQL) -> `@gixcopilot/vectorstore-pgvector` (the only package depending on
+`drizzle-orm`/`pg`). `@gixcopilot/memory` (working/session/durable/semantic memory; depends on
+protocol + security + rag) reuses rag's `EmbeddingProvider`/`VectorStore` for semantic memory in
+a separate table rather than a second vector system. Neither `rag` nor `memory` depends on
+`@gixcopilot/context` — both produce plain, duck-typed contributions the host registers into the
+existing `ContextEngine`, and neither depends on `@gixcopilot/security`'s policy/firewall
+machinery beyond `SecurityContext`/`Policy`/`DataPolicy` (no second authorization model).
+`@gixcopilot/react`/`@gixcopilot/ui` do not depend on knowledge/rag/memory at all — citation UI
+is duck-typed against plain data the host application supplies. See
+[Phase 9 architecture](../phases/phase-09/Phase_9_Architecture.md) for the current diagrams and
+supported boundaries; older phase snapshots above describe their implementation-time scope.

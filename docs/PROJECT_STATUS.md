@@ -17,7 +17,7 @@ Phase 05 - Tools & Agent Actions               COMPLETE
 Phase 06 - Generative UI & Shared State        COMPLETE
 Phase 07 - Enterprise Security & HITL          COMPLETE
 Phase 08 - OpenAPI + MCP + Integrations        COMPLETE
-Phase 09 - Knowledge + RAG + Memory            NOT STARTED / LOCKED
+Phase 09 - Knowledge + RAG + Memory            COMPLETE
 Phase 10 - Agents + Multi-Agent + Workflows    NOT STARTED / LOCKED
 Phase 11 - DevTools + Testing + Evals + Obs.   NOT STARTED / LOCKED
 Phase 12 - Production Platform + Ecosystem     NOT STARTED / LOCKED
@@ -197,7 +197,88 @@ phase is started without an explicit instruction naming it.
 - Full record: [Phase 8 docs](phases/phase-08/Phase_8_Docs.md),
   [completion report](phases/phase-08/Phase_8_Status.md),
   [ADR 0013](adr/0013-openapi-mcp-integration-architecture.md).
-- Phase 9 remains **LOCKED / NOT STARTED**.
+
+## Phase 9 — Knowledge + RAG + Memory (COMPLETE)
+
+- Added `@gixcopilot/knowledge`: framework-independent source/document/loader contracts —
+  `text`, `markdown` (heading-aware), `pdf` (via `pdfjs-dist`, page/title provenance), `docx`
+  (via `mammoth`, heading/paragraph/table-aware), `html`/`web` (via `node-html-parser`,
+  SSRF-guarded — `assertSafeWebUrl` blocks loopback/link-local/private ranges and non-HTTP(S)
+  schemes, refuses redirects, bounds response size), `api` (developer-configured, never
+  model-controlled), `database` (a predefined safe query, no natural-language-to-SQL),
+  `object-storage` (a generic client shape, no cloud SDK dependency), and `mcp-resource`
+  (reuses Phase 8's `McpClient`, not a second connection). Depends only on protocol + `mcp`.
+- Added `@gixcopilot/rag`: structure-aware recursive chunking with deterministic chunk IDs, a
+  provider-neutral `EmbeddingProvider` (deterministic test adapter + real OpenAI adapter), a
+  storage-agnostic `VectorStore` contract (in-memory + pgvector implementations), an indexer
+  (index/reindex/delete, atomic reindex via `VectorStore.replace`), a **permission-aware
+  retriever** that enforces tenant + ACL (SQL pre-filter and application post-filter, defense
+  in depth) + ABAC before reranking, a baseline similarity reranker, stable `[S#]` citation
+  assignment with post-hoc validation against unknown IDs, and `formatKnowledgeContext` — a
+  plain, duck-typed contribution for the *existing* Phase 4 `ContextEngine` (no second
+  prompt-construction engine; `rag` never imports `@gixcopilot/context`). Depends only on
+  protocol + security + knowledge; never PostgreSQL.
+- Added `@gixcopilot/vectorstore-pgvector`: the only package depending on `drizzle-orm`/`pg`,
+  implementing `VectorStore` against PostgreSQL + pgvector with a real SQL-level ACL filter
+  (enforced before `LIMIT`, fails closed on a malformed ACL shape), an HNSW cosine index, and
+  two logically separate table sets (`knowledge_chunks`/`memory_embeddings`) selected by a
+  `table` option — proven against a real Postgres 16 + pgvector database via Testcontainers.
+- Added `@gixcopilot/memory`: an explicit taxonomy — working/session/durable/semantic, kept
+  distinct from conversation history and from RAG — with mandatory ownership
+  (`user`/`session`/`tenant`/`workspace`/`application`) derived only from a trusted
+  `SecurityContext`, an in-memory store and a persistent store built on rag's own
+  `VectorStore`/`EmbeddingProvider` (a separate table, not the knowledge index), a default
+  write policy that rejects credential-shaped values before they reach storage, bounded
+  per-type retention, and `createMemoryService` (explicit-confirmation persistence + audit).
+  Durable memory registers into the Context Engine at a fixed `'normal'` priority — one tier
+  below every `'critical'` system instruction — so it can never outrank the current explicit
+  instruction. Depends only on protocol + security + rag.
+- Extended `@gixcopilot/react` (`useCitations`) and `@gixcopilot/ui`
+  (`<Citation />`/`<CitationList />`/`<SourcePreview />`) with headless citation UI, duck-typed
+  against plain data with **no dependency on `@gixcopilot/rag`/`@gixcopilot/memory`** —
+  retrieval and authorization already happened server-side by the time anything reaches the
+  browser. Promoted `createToolCallingExecutor`/`createFrontendToolBridge` from
+  `@gixcopilot/server`'s internals to its public API (both were already fully implemented and
+  tested; `createServer` already composed them internally).
+- Added `examples/react-rag`: three tenant/permission-tiered knowledge documents (public
+  handbook, supervisor guide, admin-only security procedure), a `RagService` wiring real
+  retrieval + memory + the real Context Engine + the real AI runtime, explicit memory
+  save/view/forget HTTP routes deriving owner/tenant from server identity only, a browser UI,
+  and an integration suite proving the **mandatory critical security test** (a viewer's
+  question whose answer exists only in the admin document never reaches the model, and never
+  appears in the actual runtime request), citation-validity checking, memory
+  ownership/tenant/expiration/deletion, current-instruction-wins precedence, MCP resource
+  ingestion through the identical ACL pipeline, and prompt-injection containment through the
+  unmodified Phase 7 Action Firewall — plus a `smoke.ts` real-provider script, **actually run
+  this session** against real OpenAI (chat + embeddings) and a real, disposable
+  PostgreSQL + pgvector database; see [real-smoke.json](phases/phase-09/real-smoke.json).
+- **No file under `protocol`'s `Message`/`ContentPart`/`Run`/event shapes was modified** —
+  only the additive `CopilotErrorCode` taxonomy grew (Section 129: `SOURCE_LOAD_FAILED`,
+  `PARSE_FAILED`, `CHUNK_FAILED`, `EMBEDDING_FAILED`, `VECTOR_STORE_FAILED`, `INDEX_FAILED`,
+  `RETRIEVAL_FAILED`, `MEMORY_WRITE_DENIED`, `MEMORY_READ_DENIED`).
+- Two real bugs were found and fixed during this review: a SQL operator-precedence bug in
+  pgvector's `search()` threshold condition (caught by a genuine Testcontainers-backed
+  integration test), and a broken `pnpm-workspace.yaml` scaffold that hard-failed
+  `pnpm install` and blocked every `nx` command before any Phase 9 work could be validated.
+- Full record: [Phase 9 docs](phases/phase-09/Phase_9_Docs.md),
+  [completion report](phases/phase-09/Phase_9_Status.md),
+  [ADR 0014](adr/0014-knowledge-rag-memory-architecture.md).
+- Phase 10 remains **LOCKED / NOT STARTED**.
+
+## Current Validation (Phase 9 completion)
+
+Fresh `pnpm nx run-many -t lint,typecheck,test,build --skip-nx-cache` passed across all 32
+lint/typecheck/buildable/testable projects. **996 Vitest tests passed, 4 optional real-provider
+smoke tests skipped** without credentials/opt-in, zero failures, across every project including
+every Phase 1–8 test, unmodified apart from the additive protocol error codes above. The
+real-provider flow (real OpenAI embeddings + chat, real pgvector) was then run explicitly this
+session against a genuine OpenAI API key and a disposable, migrated PostgreSQL container, and
+**passed for real** — the cited answer, the viewer/admin authorization boundary, the
+Arabic-instruction-overrides-English-memory precedence case, and explicit memory deletion all
+verified against live infrastructure, not prompt-matched; see
+[Phase 9 Testing](phases/phase-09/Phase_9_Testing.md) for exact commands, durations, and the raw
+measurements. The Chromium/Playwright browser suite was not re-run this session (no Phase 9
+browser UI was added to it; its lint/typecheck targets were re-run and pass).
 
 ## Current Validation (Phase 8 completion)
 

@@ -89,4 +89,35 @@ describe('CopilotError', () => {
       });
     });
   });
+
+  describe('Phase 9 knowledge/RAG/memory error factories', () => {
+    it('assigns the correct code to each new factory', () => {
+      expect(CopilotError.sourceLoadFailed('x').code).toBe('SOURCE_LOAD_FAILED');
+      expect(CopilotError.parseFailed('x').code).toBe('PARSE_FAILED');
+      expect(CopilotError.chunkFailed('x').code).toBe('CHUNK_FAILED');
+      expect(CopilotError.embeddingFailed('x').code).toBe('EMBEDDING_FAILED');
+      expect(CopilotError.vectorStoreFailed('x').code).toBe('VECTOR_STORE_FAILED');
+      expect(CopilotError.indexFailed('x').code).toBe('INDEX_FAILED');
+      expect(CopilotError.retrievalFailed('x').code).toBe('RETRIEVAL_FAILED');
+      expect(CopilotError.memoryWriteDenied('x').code).toBe('MEMORY_WRITE_DENIED');
+      expect(CopilotError.memoryReadDenied('x').code).toBe('MEMORY_READ_DENIED');
+    });
+
+    it('marks transient infrastructure failures retryable by default, denials and failures not', () => {
+      expect(CopilotError.sourceLoadFailed('x').retryable).toBe(true);
+      expect(CopilotError.embeddingFailed('x').retryable).toBe(true);
+      expect(CopilotError.vectorStoreFailed('x').retryable).toBe(true);
+      expect(CopilotError.retrievalFailed('x').retryable).toBe(true);
+      expect(CopilotError.parseFailed('x').retryable).toBe(false);
+      expect(CopilotError.chunkFailed('x').retryable).toBe(false);
+      expect(CopilotError.indexFailed('x').retryable).toBe(false);
+      expect(CopilotError.memoryWriteDenied('x').retryable).toBe(false);
+      expect(CopilotError.memoryReadDenied('x').retryable).toBe(false);
+    });
+
+    it('accepts an explicit retryable override for embedding/vector-store failures', () => {
+      expect(CopilotError.embeddingFailed('x', undefined, false).retryable).toBe(false);
+      expect(CopilotError.vectorStoreFailed('x', undefined, false).retryable).toBe(false);
+    });
+  });
 });

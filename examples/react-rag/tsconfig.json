@@ -1,0 +1,68 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "types": [
+      "node"
+    ],
+    "lib": [
+      "ES2023",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ],
+  "references": [
+    {
+      "path": "../../packages/react"
+    },
+    {
+      "path": "../../packages/ui"
+    },
+    {
+      "path": "../../packages/protocol"
+    },
+    {
+      "path": "../../packages/core"
+    },
+    {
+      "path": "../../packages/server"
+    },
+    {
+      "path": "../../packages/providers/provider-core"
+    },
+    {
+      "path": "../../packages/providers/openai"
+    },
+    {
+      "path": "../../packages/security"
+    },
+    {
+      "path": "../../packages/context"
+    },
+    {
+      "path": "../../packages/knowledge"
+    },
+    {
+      "path": "../../packages/rag"
+    },
+    {
+      "path": "../../packages/memory"
+    },
+    {
+      "path": "../../packages/vectorstores/pgvector"
+    },
+    {
+      "path": "../../packages/mcp"
+    },
+    {
+      "path": "../../packages/tools"
+    }
+  ]
+}

@@ -26,13 +26,17 @@ Every skill directory contains exactly one `SKILL.md` with YAML frontmatter (`na
 
 ## How Skills Are Selected
 
-1. Start with [`ai-copilot-project/SKILL.md`](ai-copilot-project/SKILL.md) — the master
-   skill. It explains the project vision, architecture direction, the 12 phases, and
-   contains the **routing table** below, mapping a task type to the skill(s) required.
-2. Always also load [`phase-gate/SKILL.md`](phase-gate/SKILL.md) before doing
+1. Read [`CONSTITUTION.md`](../../CONSTITUTION.md) at the repo root first — it's the
+   non-negotiable law (vision, framework-independent-core, phase discipline, trust boundary,
+   verified completion, dependency discipline) that every skill below operates under. Skills
+   are the *how*; the constitution is the *why it's non-negotiable*.
+2. Then [`ai-copilot-project/SKILL.md`](ai-copilot-project/SKILL.md) — the master
+   navigation skill. It contains the **routing table** below, mapping a task type to the
+   skill(s) required.
+3. Always also load [`phase-gate/SKILL.md`](phase-gate/SKILL.md) before doing
    implementation work — it governs which phase's work is currently in scope and forbids
    automatic progression to the next phase.
-3. Load the specific skill(s) the routing table names for the task at hand. Skills
+4. Load the specific skill(s) the routing table names for the task at hand. Skills
    cross-reference each other with `[[skill-name]]` links — follow those links rather than
    assuming a related rule is duplicated locally.
 

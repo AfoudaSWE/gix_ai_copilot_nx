@@ -80,3 +80,5 @@ export type {
 // Re-exported (Phase 6) so a consumer never needs a direct `@gixcopilot/generative-ui`
 // dependency just to type a `useGenerativeComponent` call.
 export type { GenerativeComponentMetadata } from '@gixcopilot/generative-ui';
+export { useCitations } from './citation-hooks.js';
+export type { CitationData, UseCitationsResult } from './citation-hooks.js';

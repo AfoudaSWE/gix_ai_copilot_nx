@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e ' *)",
+      "Bash(node -e \"console.log\\(require\\('mammoth/package.json'\\).types || require\\('mammoth/package.json'\\).typings || 'none'\\)\")",
+      "Bash(npm view *)",
+      "Bash(node \"C:\\\\Users\\\\afoud\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\e--github-apps-gix-ai-copilot-nx\\\\cbe68e51-4e96-4bc2-8643-810cd844e683\\\\scratchpad\\\\pdf-known-good.cjs\")",
+      "Bash(pnpm install *)"
+    ]
+  }
+}

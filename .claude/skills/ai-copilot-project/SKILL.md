@@ -5,43 +5,15 @@ description: Master navigation skill for the AI Copilot SDK. Read this first for
 
 # Purpose
 
-This is the master skill for the AI Copilot & Agent SDK project. It orients Claude to the
-project vision, non-negotiable architectural principles, the fixed phase plan, and the
-technology direction. It is a navigation/index skill — it routes to specialized skills rather
-than duplicating their rules.
+This is the master skill for the AI Copilot & Agent SDK project. It is a navigation/index
+skill — it routes to specialized skills rather than duplicating their rules. Non-negotiable
+project law (vision, the framework-independent-core principle, phase discipline, security/
+testing/documentation philosophy) lives in [CONSTITUTION.md](../../../CONSTITUTION.md) at
+the repo root, not here — read that first, since this file defers to it.
 
-Read this skill first in any new session on this project. Then load the specialized skills
-relevant to the current task using the routing table below.
-
-# Project Vision
-
-> A framework-independent enterprise SDK for building safe, observable, application-aware
-> AI copilots and agents capable of interacting with real software systems.
-
-This is not a chatbot widget. The target surface area includes: a framework-independent
-core, React and Angular SDKs, a Node.js server SDK, LLM provider adapters, streaming,
-application-aware context, shared state, frontend/backend tools, structured outputs,
-generative UI, human-in-the-loop approval, an AI Action Firewall, auth/RBAC/ABAC, PII
-protection, audit trails, OpenAPI-to-tool generation, MCP, RAG, knowledge management,
-memory, an agent runtime, multi-agent orchestration, workflows, long-running agents,
-DevTools, tracing, evals, simulation, a CLI, multi-tenancy, usage tracking, cost controls,
-and an enterprise management platform.
-
-# Architectural Principle
-
-```text
-TypeScript Core
-      ↓
-Own Protocol
-      ↓
-Own Runtime
-      ↓
-Adapters
-```
-
-The core must remain framework-independent. React, Angular, OpenAI, Anthropic, Gemini,
-Ollama, OpenAPI, MCP, PostgreSQL, and Redis are all **adapters or integrations**, never hard
-dependencies baked into the core. See [[project-architecture]] for the full rule set.
+Read [CONSTITUTION.md](../../../CONSTITUTION.md) and this skill first in any new session on
+this project. Then load the specialized skills relevant to the current task using the
+routing table below.
 
 # Technology Direction (planned, not yet installed)
 
@@ -54,44 +26,16 @@ This list describes architectural direction only. Do not install this stack, sca
 packages, or scaffold config for it unless the current, explicitly-approved phase calls for
 it. See [[dependency-policy]].
 
-# The 12 Fixed Phases
-
-```text
-01 Foundation & Architecture         07 Enterprise Security & HITL
-02 LLM Runtime & Streaming           08 OpenAPI + MCP + Integrations
-03 React Copilot UI                  09 Knowledge + RAG + Memory
-04 Application Context & State       10 Agents + Multi-Agent + Workflows
-05 Tools & Agent Actions             11 DevTools + Testing + Evals + Observability
-06 Generative UI & Shared State      12 Production Platform + Ecosystem
-```
-
-These phases are fixed. See [[phase-gate]] for the mandatory phase-gate protocol — this is
-the single most important rule in this project: **Claude must never automatically continue
-from one phase to the next.** Phase progression is explicitly controlled by the user, every
-time.
-
 # Package Philosophy
 
 Small, composable, independently versioned packages under a single `@gixcopilot/*` scope.
 Framework SDKs (React, Angular) are thin adapters over a framework-independent core. See
 [[nx-monorepo]] for package boundaries and [[sdk-design]] for developer-facing API rules.
 
-# Security Philosophy
-
-Model output is never trusted by default. Every consequential tool call passes through the
-Action Firewall pipeline. Authorization is never enforced by a system prompt. See
-[[security]], [[action-firewall]], and [[hitl]].
-
-# Testing Philosophy
-
-Deterministic tests wherever possible, real integration coverage over mocks where behavior
-matters, and no claim of a passing test/build/lint that wasn't actually run. See [[testing]],
-[[ai-evals]], and [[code-review]].
-
-# Documentation Philosophy
-
-Every package ships a README; architecture decisions are recorded as ADRs; public API
-changes require compatibility review. See [[documentation]] and [[backward-compatibility]].
+The 12 fixed phases, the phase-gate law, and the security/testing/documentation philosophy
+that used to be repeated here now live once, in
+[CONSTITUTION.md](../../../CONSTITUTION.md) (Articles II–V) — see it for the phase list and
+[docs/PROJECT_STATUS.md](../../../docs/PROJECT_STATUS.md) for which phase is current.
 
 # Skill Routing Table
 

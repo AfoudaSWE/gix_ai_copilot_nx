@@ -24,10 +24,20 @@ import eslintConfigPrettier from 'eslint-config-prettier';
  * tools - they generate canonical `ToolDefinition`s from an external source and register
  * them into a caller-supplied `ToolRegistry`, never owning a second tool runtime;
  * `@gixcopilot/integrations` (Phase 8) may depend only on protocol - a thin, source-agnostic
- * registry tracking integration health/metadata; only `scope:example` may depend on all
- * three; react may depend on protocol + client + context + tools + generative-ui; examples
- * may depend on anything. This is the executable form of the dependency-direction diagram in
- * docs/architecture/overview.md.
+ * registry tracking integration health/metadata; `@gixcopilot/knowledge` (Phase 9) may depend
+ * on protocol + mcp (an MCP-resource loader reuses Phase 8's MCP client) - source/document/
+ * loader contracts only, no chunking/embedding/vector-store concern; `@gixcopilot/rag`
+ * (Phase 9) may depend on protocol + security + knowledge - chunking, embeddings, the
+ * `VectorStore` abstraction, permission-aware retrieval (reuses `SecurityContext`/`Policy`/
+ * `DataPolicy` rather than a second authorization model), reranking, citations; never a
+ * PostgreSQL/Drizzle dependency itself; `@gixcopilot/vectorstore-pgvector` (Phase 9) may
+ * depend on protocol + rag - the only package allowed to import `drizzle-orm`/`pg`, isolating
+ * that dependency from the core RAG abstractions per the database skill;
+ * `@gixcopilot/memory` (Phase 9) may depend on protocol + security + rag - reuses rag's
+ * `EmbeddingProvider`/`VectorStore` for semantic memory rather than a second, incompatible
+ * vector system; only `scope:example` may depend on all of these; react may depend on
+ * protocol + client + context + tools + generative-ui; examples may depend on anything. This
+ * is the executable form of the dependency-direction diagram in docs/architecture/overview.md.
  */
 export default tseslint.config(
   {
@@ -125,6 +135,22 @@ export default tseslint.config(
               onlyDependOnLibsWithTags: ['scope:protocol', 'scope:integrations'],
             },
             {
+              sourceTag: 'scope:knowledge',
+              onlyDependOnLibsWithTags: ['scope:protocol', 'scope:mcp', 'scope:knowledge'],
+            },
+            {
+              sourceTag: 'scope:rag',
+              onlyDependOnLibsWithTags: ['scope:protocol', 'scope:security', 'scope:knowledge', 'scope:rag'],
+            },
+            {
+              sourceTag: 'scope:vectorstore-pgvector',
+              onlyDependOnLibsWithTags: ['scope:protocol', 'scope:rag', 'scope:vectorstore-pgvector'],
+            },
+            {
+              sourceTag: 'scope:memory',
+              onlyDependOnLibsWithTags: ['scope:protocol', 'scope:security', 'scope:rag', 'scope:memory'],
+            },
+            {
               sourceTag: 'scope:client',
               onlyDependOnLibsWithTags: ['scope:protocol', 'scope:client'],
             },
@@ -165,6 +191,10 @@ export default tseslint.config(
                 'scope:openapi',
                 'scope:mcp',
                 'scope:integrations',
+                'scope:knowledge',
+                'scope:rag',
+                'scope:vectorstore-pgvector',
+                'scope:memory',
                 'scope:example',
               ],
             },

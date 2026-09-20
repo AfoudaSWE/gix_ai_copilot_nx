@@ -1,0 +1,14 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "knowledge",
+  "projectType": "library",
+  "sourceRoot": "packages/knowledge/src",
+  "tags": ["scope:knowledge", "type:lib"],
+  "implicitDependencies": ["protocol", "mcp"],
+  "targets": {
+    "build": { "executor": "nx:run-commands", "options": { "command": "pnpm run build", "cwd": "packages/knowledge" } },
+    "typecheck": { "executor": "nx:run-commands", "options": { "command": "pnpm run typecheck", "cwd": "packages/knowledge" } },
+    "test": { "executor": "nx:run-commands", "options": { "command": "pnpm run test", "cwd": "packages/knowledge" } },
+    "lint": { "executor": "nx:run-commands", "options": { "command": "pnpm run lint", "cwd": "packages/knowledge" } }
+  }
+}

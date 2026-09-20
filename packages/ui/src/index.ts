@@ -37,3 +37,5 @@ export type { CopilotLabels } from './labels.js';
 
 export { ApprovalCard, ApprovalList, SecurityDenial } from './approval.js';
 export type { ApprovalCardProps, ApprovalListProps } from './approval.js';
+export { Citation, CitationList, SourcePreview } from './citations.js';
+export type { CitationListProps, SourcePreviewProps } from './citations.js';

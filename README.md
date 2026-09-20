@@ -183,11 +183,14 @@ do, to keep architecture drift from creeping in as later phases are built.
 
 ## Engineering Standards
 
-This project is built against an explicit skill system in [`.claude/skills/`](.claude/skills/),
-covering architecture, TypeScript standards, security, testing, and more — see
-[`.claude/skills/README.md`](.claude/skills/README.md). Development proceeds through 12
-fixed phases with an explicit phase-gate: work never silently continues from one phase to
-the next.
+[`AGENTS.md`](AGENTS.md) is the entry point for any coding agent working in this repo, and
+[`CONSTITUTION.md`](CONSTITUTION.md) is the non-negotiable law it defers to — framework
+independence, phase discipline, the trust boundary around model output, verified-completion
+requirements, and dependency discipline. Everything below that is an explicit skill system in
+[`.claude/skills/`](.claude/skills/), covering architecture, TypeScript standards, security,
+testing, and more — see [`.claude/skills/README.md`](.claude/skills/README.md). Development
+proceeds through 12 fixed phases with an explicit phase-gate: work never silently continues
+from one phase to the next.
 
 ## License
 
