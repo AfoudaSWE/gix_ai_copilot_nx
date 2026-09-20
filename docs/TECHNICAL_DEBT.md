@@ -73,6 +73,8 @@ would have blocked every approved action from ever executing. None is carried fo
 debt — all three are fixed and covered by regression tests. No Phase 8+ feature (OpenAPI/MCP
 auto-tool-generation, RAG, agents) is tracked here.
 
+Phase 8 review: the generated build/test-output and process-local storage limitations above also apply to the new integration packages. The completion review fixed firewall, credential, schema, HTTP and MCP lifecycle defects; these are not carried forward as debt. Resource/prompt pagination and custom-client disconnect handling limits are recorded below and in [Phase 8 issues](phases/phase-08/Phase_8_Issues.md). No planned Phase 9 capability is classified as technical debt.
+
 ## Resolved
 
 Phase 3 review: the new React/UI package file lists exclude compiled specs from packing.
@@ -88,3 +90,7 @@ optimization. No Phase 4+ feature is tracked as Phase 3 debt.
   policy, causing real, uncontrolled backoff delays.~~ Fixed during Phase 2 validation by
   setting `maxRetries: 0` on the OpenAI client — see
   `packages/providers/openai/src/openai-provider.ts`.
+
+## Phase 8 completion-review limits
+
+MCP resource/prompt discovery currently returns one page and resource reads return the first text item. Custom MCP clients without state subscriptions require explicit host cleanup. The OpenAPI converter supports a documented subset and rejects unsupported constructs; no full conformance claim is made. Concrete security defects found in review were fixed, rather than carried forward as debt. See [Phase 8 issues](phases/phase-08/Phase_8_Issues.md) for scope and operational limits. Planned Phase 9 capabilities remain outside this debt list.

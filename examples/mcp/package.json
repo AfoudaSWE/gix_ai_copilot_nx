@@ -1,0 +1,30 @@
+{
+  "name": "@gixcopilot/example-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Phase 8 MCP demonstration: a small local test MCP server, registerMCP(), and the real Model -> Generated Tool -> MCP pipeline.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "typecheck": "tsc -b tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint src",
+    "demo": "tsc -b tsconfig.json && node --env-file-if-exists=.env dist/main.js"
+  },
+  "dependencies": {
+    "@gixcopilot/core": "workspace:*",
+    "@gixcopilot/mcp": "workspace:*",
+    "@gixcopilot/protocol": "workspace:*",
+    "@gixcopilot/provider": "workspace:*",
+    "@gixcopilot/provider-openai": "workspace:*",
+    "@gixcopilot/security": "workspace:*",
+    "@gixcopilot/server": "workspace:*",
+    "@gixcopilot/tools": "workspace:*",
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@gixcopilot/client": "workspace:*",
+    "vitest": "5.0.1"
+  }
+}

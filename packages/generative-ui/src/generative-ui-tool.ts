@@ -1,7 +1,6 @@
-import { assertValidToolName } from '@gixcopilot/tools';
+import { assertValidToolName, toToolNameSegment } from '@gixcopilot/tools';
 import type { ToolDefinition } from '@gixcopilot/tools';
 import type { AnyGenerativeComponentDefinition } from './component-definition.js';
-import { toToolNameSegment } from './tool-name-segment.js';
 
 /**
  * Section 66's "structured UI without a tool" is implemented, deliberately, as a call to a

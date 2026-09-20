@@ -182,7 +182,7 @@ export function createToolRuntime(options: CreateToolRuntimeOptions): ToolRuntim
           ? CopilotError.timeout(`Tool "${name}" timed out after ${String(timeoutMs)}ms.`)
           : caught instanceof ToolAbortedSignal
             ? CopilotError.cancelled(`Tool "${name}" was cancelled.`)
-            : CopilotError.toolExecutionError(
+            : CopilotError.isCopilotError(caught) ? caught : CopilotError.toolExecutionError(
                 caught instanceof Error ? caught.message : `Tool "${name}" failed to execute.`,
                 { name },
               );

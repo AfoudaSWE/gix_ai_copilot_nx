@@ -1,0 +1,31 @@
+{
+  "name": "@gixcopilot/example-openapi",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Phase 8 OpenAPI demonstration: a small local test API + spec, registerOpenAPI(), and the real Model -> Generated Tool -> HTTP pipeline.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "typecheck": "tsc -b tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint src",
+    "demo": "tsc -b tsconfig.json && node --env-file-if-exists=.env dist/main.js"
+  },
+  "dependencies": {
+    "@gixcopilot/core": "workspace:*",
+    "@gixcopilot/openapi": "workspace:*",
+    "@gixcopilot/protocol": "workspace:*",
+    "@gixcopilot/provider": "workspace:*",
+    "@gixcopilot/provider-openai": "workspace:*",
+    "@gixcopilot/security": "workspace:*",
+    "@gixcopilot/server": "workspace:*",
+    "@gixcopilot/tools": "workspace:*"
+  },
+  "devDependencies": {
+    "@gixcopilot/client": "workspace:*",
+    "fastify": "5.12.5",
+    "vitest": "5.0.1",
+    "@gixcopilot/mcp": "workspace:*",
+    "zod": "4.6.5"
+  }
+}

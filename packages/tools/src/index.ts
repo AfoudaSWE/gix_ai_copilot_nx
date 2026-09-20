@@ -1,4 +1,5 @@
 export { isValidToolName, assertValidToolName, toolNamespaceOf } from './tool-name.js';
+export { toToolNameSegment } from './tool-name-segment.js';
 
 export type { ToolConcurrency, ToolRiskClass, ToolMetadata } from './tool-metadata.js';
 
@@ -46,3 +47,20 @@ export type {
 } from './tool-runtime.js';
 
 export { mathAddTool, applicationsGetStatusTool } from './mock-tools.js';
+
+export { jsonSchemaToZod } from './json-schema-to-zod.js';
+export type { JsonSchemaLike, JsonSchemaConversionIssue, JsonSchemaConversionResult } from './json-schema-to-zod.js';
+
+export {
+  staticCredentialProvider,
+  noCredentialsProvider,
+  credentialsToHeaders,
+  redactSensitiveHeaders,
+  redactCredentialValues,
+} from './credential-provider.js';
+export type { CredentialProvider, IntegrationContext, IntegrationCredentials } from './credential-provider.js';
+
+export { toolSourceAuditMetadata } from './tool-metadata.js';
+
+export { measureIntegration } from './integration-telemetry.js';
+export type { IntegrationTelemetryEvent, IntegrationTelemetryObserver } from './integration-telemetry.js';

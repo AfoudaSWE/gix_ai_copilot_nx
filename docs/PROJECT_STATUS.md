@@ -16,7 +16,7 @@ Phase 04 - Application Context & State         COMPLETE
 Phase 05 - Tools & Agent Actions               COMPLETE
 Phase 06 - Generative UI & Shared State        COMPLETE
 Phase 07 - Enterprise Security & HITL          COMPLETE
-Phase 08 - OpenAPI + MCP + Integrations        NOT STARTED / LOCKED
+Phase 08 - OpenAPI + MCP + Integrations        COMPLETE
 Phase 09 - Knowledge + RAG + Memory            NOT STARTED / LOCKED
 Phase 10 - Agents + Multi-Agent + Workflows    NOT STARTED / LOCKED
 Phase 11 - DevTools + Testing + Evals + Obs.   NOT STARTED / LOCKED
@@ -150,7 +150,75 @@ phase is started without an explicit instruction naming it.
 - Full record: [Phase 7 docs](phases/phase-07/Phase_7_Docs.md),
   [completion report](phases/phase-07/Phase_7_Status.md),
   [ADR 0012](adr/0012-action-firewall-and-hitl-architecture.md).
-- Phase 8 remains **LOCKED / NOT STARTED**.
+
+## Phase 8 — OpenAPI + MCP + Integrations (COMPLETE)
+
+- Added `@gixcopilot/openapi`: loads/validates/resolves an OpenAPI 3.0/3.1 document, discovers
+  operations, derives deterministic dot-namespaced tool names, converts parameters/request/
+  response bodies into Zod (including `readOnly`/`writeOnly` direction-aware handling and
+  declared-response validation), applies an exposure policy that requires deliberate
+  selection (`include`/`operations`) rather than ever auto-activating a whole spec, maps that
+  into the same `ToolSecurityManifest` every hand-written tool uses, executes over a
+  from-scratch SSRF-safe HTTP executor (trusted base URL + escaped path/query values, redirect
+  refusal, dot-segment rejection, bounded response size, credential-header precedence over any
+  model-supplied header), and normalizes results/errors into the existing `CopilotError`
+  taxonomy. `inspectOpenAPI`/`registerOpenAPI` are the preview/live entry points; `refresh()`
+  reconciles a changed spec by content digest without ever silently overwriting a conflict.
+- Added `@gixcopilot/mcp`: a project-owned wrapper around the official
+  `@modelcontextprotocol/sdk` (confined to one file — no SDK type crosses the public
+  boundary), an explicit connection lifecycle, tool/resource/prompt discovery, `mcp.<server>.
+  <tool>` namespacing, and a **deny-by-default** exposure policy — an MCP tool is never
+  exposed just because the server offers it, and a malicious tool description/result carries
+  no special authority. `registerMCP` connects (bounded, backoff reconnect), generates, and
+  registers tools identically to `registerOpenAPI`.
+- Added `@gixcopilot/integrations`: a small in-memory registry tracking OpenAPI/MCP/future
+  connectors uniformly, deliberately not a management platform.
+- `jsonSchemaToZod`, `toToolNameSegment`, `CredentialProvider`/credential-redaction, and a new
+  safe `measureIntegration` telemetry helper live in `@gixcopilot/tools`, shared by both
+  source packages instead of duplicated. `@gixcopilot/security`/`@gixcopilot/server` gained a
+  small, additive extension: a server with no configured Action Firewall now refuses to
+  execute an OpenAPI/MCP-sourced tool at all (fails closed) rather than silently allowing it
+  through, and audit records carry safe source metadata (integration/operation/server/
+  duration/external status) alongside the existing decision/approval trail — no protocol
+  event or wire-shape change.
+- **No file under `protocol`, `core`, `client`, or any provider package was modified** —
+  generated tools register into the exact same `ToolRegistry`/`ToolRuntime` Phase 5 built and
+  are enforced by the exact same Action Firewall Phase 7 built.
+- Added `examples/openapi` and `examples/mcp`: each wires a real local API/MCP server, a real
+  Action Firewall + approval store + audit sink, and an explicit, reviewed tool selection
+  (no permission-loosening defaults) — proving the full chain (discovery → policy →
+  permission-gated generation → real HTTP/MCP execution → model response) end to end,
+  including a live supervisor-approval round trip for a generated write tool and a mixed
+  native/frontend/backend/OpenAPI/MCP catalog correctly filtered per caller. A dedicated
+  governance/security-hardening test suite additionally proves a malicious MCP tool
+  description/result cannot grant itself authority, a server with no firewall configured
+  refuses every external tool call, and PII/secret fields are redacted from a tool result
+  before the model ever sees them.
+- Full record: [Phase 8 docs](phases/phase-08/Phase_8_Docs.md),
+  [completion report](phases/phase-08/Phase_8_Status.md),
+  [ADR 0013](adr/0013-openapi-mcp-integration-architecture.md).
+- Phase 9 remains **LOCKED / NOT STARTED**.
+
+## Current Validation (Phase 8 completion)
+
+Fresh `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (via `nx run-many
+--skip-nx-cache`) passed across all 27 lint/typecheck projects and all 26 buildable/testable
+projects — **750 Vitest tests passed, 4 optional real-OpenAI smoke tests skipped** without
+credentials/opt-in (`examples/model-streaming`, `examples/openapi` ×2, `examples/mcp`; a
+fifth optional suite, `examples/react-generative-ui`'s, also skipped in this particular run
+since `OPENAI_API_KEY` was not in the shell's ambient environment), zero failures, across 105
+test files — including every Phase 1–7 test, unmodified except the `toToolNameSegment`
+relocation (both `@gixcopilot/generative-ui` import sites updated, its suite re-run and
+passing). All four skipped Phase 8 real-OpenAI tests were then run explicitly, with
+`OPENAI_API_KEY` supplied via `--env-file` and `RUN_OPENAI_SMOKE=1`, and **all passed for
+real** — the model chose and called `vas.getApplication` (a generated OpenAPI GET tool), the
+model chose `vas.assignApplication` (a generated OpenAPI POST tool) and the mutation
+genuinely waited for supervisor approval before reaching the local HTTP API, and the model
+chose and called `mcp.widgets.getWidget` over a real, separately-spawned MCP server process —
+disclosed explicitly, not assumed; see [Phase 8 Testing](phases/phase-08/Phase_8_Testing.md)
+for exact commands and durations. The Chromium/Playwright browser suite was not re-run this
+session (no Phase 8 UI surface exists to add to it; its lint/typecheck targets were re-run and
+pass).
 
 ## Current Validation (Phase 7 completion)
 

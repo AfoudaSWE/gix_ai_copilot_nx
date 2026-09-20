@@ -11,7 +11,7 @@ import type {
   ToolSecurityManifest,
 } from '@gixcopilot/protocol';
 import type { Executor, ExecutorContext, ExecutorInput } from '@gixcopilot/core';
-import { createToolRuntime, runWithConcurrencyPlan, toToolManifest } from '@gixcopilot/tools';
+import { createToolRuntime, runWithConcurrencyPlan, toToolManifest, toolSourceAuditMetadata } from '@gixcopilot/tools';
 import type { AnyToolDefinition, ToolResolver } from '@gixcopilot/tools';
 import type { ModelMessage, ModelReference, ModelRuntime, ModelToolDefinition } from '@gixcopilot/provider';
 import { createActionFirewallMiddleware, strongerApprovalLevel } from '@gixcopilot/security';
@@ -331,6 +331,13 @@ export function createToolCallingExecutor(options: CreateToolCallingExecutorOpti
           seenCalls.add(call.id);
 
           if (!options.actionFirewall) {
+            const external = securityBackendTools.find((tool) => tool.name === call.name)?.metadata?.source;
+            if (external === 'openapi' || external === 'mcp') {
+              const error = CopilotError.validation('External integrations require an Action Firewall.').toPublicJSON();
+              context.onToolEvent?.({ phase: 'failed', toolCallId: call.id, name: call.name, error });
+              plans.push({ kind: 'denied', call, result: { status: 'error', toolCallId: call.id, error } });
+              continue;
+            }
             plans.push({ kind: 'proceed', call });
             continue;
           }
@@ -351,7 +358,7 @@ export function createToolCallingExecutor(options: CreateToolCallingExecutorOpti
             toolCallId: call.id,
             action: call.name,
             arguments: call.arguments,
-            metadata: actionMetadataOf(call.name, source === 'frontend' ? 'frontend' : 'backend', security),
+            metadata: { ...actionMetadataOf(call.name, source === 'frontend' ? 'frontend' : 'backend', security), sourceMetadata: toolSourceAuditMetadata(definition.metadata) },
           };
           const currentSecurity = options.refreshSecurityContext ? await options.refreshSecurityContext() : options.securityContext ?? {};
           const decision = await options.actionFirewall.evaluate(actionRequest, currentSecurity);
@@ -494,9 +501,12 @@ async function dispatchPlan(plan: DispatchPlan, options: DispatchOptions): Promi
   }
 
   if (options.context.signal.aborted) return { status: 'error', toolCallId: plan.call.id, error: CopilotError.cancelled().toPublicJSON() };
-  await recordAction(options, options.context, plan.call, 'execution.started');
+  const source = toolSourceAuditMetadata(options.backendTools.find((tool) => tool.name === plan.call.name)?.metadata);
+  const started = performance.now();
+  await recordAction(options, options.context, plan.call, 'execution.started', undefined, undefined, source);
   const result = await dispatchCall(plan.call, options);
-  await recordAction(options, options.context, plan.call, 'execution.completed', undefined, result.status);
+  const externalStatus = result.status === 'success' && result.data && typeof result.data === 'object' && 'status' in result.data && typeof result.data.status === 'number' ? result.data.status : undefined;
+  await recordAction(options, options.context, plan.call, 'execution.completed', undefined, result.status, { ...source, durationMs: performance.now() - started, externalStatus });
   if (result.status === 'error') options.context.onToolEvent?.({ phase: 'failed', toolCallId: plan.call.id, name: plan.call.name, error: result.error });
   return result;
 }
@@ -700,12 +710,13 @@ async function recordAction(
   decision: string,
   approval?: AuditRecord['approval'],
   resultStatus?: 'success' | 'error',
+  metadata?: Readonly<Record<string, unknown>>,
 ): Promise<void> {
   await options.actionFirewall?.record?.({
     id: randomUUID(), timestamp: new Date().toISOString(),
     tenantId: options.securityContext?.tenant?.tenantId,
     actor: { kind: 'user', subject: options.securityContext?.identity?.subject },
     action: call.name, tool: call.name, runId: context.runId, toolCallId: call.id,
-    decision, approval, resultStatus,
+    decision, approval, resultStatus, metadata,
   });
 }

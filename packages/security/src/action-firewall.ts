@@ -99,12 +99,12 @@ export function createActionFirewall(options: CreateActionFirewallOptions = {}):
       toolCallId: request.toolCallId,
       decision: decision.decision,
       resultStatus: decision.decision === 'deny' ? 'denied' : decision.decision === 'approval' ? 'pending' : undefined,
-      metadata:
+      metadata: { ...request.metadata.sourceMetadata, ...(
         decision.decision === 'deny'
           ? { code: decision.reason.code }
           : decision.decision === 'approval'
             ? { level: decision.approval.level }
-            : undefined,
+            : undefined) },
     });
   }
 

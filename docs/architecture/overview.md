@@ -232,3 +232,7 @@ Disclosed rather than hidden, per the code-review skill:
   selection, or automatic multi-provider fallback (explicitly out of scope; Section 35/36).
 - **(Phase 2)** `ModelRuntime`'s retry backoff uses real (not virtual/fake) timers; tests
   keep this fast by setting `baseDelayMs`/`maxDelayMs` to `0` rather than by mocking time.
+
+## Phase 8 integration boundary
+
+OpenAPI and MCP now generate canonical tools into the existing registry/runtime. They depend on tools/protocol, never on React, the server, each other or the security implementation. Host authentication, the Action Firewall and approval/data policies govern external execution; server calls fail closed without the firewall. The integration catalog is a separate host-owned metadata registry. See [Phase 8 architecture](../phases/phase-08/Phase_8_Architecture.md) for the current diagrams and supported boundaries; older phase snapshots above describe their implementation-time scope.

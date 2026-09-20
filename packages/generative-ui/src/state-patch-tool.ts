@@ -1,8 +1,7 @@
 import { z } from 'zod';
-import { assertValidToolName } from '@gixcopilot/tools';
+import { assertValidToolName, toToolNameSegment } from '@gixcopilot/tools';
 import type { ToolDefinition } from '@gixcopilot/tools';
 import type { CopilotStateStore, StatePatch } from '@gixcopilot/context';
-import { toToolNameSegment } from './tool-name-segment.js';
 
 /**
  * Mirrors `generative-ui-tool.ts`'s decision exactly, applied to Section 36-49's "Shared

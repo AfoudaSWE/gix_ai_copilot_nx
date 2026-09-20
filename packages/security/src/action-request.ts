@@ -8,6 +8,7 @@ import type { ToolActionRisk, ToolActionReversibility, ToolApprovalLevel, DataCl
  */
 export interface ActionMetadata {
   readonly toolName: string;
+  readonly sourceMetadata?: Readonly<Record<string, string>>;
   readonly source: 'frontend' | 'backend';
   readonly risk?: ToolActionRisk;
   readonly reversibility?: ToolActionReversibility;

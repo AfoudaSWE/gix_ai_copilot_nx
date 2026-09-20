@@ -1,0 +1,107 @@
+{
+  "parseMs": 25.865999999999985,
+  "syntheticReport": {
+    "integrationId": "catalog",
+    "documentIssues": [],
+    "operationsDiscovered": 1000,
+    "generated": 20,
+    "skipped": 0,
+    "denied": 980,
+    "unsupported": 0,
+    "warnings": [],
+    "conflicts": []
+  },
+  "modelVisibleTools": 20,
+  "modelToolPayloadBytes": 5571,
+  "openapiReport": {
+    "integrationId": "vas",
+    "documentIssues": [],
+    "operationsDiscovered": 5,
+    "generated": 4,
+    "skipped": 0,
+    "denied": 1,
+    "unsupported": 0,
+    "warnings": [],
+    "conflicts": []
+  },
+  "mcpReport": {
+    "serverId": "widgets",
+    "toolsDiscovered": 3,
+    "generated": 1,
+    "skipped": 0,
+    "denied": 2,
+    "unsupported": 0,
+    "warnings": [],
+    "conflicts": []
+  },
+  "timings": [
+    {
+      "stage": "load",
+      "integrationId": "catalog",
+      "status": "success",
+      "durationMs": 0.0342000000000553
+    },
+    {
+      "stage": "generate",
+      "integrationId": "catalog",
+      "status": "success",
+      "durationMs": 19.776700000000005
+    },
+    {
+      "stage": "load",
+      "integrationId": "vas",
+      "status": "success",
+      "durationMs": 0.009300000000052933
+    },
+    {
+      "stage": "generate",
+      "integrationId": "vas",
+      "status": "success",
+      "durationMs": 2.1908999999999423
+    },
+    {
+      "stage": "register",
+      "integrationId": "vas",
+      "status": "success",
+      "durationMs": 2.455100000000016
+    },
+    {
+      "stage": "connect",
+      "integrationId": "widgets",
+      "status": "success",
+      "durationMs": 809.2856999999999
+    },
+    {
+      "stage": "discover",
+      "integrationId": "widgets",
+      "status": "success",
+      "durationMs": 9.94990000000007
+    },
+    {
+      "stage": "generate",
+      "integrationId": "widgets",
+      "status": "success",
+      "durationMs": 10.732799999999997
+    },
+    {
+      "stage": "register",
+      "integrationId": "widgets",
+      "status": "success",
+      "durationMs": 820.2314
+    },
+    {
+      "stage": "execute",
+      "integrationId": "vas",
+      "toolName": "vas.getApplication",
+      "status": "success",
+      "durationMs": 31.47519999999986
+    },
+    {
+      "stage": "execute",
+      "integrationId": "widgets",
+      "toolName": "mcp.widgets.getWidget",
+      "status": "success",
+      "durationMs": 6.825900000000047
+    }
+  ]
+}

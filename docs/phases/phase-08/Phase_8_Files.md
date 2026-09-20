@@ -1,0 +1,139 @@
+# Phase 8 files
+
+Includes the pre-existing Phase 8 draft and this completion review. Generated dist/build outputs, local environment files and validation logs are excluded.
+
+## Added
+
+- `docs/adr/0013-openapi-mcp-integration-architecture.md`
+- `docs/phases/phase-08/Phase_8_API.md`
+- `docs/phases/phase-08/Phase_8_Architecture.md`
+- `docs/phases/phase-08/Phase_8_Decisions.md`
+- `docs/phases/phase-08/Phase_8_Docs.md`
+- `docs/phases/phase-08/Phase_8_Handoff.md`
+- `docs/phases/phase-08/Phase_8_Implementation.md`
+- `docs/phases/phase-08/Phase_8_Issues.md`
+- `docs/phases/phase-08/Phase_8_Status.md`
+- `docs/phases/phase-08/Phase_8_Testing.md`
+- `docs/phases/phase-08/benchmark.json`
+- `docs/prompts/Phase_8_Prompt.md`
+- `examples/mcp/.env.example`
+- `examples/mcp/README.md`
+- `examples/mcp/package.json`
+- `examples/mcp/project.json`
+- `examples/mcp/src/backend.ts`
+- `examples/mcp/src/integration.spec.ts`
+- `examples/mcp/src/main.ts`
+- `examples/mcp/src/mcp-server-process.mjs`
+- `examples/mcp/src/openai-smoke.spec.ts`
+- `examples/mcp/tsconfig.json`
+- `examples/mcp/vitest.config.ts`
+- `examples/openapi/.env.example`
+- `examples/openapi/README.md`
+- `examples/openapi/package.json`
+- `examples/openapi/project.json`
+- `examples/openapi/src/backend.ts`
+- `examples/openapi/src/benchmark.ts`
+- `examples/openapi/src/governance.spec.ts`
+- `examples/openapi/src/integration.spec.ts`
+- `examples/openapi/src/main.ts`
+- `examples/openapi/src/openai-smoke.spec.ts`
+- `examples/openapi/src/openapi-spec.ts`
+- `examples/openapi/src/test-api-server.ts`
+- `examples/openapi/tsconfig.json`
+- `examples/openapi/vitest.config.ts`
+- `packages/integrations/README.md`
+- `packages/integrations/package.json`
+- `packages/integrations/project.json`
+- `packages/integrations/src/index.ts`
+- `packages/integrations/src/integration-registry.spec.ts`
+- `packages/integrations/src/integration-registry.ts`
+- `packages/integrations/src/types.ts`
+- `packages/integrations/tsconfig.json`
+- `packages/integrations/vitest.config.ts`
+- `packages/mcp/README.md`
+- `packages/mcp/package.json`
+- `packages/mcp/project.json`
+- `packages/mcp/src/client.spec.ts`
+- `packages/mcp/src/client.ts`
+- `packages/mcp/src/error-normalization.spec.ts`
+- `packages/mcp/src/error-normalization.ts`
+- `packages/mcp/src/index.ts`
+- `packages/mcp/src/input-schema.ts`
+- `packages/mcp/src/inspect-mcp.spec.ts`
+- `packages/mcp/src/inspect-mcp.ts`
+- `packages/mcp/src/naming.spec.ts`
+- `packages/mcp/src/naming.ts`
+- `packages/mcp/src/register-mcp.spec.ts`
+- `packages/mcp/src/register-mcp.ts`
+- `packages/mcp/src/security-policy.spec.ts`
+- `packages/mcp/src/security-policy.ts`
+- `packages/mcp/src/test-server.ts`
+- `packages/mcp/src/tool-generator.spec.ts`
+- `packages/mcp/src/tool-generator.ts`
+- `packages/mcp/src/types.ts`
+- `packages/mcp/tsconfig.json`
+- `packages/mcp/vitest.config.ts`
+- `packages/openapi/README.md`
+- `packages/openapi/package.json`
+- `packages/openapi/project.json`
+- `packages/openapi/src/error-normalization.spec.ts`
+- `packages/openapi/src/error-normalization.ts`
+- `packages/openapi/src/exposure-policy.spec.ts`
+- `packages/openapi/src/exposure-policy.ts`
+- `packages/openapi/src/http-executor.spec.ts`
+- `packages/openapi/src/http-executor.ts`
+- `packages/openapi/src/index.ts`
+- `packages/openapi/src/input-schema.spec.ts`
+- `packages/openapi/src/input-schema.ts`
+- `packages/openapi/src/inspect-openapi.spec.ts`
+- `packages/openapi/src/inspect-openapi.ts`
+- `packages/openapi/src/loader.ts`
+- `packages/openapi/src/naming.spec.ts`
+- `packages/openapi/src/naming.ts`
+- `packages/openapi/src/operation-discovery.ts`
+- `packages/openapi/src/ref-resolver.ts`
+- `packages/openapi/src/register-openapi.spec.ts`
+- `packages/openapi/src/register-openapi.ts`
+- `packages/openapi/src/retry.spec.ts`
+- `packages/openapi/src/retry.ts`
+- `packages/openapi/src/security-hardening.spec.ts`
+- `packages/openapi/src/security-metadata.spec.ts`
+- `packages/openapi/src/security-metadata.ts`
+- `packages/openapi/src/tool-generator.spec.ts`
+- `packages/openapi/src/tool-generator.ts`
+- `packages/openapi/src/types.ts`
+- `packages/openapi/src/validator.ts`
+- `packages/openapi/tsconfig.json`
+- `packages/openapi/vitest.config.ts`
+- `packages/tools/src/credential-provider.spec.ts`
+- `packages/tools/src/credential-provider.ts`
+- `packages/tools/src/integration-telemetry.ts`
+- `packages/tools/src/json-schema-to-zod.spec.ts`
+- `packages/tools/src/json-schema-to-zod.ts`
+- `packages/tools/src/tool-name-segment.spec.ts`
+- `packages/tools/src/tool-name-segment.ts`
+
+## Modified or relocated
+
+- `M ` - `docs/CHANGELOG_PHASES.md`
+- `M ` - `docs/DECISIONS.md`
+- `M ` - `docs/PROJECT_STATUS.md`
+- `M ` - `docs/TECHNICAL_DEBT.md`
+- `M ` - `docs/architecture/overview.md`
+- `M ` - `eslint.config.js`
+- `M ` - `packages/generative-ui/src/generative-ui-tool.ts`
+- `M ` - `packages/generative-ui/src/state-patch-tool.ts`
+- `D ` - `packages/generative-ui/src/tool-name-segment.spec.ts`
+- `D ` - `packages/generative-ui/src/tool-name-segment.ts`
+- `M ` - `packages/security/src/action-firewall.ts`
+- `M ` - `packages/security/src/action-request.ts`
+- `M ` - `packages/security/src/tool-middleware.ts`
+- `M ` - `packages/server/src/tool-calling-executor.ts`
+- `M ` - `packages/tools/src/index.ts`
+- `M ` - `packages/tools/src/tool-metadata.ts`
+- `M ` - `packages/tools/src/tool-runtime.ts`
+- `M ` - `pnpm-lock.yaml`
+- `M ` - `tools/vitest.shared.ts`
+- `M ` - `tsconfig.json`
+
+No commits were created.

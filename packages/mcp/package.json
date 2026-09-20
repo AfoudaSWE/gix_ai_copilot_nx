@@ -1,0 +1,36 @@
+{
+  "name": "@gixcopilot/mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Connects to MCP servers and turns their tools into canonical, security-governed AI tools for the AI Copilot SDK.",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.spec.*"
+  ],
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "typecheck": "tsc -b tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@gixcopilot/protocol": "workspace:*",
+    "@gixcopilot/tools": "workspace:*",
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "vitest": "5.0.1"
+  }
+}

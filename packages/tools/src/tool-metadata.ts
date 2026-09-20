@@ -41,3 +41,14 @@ export interface ToolMetadata {
   readonly sensitivity?: string;
   readonly custom?: Readonly<Record<string, unknown>>;
 }
+
+/** Small source identifiers for audit; never copies arbitrary custom metadata or credentials. */
+export function toolSourceAuditMetadata(metadata: ToolMetadata | undefined): Readonly<Record<string, string>> {
+  const safe: Record<string, string> = {};
+  if (metadata?.source) safe['sourceType'] = metadata.source;
+  for (const key of ['integrationId', 'operationId', 'method', 'path', 'serverId', 'toolName', 'documentVersion']) {
+    const value = metadata?.custom?.[key];
+    if (typeof value === 'string') safe[key] = value.slice(0, 500);
+  }
+  return safe;
+}

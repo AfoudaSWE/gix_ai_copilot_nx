@@ -1,3 +1,4 @@
+import { toolSourceAuditMetadata } from '@gixcopilot/tools';
 import { CopilotError } from '@gixcopilot/protocol';
 import type { ToolApprovalLevel } from '@gixcopilot/protocol';
 import type { ToolResolver, ToolRuntimeMiddleware } from '@gixcopilot/tools';
@@ -26,7 +27,7 @@ export function createActionFirewallMiddleware(options: FirewallMiddlewareOption
     const decision = await options.firewall.evaluate({
       actionId: toolCallId, runId: invocation.context.runId, toolCallId, action: name,
       arguments: invocation.arguments, revalidation: options.revalidation,
-      metadata: { ...tool.security, toolName: name, source: tool.metadata?.executionLocation === 'client' ? 'frontend' : 'backend' },
+      metadata: { ...tool.security, sourceMetadata: toolSourceAuditMetadata(tool.metadata), toolName: name, source: tool.metadata?.executionLocation === 'client' ? 'frontend' : 'backend' },
     }, await options.getContext());
     if (decision.decision === 'deny') return fail(new CopilotError(decision.reason.code, decision.reason.message));
     if (decision.decision === 'approval' && !options.hasApproval?.(toolCallId, decision.approval.level)) {

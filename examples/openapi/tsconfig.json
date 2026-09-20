@@ -1,0 +1,46 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "references": [
+    {
+      "path": "../../packages/protocol"
+    },
+    {
+      "path": "../../packages/core"
+    },
+    {
+      "path": "../../packages/client"
+    },
+    {
+      "path": "../../packages/server"
+    },
+    {
+      "path": "../../packages/tools"
+    },
+    {
+      "path": "../../packages/openapi"
+    },
+    {
+      "path": "../../packages/security"
+    },
+    {
+      "path": "../../packages/providers/provider-core"
+    },
+    {
+      "path": "../../packages/providers/openai"
+    },
+    {
+      "path": "../../packages/mcp"
+    }
+  ]
+}

@@ -20,8 +20,13 @@ import eslintConfigPrettier from 'eslint-config-prettier';
  * `@gixcopilot/security` (Phase 7) may depend only on protocol + tools - the framework-
  * independent AI Action Firewall/HITL/audit engine, consumed by server (never by react/ui
  * directly - approval-related React state is built from protocol-level event types only);
- * react may depend on protocol + client + context + tools + generative-ui; examples may
- * depend on anything. This is the executable form of the dependency-direction diagram in
+ * `@gixcopilot/openapi` and `@gixcopilot/mcp` (Phase 8) may each depend only on protocol +
+ * tools - they generate canonical `ToolDefinition`s from an external source and register
+ * them into a caller-supplied `ToolRegistry`, never owning a second tool runtime;
+ * `@gixcopilot/integrations` (Phase 8) may depend only on protocol - a thin, source-agnostic
+ * registry tracking integration health/metadata; only `scope:example` may depend on all
+ * three; react may depend on protocol + client + context + tools + generative-ui; examples
+ * may depend on anything. This is the executable form of the dependency-direction diagram in
  * docs/architecture/overview.md.
  */
 export default tseslint.config(
@@ -39,6 +44,10 @@ export default tseslint.config(
       '.claude/**',
       'docs/**',
       '**/*.md',
+      // A standalone MCP server script (Section 71's example), spawned directly by `node`
+      // with no build step - deliberately plain JS outside every TS project (see its own
+      // doc comment), so it is not part of the type-checked TS project service.
+      'examples/mcp/src/mcp-server-process.mjs',
     ],
   },
   ...tseslint.configs.recommendedTypeChecked,
@@ -104,6 +113,18 @@ export default tseslint.config(
               onlyDependOnLibsWithTags: ['scope:protocol', 'scope:tools', 'scope:security'],
             },
             {
+              sourceTag: 'scope:openapi',
+              onlyDependOnLibsWithTags: ['scope:protocol', 'scope:tools', 'scope:openapi'],
+            },
+            {
+              sourceTag: 'scope:mcp',
+              onlyDependOnLibsWithTags: ['scope:protocol', 'scope:tools', 'scope:mcp'],
+            },
+            {
+              sourceTag: 'scope:integrations',
+              onlyDependOnLibsWithTags: ['scope:protocol', 'scope:integrations'],
+            },
+            {
               sourceTag: 'scope:client',
               onlyDependOnLibsWithTags: ['scope:protocol', 'scope:client'],
             },
@@ -141,6 +162,9 @@ export default tseslint.config(
                 'scope:tools',
                 'scope:generative-ui',
                 'scope:security',
+                'scope:openapi',
+                'scope:mcp',
+                'scope:integrations',
                 'scope:example',
               ],
             },
