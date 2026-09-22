@@ -58,7 +58,53 @@ export type CopilotErrorCode =
   | 'INDEX_FAILED'
   | 'RETRIEVAL_FAILED'
   | 'MEMORY_WRITE_DENIED'
-  | 'MEMORY_READ_DENIED';
+  | 'MEMORY_READ_DENIED'
+  /**
+   * Added in Phase 10 (agents) - the agent runtime's normalized error taxonomy. Delegation/
+   * handoff/routing denials are distinct codes (not a reuse of PERMISSION_DENIED) because
+   * they represent an agent-graph/authorization-boundary decision made by the agent runtime
+   * itself, before a tool call - and therefore before the Action Firewall - is ever reached;
+   * an actual tool denial inside a delegated call still surfaces as PERMISSION_DENIED/
+   * POLICY_DENIED exactly as it does today (see the agent-architecture skill).
+   */
+  | 'AGENT_NOT_FOUND'
+  | 'AGENT_DISABLED'
+  | 'AGENT_INPUT_INVALID'
+  | 'AGENT_OUTPUT_INVALID'
+  | 'AGENT_ITERATION_LIMIT_EXCEEDED'
+  | 'AGENT_TOOL_LIMIT_EXCEEDED'
+  | 'AGENT_DELEGATION_LIMIT_EXCEEDED'
+  | 'AGENT_DELEGATION_DEPTH_EXCEEDED'
+  | 'AGENT_DELEGATION_DENIED'
+  | 'AGENT_HANDOFF_TARGET_INVALID'
+  | 'AGENT_ROUTING_FAILED'
+  | 'AGENT_PLAN_INVALID'
+  | 'AGENT_PLAN_STEP_FAILED'
+  | 'AGENT_TIMEOUT'
+  | 'AGENT_CANCELLED'
+  | 'AGENT_EXECUTION_ERROR'
+  /**
+   * Added in Phase 10 (workflows) - the workflow engine's normalized error taxonomy.
+   * Consequential workflow steps (tool/approval steps) still raise the exact Phase 5/7 codes
+   * above when the Action Firewall itself denies them - these codes cover workflow-engine-
+   * level failures (definition, retry exhaustion, checkpoint persistence, cancellation), not
+   * a second authorization system (see the redis-jobs and hitl skills).
+   */
+  | 'WORKFLOW_NOT_FOUND'
+  | 'WORKFLOW_DEFINITION_INVALID'
+  | 'WORKFLOW_INPUT_INVALID'
+  | 'WORKFLOW_STEP_NOT_FOUND'
+  | 'WORKFLOW_STEP_EXECUTION_ERROR'
+  | 'WORKFLOW_STEP_TIMEOUT'
+  | 'WORKFLOW_RETRY_EXHAUSTED'
+  | 'WORKFLOW_COMPENSATION_FAILED'
+  | 'WORKFLOW_CHECKPOINT_FAILED'
+  | 'WORKFLOW_CHECKPOINT_NOT_FOUND'
+  | 'WORKFLOW_CHECKPOINT_VERSION_MISMATCH'
+  | 'WORKFLOW_RESUME_FAILED'
+  | 'WORKFLOW_APPROVAL_EXPIRED'
+  | 'WORKFLOW_CANCELLED'
+  | 'WORKFLOW_DEAD_LETTERED';
 
 export type CopilotErrorMetadata = Readonly<Record<string, unknown>>;
 
@@ -289,5 +335,187 @@ export class CopilotError extends Error {
 
   static memoryReadDenied(message: string, metadata?: CopilotErrorMetadata): CopilotError {
     return new CopilotError('MEMORY_READ_DENIED', message, { retryable: false, metadata });
+  }
+
+  static agentNotFound(agentId: string): CopilotError {
+    return new CopilotError('AGENT_NOT_FOUND', `No agent is registered with id "${agentId}".`, {
+      retryable: false,
+      metadata: { agentId },
+    });
+  }
+
+  static agentDisabled(agentId: string): CopilotError {
+    return new CopilotError('AGENT_DISABLED', `Agent "${agentId}" is currently disabled.`, {
+      retryable: false,
+      metadata: { agentId },
+    });
+  }
+
+  static agentInputInvalid(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('AGENT_INPUT_INVALID', message, { retryable: false, metadata });
+  }
+
+  static agentOutputInvalid(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('AGENT_OUTPUT_INVALID', message, { retryable: false, metadata });
+  }
+
+  static agentIterationLimitExceeded(limit: number): CopilotError {
+    return new CopilotError(
+      'AGENT_ITERATION_LIMIT_EXCEEDED',
+      `The agent exceeded its maximum of ${limit} iteration(s) in a single run.`,
+      { retryable: false, metadata: { limit } },
+    );
+  }
+
+  static agentToolLimitExceeded(limit: number): CopilotError {
+    return new CopilotError(
+      'AGENT_TOOL_LIMIT_EXCEEDED',
+      `The agent exceeded its maximum of ${limit} tool call(s) in a single run.`,
+      { retryable: false, metadata: { limit } },
+    );
+  }
+
+  static agentDelegationLimitExceeded(limit: number): CopilotError {
+    return new CopilotError(
+      'AGENT_DELEGATION_LIMIT_EXCEEDED',
+      `The agent exceeded its maximum of ${limit} delegation(s) in a single run.`,
+      { retryable: false, metadata: { limit } },
+    );
+  }
+
+  static agentDelegationDepthExceeded(limit: number): CopilotError {
+    return new CopilotError(
+      'AGENT_DELEGATION_DEPTH_EXCEEDED',
+      `Delegation exceeded the maximum allowed depth of ${limit}.`,
+      { retryable: false, metadata: { limit } },
+    );
+  }
+
+  static agentDelegationDenied(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('AGENT_DELEGATION_DENIED', message, { retryable: false, metadata });
+  }
+
+  static agentHandoffTargetInvalid(fromAgentId: string, toAgentId: string): CopilotError {
+    return new CopilotError(
+      'AGENT_HANDOFF_TARGET_INVALID',
+      `Agent "${fromAgentId}" is not permitted to hand off to "${toAgentId}".`,
+      { retryable: false, metadata: { fromAgentId, toAgentId } },
+    );
+  }
+
+  static agentRoutingFailed(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('AGENT_ROUTING_FAILED', message, { retryable: false, metadata });
+  }
+
+  static agentPlanInvalid(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('AGENT_PLAN_INVALID', message, { retryable: false, metadata });
+  }
+
+  static agentPlanStepFailed(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('AGENT_PLAN_STEP_FAILED', message, { retryable: false, metadata });
+  }
+
+  static agentTimeout(message = 'The agent run timed out.'): CopilotError {
+    return new CopilotError('AGENT_TIMEOUT', message, { retryable: false });
+  }
+
+  static agentCancelled(message = 'The agent run was cancelled.'): CopilotError {
+    return new CopilotError('AGENT_CANCELLED', message, { retryable: false });
+  }
+
+  static agentExecutionError(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('AGENT_EXECUTION_ERROR', message, { retryable: false, metadata });
+  }
+
+  static workflowNotFound(workflowId: string): CopilotError {
+    return new CopilotError(
+      'WORKFLOW_NOT_FOUND',
+      `No workflow is registered with id "${workflowId}".`,
+      { retryable: false, metadata: { workflowId } },
+    );
+  }
+
+  static workflowDefinitionInvalid(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('WORKFLOW_DEFINITION_INVALID', message, { retryable: false, metadata });
+  }
+
+  static workflowInputInvalid(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('WORKFLOW_INPUT_INVALID', message, { retryable: false, metadata });
+  }
+
+  static workflowStepNotFound(stepId: string): CopilotError {
+    return new CopilotError(
+      'WORKFLOW_STEP_NOT_FOUND',
+      `No step is defined with id "${stepId}".`,
+      { retryable: false, metadata: { stepId } },
+    );
+  }
+
+  static workflowStepExecutionError(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('WORKFLOW_STEP_EXECUTION_ERROR', message, { retryable: false, metadata });
+  }
+
+  static workflowStepTimeout(stepId: string): CopilotError {
+    return new CopilotError(
+      'WORKFLOW_STEP_TIMEOUT',
+      `Step "${stepId}" timed out.`,
+      { retryable: true, metadata: { stepId } },
+    );
+  }
+
+  static workflowRetryExhausted(stepId: string, attempts: number): CopilotError {
+    return new CopilotError(
+      'WORKFLOW_RETRY_EXHAUSTED',
+      `Step "${stepId}" failed after ${attempts} attempt(s) and moved to the dead-letter queue.`,
+      { retryable: false, metadata: { stepId, attempts } },
+    );
+  }
+
+  static workflowCompensationFailed(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('WORKFLOW_COMPENSATION_FAILED', message, { retryable: false, metadata });
+  }
+
+  static workflowCheckpointFailed(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('WORKFLOW_CHECKPOINT_FAILED', message, { retryable: true, metadata });
+  }
+
+  static workflowCheckpointNotFound(workflowRunId: string): CopilotError {
+    return new CopilotError(
+      'WORKFLOW_CHECKPOINT_NOT_FOUND',
+      `No checkpoint exists for workflow run "${workflowRunId}".`,
+      { retryable: false, metadata: { workflowRunId } },
+    );
+  }
+
+  static workflowCheckpointVersionMismatch(
+    workflowRunId: string,
+    expected: number,
+    actual: number,
+  ): CopilotError {
+    return new CopilotError(
+      'WORKFLOW_CHECKPOINT_VERSION_MISMATCH',
+      `Checkpoint for workflow run "${workflowRunId}" was expected at version ${expected} but is at ${actual}.`,
+      { retryable: false, metadata: { workflowRunId, expected, actual } },
+    );
+  }
+
+  static workflowResumeFailed(message: string, metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('WORKFLOW_RESUME_FAILED', message, { retryable: false, metadata });
+  }
+
+  static workflowApprovalExpired(message = 'The workflow approval expired before a decision was made.'): CopilotError {
+    return new CopilotError('WORKFLOW_APPROVAL_EXPIRED', message, { retryable: false });
+  }
+
+  static workflowCancelled(message = 'The workflow run was cancelled.'): CopilotError {
+    return new CopilotError('WORKFLOW_CANCELLED', message, { retryable: false });
+  }
+
+  static workflowDeadLettered(stepId: string): CopilotError {
+    return new CopilotError(
+      'WORKFLOW_DEAD_LETTERED',
+      `Step "${stepId}" was moved to the dead-letter queue.`,
+      { retryable: false, metadata: { stepId } },
+    );
   }
 }

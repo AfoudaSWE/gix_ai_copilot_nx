@@ -5,7 +5,25 @@
       "Bash(node -e \"console.log\\(require\\('mammoth/package.json'\\).types || require\\('mammoth/package.json'\\).typings || 'none'\\)\")",
       "Bash(npm view *)",
       "Bash(node \"C:\\\\Users\\\\afoud\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\e--github-apps-gix-ai-copilot-nx\\\\cbe68e51-4e96-4bc2-8643-810cd844e683\\\\scratchpad\\\\pdf-known-good.cjs\")",
-      "Bash(pnpm install *)"
+      "Bash(pnpm install *)",
+      "Bash(pnpm --filter @gixcopilot/core typecheck)",
+      "Bash(pnpm --filter @gixcopilot/server typecheck)",
+      "Bash(pnpm --filter @gixcopilot/react typecheck)",
+      "Bash(pnpm --filter @gixcopilot/client typecheck)",
+      "Bash(pnpm --filter @gixcopilot/react test)",
+      "Bash(pnpm -r typecheck)",
+      "Bash(pnpm -r test)",
+      "Bash(pnpm -r lint)",
+      "Bash(pnpm -r build)",
+      "Bash(pnpm --filter @gixcopilot/agents typecheck)",
+      "Bash(pnpm --filter @gixcopilot/agents lint)",
+      "Bash(pnpm --filter @gixcopilot/agents test)",
+      "Bash(echo \"EXIT CODE: $?\")",
+      "Read(//tmp/**)",
+      "Bash(pnpm --filter @gixcopilot/agents build)",
+      "Bash(pnpm --filter @gixcopilot/workflows typecheck)",
+      "Bash(pnpm --filter @gixcopilot/workflows lint)",
+      "Bash(pnpm --filter @gixcopilot/workflows test)"
     ]
   }
 }

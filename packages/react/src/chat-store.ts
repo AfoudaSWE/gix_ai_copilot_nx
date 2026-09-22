@@ -2,7 +2,17 @@ import type { ClientModelReference, ClientRun, CopilotClient } from '@gixcopilot
 import { CopilotError, createMessageId, createThreadId } from '@gixcopilot/protocol';
 import type { CopilotEvent, PublicCopilotError, ToolResult, ToolManifestEntry } from '@gixcopilot/protocol';
 import type { ToolRuntime } from '@gixcopilot/tools';
-import type { ApprovalState, ChatSnapshot, CopilotAccess, CopilotMessage, ToolCallState } from './types.js';
+import type {
+  AgentHandoffState,
+  AgentRunState,
+  ApprovalState,
+  ChatSnapshot,
+  CopilotAccess,
+  CopilotMessage,
+  ToolCallState,
+  WorkflowRunState,
+  WorkflowStepState,
+} from './types.js';
 
 interface ActiveRun {
   readonly action?: { readonly name: string; readonly arguments: Readonly<Record<string, unknown>> };
@@ -67,6 +77,10 @@ export function createChatStore(
     finishReason: undefined,
     toolCalls: [],
     approvals: [],
+    agentRuns: [],
+    agentDelegations: [],
+    agentHandoffs: [],
+    workflowRuns: [],
   };
   let state: ChatSnapshot = initial;
   let active: ActiveRun | undefined;
@@ -111,6 +125,48 @@ export function createChatStore(
       approvals: state.approvals.map((approval) =>
         approval.approvalId === approvalId ? { ...approval, ...patch } : approval,
       ),
+    });
+  }
+
+  function updateAgentRun(agentRunId: string, patch: Partial<AgentRunState>): void {
+    publish({
+      ...state,
+      agentRuns: state.agentRuns.map((run) => (run.agentRunId === agentRunId ? { ...run, ...patch } : run)),
+    });
+  }
+
+  /** A workflow run is created lazily on its first observed event, then patched/merged - a
+   * client run may never involve a workflow at all (the common case), so nothing is
+   * pre-allocated (mirrors `agentRuns`/`toolCalls` only ever growing on a real event). */
+  function upsertWorkflowRun(
+    workflowRunId: string,
+    build: (existing: WorkflowRunState | undefined) => WorkflowRunState,
+  ): void {
+    const existing = state.workflowRuns.find((run) => run.workflowRunId === workflowRunId);
+    const next = build(existing);
+    publish({
+      ...state,
+      workflowRuns: existing
+        ? state.workflowRuns.map((run) => (run.workflowRunId === workflowRunId ? next : run))
+        : [...state.workflowRuns, next],
+    });
+  }
+
+  function upsertWorkflowStep(workflowRunId: string, patch: WorkflowStepState): void {
+    upsertWorkflowRun(workflowRunId, (existing) => {
+      const base: WorkflowRunState = existing ?? {
+        workflowRunId,
+        workflowId: '',
+        status: 'running',
+        steps: [],
+      };
+      const hasStep = base.steps.some((step) => step.stepId === patch.stepId && step.phase === patch.phase);
+      return {
+        ...base,
+        steps: hasStep
+          ? base.steps.map((step) => (step.stepId === patch.stepId && step.phase === patch.phase ? patch : step))
+          : [...base.steps, patch],
+      };
     });
   }
 
@@ -224,6 +280,10 @@ export function createChatStore(
           error: null,
           finishReason: 'cancelled',
         approvals: state.approvals.map((approval) => approval.status === 'pending' ? { ...approval, status: 'cancelled' as const } : approval),
+        agentRuns: state.agentRuns.map((run) => (run.status === 'running' ? { ...run, status: 'cancelled' as const } : run)),
+        workflowRuns: state.workflowRuns.map((run) =>
+          run.status === 'running' || run.status === 'paused' ? { ...run, status: 'cancelled' as const } : run,
+        ),
         });
         break;
       case 'run.failed':
@@ -295,6 +355,159 @@ export function createChatStore(
       case 'approval.expired':
         updateApproval(event.approvalId, { status: 'expired' });
         break;
+      // Agent/workflow events, added in Phase 10 (Section 139-143) - structured facts only
+      // (Section 18, 140: no chain-of-thought), reusing the exact same event stream every
+      // other case in this switch already consumes; a client with no agent/workflow-aware
+      // backend simply never sees these event types at all.
+      case 'agent.run.started':
+        if (state.agentRuns.some((run) => run.agentRunId === event.agentRunId)) return;
+        publish({
+          ...state,
+          agentRuns: [
+            ...state.agentRuns,
+            {
+              agentRunId: event.agentRunId,
+              agentId: event.agentId,
+              rootRunId: event.rootRunId,
+              parentRunId: event.parentRunId,
+              status: 'running',
+            },
+          ],
+        });
+        break;
+      case 'agent.run.completed':
+        updateAgentRun(event.agentRunId, { status: 'completed' });
+        break;
+      case 'agent.run.failed':
+        updateAgentRun(event.agentRunId, { status: 'failed', error: event.error });
+        break;
+      case 'agent.run.cancelled':
+        updateAgentRun(event.agentRunId, { status: 'cancelled' });
+        break;
+      case 'agent.delegation.started':
+        if (state.agentDelegations.some((delegation) => delegation.delegationId === event.delegationId)) return;
+        publish({
+          ...state,
+          agentDelegations: [
+            ...state.agentDelegations,
+            {
+              delegationId: event.delegationId,
+              fromAgentId: event.fromAgentId,
+              toAgentId: event.toAgentId,
+              depth: event.depth,
+              status: 'started',
+            },
+          ],
+        });
+        break;
+      case 'agent.delegation.completed':
+        publish({
+          ...state,
+          agentDelegations: state.agentDelegations.map((delegation) =>
+            delegation.delegationId === event.delegationId
+              ? { ...delegation, status: event.status, error: event.error }
+              : delegation,
+          ),
+        });
+        break;
+      case 'agent.handoff': {
+        const handoff: AgentHandoffState = {
+          fromAgentId: event.fromAgentId,
+          toAgentId: event.toAgentId,
+          reason: event.reason,
+        };
+        publish({ ...state, agentHandoffs: [...state.agentHandoffs, handoff] });
+        break;
+      }
+      case 'agent.routing.decided':
+        // Auditable (Section 47, 51, 182), but not yet surfaced through a dedicated headless
+        // hook - no UI requirement in this phase reads it. Recorded nowhere client-side for
+        // now; a future consumer can add a hook the same way this file's other cases do.
+        break;
+      case 'workflow.run.started':
+        upsertWorkflowRun(event.workflowRunId, () => ({
+          workflowRunId: event.workflowRunId,
+          workflowId: event.workflowId,
+          status: 'running',
+          steps: [],
+        }));
+        break;
+      case 'workflow.run.paused':
+        upsertWorkflowRun(event.workflowRunId, (existing) => ({
+          ...(existing ?? { workflowRunId: event.workflowRunId, workflowId: event.workflowId, steps: [] }),
+          status: 'paused',
+          pauseReason: event.reason,
+          pausedStepId: event.stepId,
+        }));
+        break;
+      case 'workflow.run.resumed':
+        upsertWorkflowRun(event.workflowRunId, (existing) => ({
+          ...(existing ?? { workflowRunId: event.workflowRunId, workflowId: event.workflowId, steps: [] }),
+          status: 'running',
+          pauseReason: undefined,
+          pausedStepId: undefined,
+        }));
+        break;
+      case 'workflow.run.completed':
+        upsertWorkflowRun(event.workflowRunId, (existing) => ({
+          ...(existing ?? { workflowRunId: event.workflowRunId, workflowId: event.workflowId, steps: [] }),
+          status: 'completed',
+        }));
+        break;
+      case 'workflow.run.failed':
+        upsertWorkflowRun(event.workflowRunId, (existing) => ({
+          ...(existing ?? { workflowRunId: event.workflowRunId, workflowId: event.workflowId, steps: [] }),
+          status: 'failed',
+          error: event.error,
+        }));
+        break;
+      case 'workflow.run.cancelled':
+        upsertWorkflowRun(event.workflowRunId, (existing) => ({
+          ...(existing ?? { workflowRunId: event.workflowRunId, workflowId: event.workflowId, steps: [] }),
+          status: 'cancelled',
+        }));
+        break;
+      case 'workflow.step.started':
+        upsertWorkflowStep(event.workflowRunId, {
+          stepId: event.stepId,
+          stepType: event.stepType,
+          status: 'running',
+          attempt: event.attempt,
+          phase: event.phase,
+        });
+        break;
+      case 'workflow.step.completed':
+        upsertWorkflowStep(event.workflowRunId, {
+          stepId: event.stepId,
+          stepType:
+            state.workflowRuns
+              .find((run) => run.workflowRunId === event.workflowRunId)
+              ?.steps.find((step) => step.stepId === event.stepId && step.phase === event.phase)?.stepType ??
+            'function',
+          status: 'completed',
+          attempt: event.attempt,
+          phase: event.phase,
+        });
+        break;
+      case 'workflow.step.failed':
+        upsertWorkflowStep(event.workflowRunId, {
+          stepId: event.stepId,
+          stepType:
+            state.workflowRuns
+              .find((run) => run.workflowRunId === event.workflowRunId)
+              ?.steps.find((step) => step.stepId === event.stepId && step.phase === event.phase)?.stepType ??
+            'function',
+          status: 'failed',
+          attempt: event.attempt,
+          phase: event.phase,
+          error: event.error,
+          willRetry: event.willRetry,
+        });
+        break;
+      case 'workflow.checkpoint.saved':
+        // The resumability audit trail (Section 100) - not yet surfaced through a dedicated
+        // headless hook, same posture as 'agent.routing.decided' above.
+        break;
     }
   }
 
@@ -365,6 +578,10 @@ export function createChatStore(
       finishReason: undefined,
       toolCalls: [],
       approvals: [],
+      agentRuns: [],
+      agentDelegations: [],
+      agentHandoffs: [],
+      workflowRuns: [],
     });
     void consume(token, history);
     return true;
@@ -412,6 +629,10 @@ export function createChatStore(
         error: null,
         finishReason: 'cancelled',
         approvals: state.approvals.map((approval) => approval.status === 'pending' ? { ...approval, status: 'cancelled' as const } : approval),
+        agentRuns: state.agentRuns.map((run) => (run.status === 'running' ? { ...run, status: 'cancelled' as const } : run)),
+        workflowRuns: state.workflowRuns.map((run) =>
+          run.status === 'running' || run.status === 'paused' ? { ...run, status: 'cancelled' as const } : run,
+        ),
       });
     },
     retry: () => state.status === 'error' && replay !== undefined && start(replay),

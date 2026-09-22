@@ -2,6 +2,10 @@
 
 export {
   CopilotProvider,
+  useAgentDelegations,
+  useAgentHandoffs,
+  useAgentRun,
+  useAgentRuns,
   useApproval,
   useApprovals,
   useCopilot,
@@ -11,8 +15,13 @@ export {
   usePendingApprovals,
   useThread,
   useToolCalls,
+  useWorkflowRun,
+  useWorkflowRuns,
 } from './provider.js';
 export type {
+  AgentDelegationState,
+  AgentHandoffState,
+  AgentRunState,
   ApprovalState,
   ChatActions,
   ChatSnapshot,
@@ -23,6 +32,8 @@ export type {
   CopilotMessage,
   CopilotProviderProps,
   ToolCallState,
+  WorkflowRunState,
+  WorkflowStepState,
 } from './types.js';
 
 export { useCopilotContext, useCopilotContextDebug } from './context-hooks.js';

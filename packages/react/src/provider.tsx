@@ -13,6 +13,9 @@ import type { ResolveContextMessage, ResolveToolManifest } from './chat-store.js
 import { CopilotInternalsContext } from './internals.js';
 import type { CopilotInternals } from './internals.js';
 import type {
+  AgentDelegationState,
+  AgentHandoffState,
+  AgentRunState,
   ApprovalState,
   ChatStatus,
   CopilotAccess,
@@ -20,6 +23,7 @@ import type {
   CopilotMessage,
   CopilotProviderProps,
   ToolCallState,
+  WorkflowRunState,
 } from './types.js';
 
 const StoreContext = createContext<ReturnType<typeof createChatStore> | null>(null);
@@ -212,4 +216,61 @@ export function useThread(): Thread | null {
     () => store.getSnapshot().thread,
     () => store.getServerSnapshot().thread,
   );
+}
+
+/**
+ * Headless agent-run progress for the current run (Phase 10, Section 141) - every agent run
+ * observed so far, including delegated/handed-off children, mirroring `useToolCalls`'
+ * "generic timeline any custom UI can render" contract. Structured facts only (Section 18,
+ * 140) - never raw model reasoning.
+ */
+export function useAgentRuns(): readonly AgentRunState[] {
+  const store = useStore();
+  return useSyncExternalStore(
+    store.subscribe,
+    () => store.getSnapshot().agentRuns,
+    () => store.getServerSnapshot().agentRuns,
+  );
+}
+
+/** One agent run by its own `agentRunId`, or `undefined` if not (yet) observed - mirrors
+ * `useApproval`'s single-item convenience lookup. */
+export function useAgentRun(agentRunId: string): AgentRunState | undefined {
+  return useAgentRuns().find((run) => run.agentRunId === agentRunId);
+}
+
+/** Headless delegation timeline (A -> B -> A, Section 56-58) for the current run. */
+export function useAgentDelegations(): readonly AgentDelegationState[] {
+  const store = useStore();
+  return useSyncExternalStore(
+    store.subscribe,
+    () => store.getSnapshot().agentDelegations,
+    () => store.getServerSnapshot().agentDelegations,
+  );
+}
+
+/** Headless handoff timeline (A -> B, B becomes active, Section 61-65) for the current run. */
+export function useAgentHandoffs(): readonly AgentHandoffState[] {
+  const store = useStore();
+  return useSyncExternalStore(
+    store.subscribe,
+    () => store.getSnapshot().agentHandoffs,
+    () => store.getServerSnapshot().agentHandoffs,
+  );
+}
+
+/** Headless workflow-run progress for the current run (Phase 10, Section 141), mirroring
+ * `useAgentRuns` - each entry's own `steps` carries per-step status/attempt/phase. */
+export function useWorkflowRuns(): readonly WorkflowRunState[] {
+  const store = useStore();
+  return useSyncExternalStore(
+    store.subscribe,
+    () => store.getSnapshot().workflowRuns,
+    () => store.getServerSnapshot().workflowRuns,
+  );
+}
+
+/** One workflow run by its own `workflowRunId`, or `undefined` if not (yet) observed. */
+export function useWorkflowRun(workflowRunId: string): WorkflowRunState | undefined {
+  return useWorkflowRuns().find((run) => run.workflowRunId === workflowRunId);
 }

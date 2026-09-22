@@ -2,6 +2,7 @@ import type { ClientModelReference, CopilotClient } from '@gixcopilot/client';
 import type {
   Message,
   PublicCopilotError,
+  RunId,
   Thread,
   ToolActionPreview,
   ToolActionRisk,
@@ -59,6 +60,68 @@ export interface ApprovalState {
   readonly decidedBy?: string;
 }
 
+/**
+ * Headless agent-run progress (Phase 10, Section 139-143) - one entry per agent run that
+ * occurred during the current client run, including every delegated/handed-off child run
+ * (each carries its own `agentRunId`; `rootRunId`/`parentRunId` let a consumer reconstruct
+ * the tree if it wants one). Mirrors `ToolCallState`'s "generic timeline, no
+ * chain-of-thought" posture (Section 18, 140) - only structured facts, never raw model
+ * reasoning.
+ */
+export interface AgentRunState {
+  readonly agentRunId: string;
+  readonly agentId: string;
+  readonly rootRunId?: RunId;
+  readonly parentRunId?: RunId;
+  readonly status: 'running' | 'completed' | 'failed' | 'cancelled';
+  readonly error?: PublicCopilotError;
+}
+
+/** One delegation (A -> B -> A, Section 56-58) observed during the current client run. */
+export interface AgentDelegationState {
+  readonly delegationId: string;
+  readonly fromAgentId: string;
+  readonly toAgentId: string;
+  readonly depth: number;
+  readonly status: 'started' | 'completed' | 'failed';
+  readonly error?: PublicCopilotError;
+}
+
+/** One handoff (A -> B, B becomes active, Section 61-65) observed during the current client
+ * run. */
+export interface AgentHandoffState {
+  readonly fromAgentId: string;
+  readonly toAgentId: string;
+  readonly reason: string;
+}
+
+/**
+ * Headless workflow-step progress (Phase 10, Section 139-143) - one entry per step attempt of
+ * the current workflow run. `attempt`/`phase` mirror the underlying
+ * `workflow.step.*` events (Section 117, 121, 202's retry/compensation reuse of this one
+ * event triad).
+ */
+export interface WorkflowStepState {
+  readonly stepId: string;
+  readonly stepType: 'function' | 'tool' | 'agent' | 'approval' | 'condition' | 'parallel';
+  readonly status: 'running' | 'completed' | 'failed';
+  readonly attempt: number;
+  readonly phase?: 'forward' | 'compensation';
+  readonly error?: PublicCopilotError;
+  readonly willRetry?: boolean;
+}
+
+/** Headless workflow-run progress (Phase 10, Section 139-143), mirroring `AgentRunState`. */
+export interface WorkflowRunState {
+  readonly workflowRunId: string;
+  readonly workflowId: string;
+  readonly status: 'running' | 'paused' | 'completed' | 'failed' | 'cancelled';
+  readonly pauseReason?: 'approval' | 'checkpoint' | 'manual' | 'external-event';
+  readonly pausedStepId?: string;
+  readonly error?: PublicCopilotError;
+  readonly steps: readonly WorkflowStepState[];
+}
+
 interface ChatSnapshotBase {
   readonly messages: readonly CopilotMessage[];
   readonly thread: Thread | null;
@@ -70,6 +133,11 @@ interface ChatSnapshotBase {
   readonly toolCalls: readonly ToolCallState[];
   /** Cleared at the start of every new run, same as `toolCalls` above. */
   readonly approvals: readonly ApprovalState[];
+  /** Cleared at the start of every new run, same as `toolCalls` above (Phase 10). */
+  readonly agentRuns: readonly AgentRunState[];
+  readonly agentDelegations: readonly AgentDelegationState[];
+  readonly agentHandoffs: readonly AgentHandoffState[];
+  readonly workflowRuns: readonly WorkflowRunState[];
 }
 
 /** Immutable chat snapshot. Errors exist only in the error state. */

@@ -1,0 +1,35 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "workflow-approval-demo",
+  "projectType": "application",
+  "sourceRoot": "examples/workflow-approval/src",
+  "tags": ["scope:example", "type:app"],
+  "implicitDependencies": [
+    "protocol",
+    "agents",
+    "workflows",
+    "tools",
+    "security",
+    "provider",
+    "provider-mock",
+    "provider-openai"
+  ],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm run build", "cwd": "examples/workflow-approval" }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm run typecheck", "cwd": "examples/workflow-approval" }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm run test", "cwd": "examples/workflow-approval" }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm run lint", "cwd": "examples/workflow-approval" }
+    }
+  }
+}

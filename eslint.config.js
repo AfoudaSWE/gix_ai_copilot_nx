@@ -35,9 +35,20 @@ import eslintConfigPrettier from 'eslint-config-prettier';
  * that dependency from the core RAG abstractions per the database skill;
  * `@gixcopilot/memory` (Phase 9) may depend on protocol + security + rag - reuses rag's
  * `EmbeddingProvider`/`VectorStore` for semantic memory rather than a second, incompatible
- * vector system; only `scope:example` may depend on all of these; react may depend on
- * protocol + client + context + tools + generative-ui; examples may depend on anything. This
- * is the executable form of the dependency-direction diagram in docs/architecture/overview.md.
+ * vector system; `@gixcopilot/agents` (Phase 10) may depend on protocol + core + tools +
+ * security + provider - the framework-independent agent runtime (definition, registry,
+ * routing, delegation, handoff, planner/executor); deliberately never depends on rag/memory/
+ * context (an agent's knowledge/context is composed at the application layer, not hard-wired
+ * into the agent core) or React; `@gixcopilot/workflows` (Phase 10) may depend on protocol +
+ * core + tools + security + agents - the deterministic workflow engine, defining
+ * `CheckpointStore`/`JobExecutor` as ports rather than depending on Postgres/Redis directly;
+ * `@gixcopilot/jobs` (Phase 10) may depend on protocol + workflows - the BullMQ/Redis
+ * `JobExecutor` adapter; `@gixcopilot/checkpoint-postgres` (Phase 10) may depend on protocol +
+ * workflows - the Drizzle/Postgres `CheckpointStore` adapter, the only other package besides
+ * `vectorstore-pgvector` allowed to import `drizzle-orm`/`pg`; only `scope:example` may
+ * depend on all of these; react may depend on protocol + client + context + tools +
+ * generative-ui; examples may depend on anything. This is the executable form of the
+ * dependency-direction diagram in docs/architecture/overview.md.
  */
 export default tseslint.config(
   {
@@ -151,6 +162,37 @@ export default tseslint.config(
               onlyDependOnLibsWithTags: ['scope:protocol', 'scope:security', 'scope:rag', 'scope:memory'],
             },
             {
+              sourceTag: 'scope:agents',
+              onlyDependOnLibsWithTags: [
+                'scope:protocol',
+                'scope:core',
+                'scope:tools',
+                'scope:security',
+                'scope:provider',
+                'scope:provider-adapter',
+                'scope:agents',
+              ],
+            },
+            {
+              sourceTag: 'scope:workflows',
+              onlyDependOnLibsWithTags: [
+                'scope:protocol',
+                'scope:core',
+                'scope:tools',
+                'scope:security',
+                'scope:agents',
+                'scope:workflows',
+              ],
+            },
+            {
+              sourceTag: 'scope:jobs',
+              onlyDependOnLibsWithTags: ['scope:protocol', 'scope:workflows', 'scope:jobs'],
+            },
+            {
+              sourceTag: 'scope:checkpoint-postgres',
+              onlyDependOnLibsWithTags: ['scope:protocol', 'scope:workflows', 'scope:checkpoint-postgres'],
+            },
+            {
               sourceTag: 'scope:client',
               onlyDependOnLibsWithTags: ['scope:protocol', 'scope:client'],
             },
@@ -195,6 +237,10 @@ export default tseslint.config(
                 'scope:rag',
                 'scope:vectorstore-pgvector',
                 'scope:memory',
+                'scope:agents',
+                'scope:workflows',
+                'scope:jobs',
+                'scope:checkpoint-postgres',
                 'scope:example',
               ],
             },

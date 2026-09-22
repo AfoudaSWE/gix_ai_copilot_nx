@@ -18,7 +18,7 @@ Phase 06 - Generative UI & Shared State        COMPLETE
 Phase 07 - Enterprise Security & HITL          COMPLETE
 Phase 08 - OpenAPI + MCP + Integrations        COMPLETE
 Phase 09 - Knowledge + RAG + Memory            COMPLETE
-Phase 10 - Agents + Multi-Agent + Workflows    NOT STARTED / LOCKED
+Phase 10 - Agents + Multi-Agent + Workflows    COMPLETE
 Phase 11 - DevTools + Testing + Evals + Obs.   NOT STARTED / LOCKED
 Phase 12 - Production Platform + Ecosystem     NOT STARTED / LOCKED
 ```
@@ -263,7 +263,90 @@ phase is started without an explicit instruction naming it.
 - Full record: [Phase 9 docs](phases/phase-09/Phase_9_Docs.md),
   [completion report](phases/phase-09/Phase_9_Status.md),
   [ADR 0014](adr/0014-knowledge-rag-memory-architecture.md).
-- Phase 10 remains **LOCKED / NOT STARTED**.
+
+## Phase 10 — Agents + Multi-Agent + Workflows (COMPLETE)
+
+- Added `@gixcopilot/agents`: a framework-independent agent runtime — `AgentDefinition`/
+  `defineAgent`, a disposable-handle registry, a think/act/observe execution loop with
+  iteration/tool-call/delegation/depth/timeout limits (chain-wide budget tracking,
+  cancellation propagating into in-flight model/tool/child-run calls), deterministic and
+  model-based routing (validated against a caller allowlist, prompt-injection-resistant),
+  least-privilege delegation (`A → B → A`, tool/knowledge/memory scope intersected — never
+  unioned — across every hop) and handoff (`A → B`, validated only against a static
+  developer-declared graph), same-turn parallel specialist dispatch with a real
+  `'fail-fast'`/`'collect-results'` policy, a minimal multi-agent message bus, and a
+  planner/executor pair (`generateObject()`-backed, Zod-validated plans that grant no
+  authorization of their own — a planned deletion is still denied by the unmodified Action
+  Firewall). Depends only on `protocol`/`core`/`tools`/`provider`/`security` (type-level) —
+  never `rag`/`memory`/`context` directly; knowledge/memory scoping is declarative data a
+  composition layer uses to build knowledge/memory-performing tools, exactly like every
+  other RAG/memory consumer in this codebase.
+- Added `@gixcopilot/workflows`: a deterministic workflow engine — `defineWorkflow`,
+  registration-time DAG validation, six step types (function/tool/agent/approval/condition/
+  parallel), checkpointing after every step, idempotent version-checked `resume()`, retry
+  (retryable-vs-not classification with backoff) and compensation (reverse-order,
+  best-effort), tenant isolation, and re-authorization on resume (a caller whose permission
+  was revoked between pause and resume is denied at the next consequential step, never
+  silently allowed through on stale authorization). Approval steps bridge into the
+  *existing* Phase 7 `ApprovalStore`/Action Firewall — no second approval engine; a forged
+  in-band `"approved": true` value (in a tool result or in workflow state itself) is
+  structurally inert, proven directly. `CheckpointStore`/`JobExecutor` are ports with
+  in-memory/inline defaults — the engine never requires Redis or Postgres to run.
+- Added `@gixcopilot/checkpoint-postgres` (real Drizzle/Postgres `CheckpointStore`,
+  optimistic-concurrency/stale-write-rejection, Testcontainers-verified) and
+  `@gixcopilot/jobs` (real BullMQ/Redis `JobExecutor` with deterministic idempotent job ids
+  and a dead-letter inspector, also Testcontainers-verified) — genuine adapters, not stubs,
+  mirroring `vectorstore-pgvector`'s relationship to `rag`'s `VectorStore` contract.
+- Both `agents` and `workflows` gained real OpenTelemetry instrumentation
+  (`@opentelemetry/api`, a no-op tracer when unconfigured) — correctly-nested spans for
+  every agent run/model call/tool call/delegation/handoff and every workflow run/step,
+  including a retroactively-timed span for a workflow's cross-process approval wait, all
+  directly verified against a real `InMemorySpanExporter`.
+- Extended `@gixcopilot/react` with six new headless hooks (`useAgentRun(s)`,
+  `useAgentDelegations`, `useAgentHandoffs`, `useWorkflowRun(s)`) on the *existing*
+  per-provider `ChatSnapshot` — no new store, provider, or protocol change; the event switch
+  these hooks read from was already wired by the prior session, previously a deliberate
+  no-op.
+- Added `examples/agent-basic` (single agent, a real tool, real RAG retrieval, real memory,
+  and a trusted security context), `examples/multi-agent` (orchestrator plus three
+  differently-scoped specialists, real same-turn parallel delegation, a mandatory
+  privilege-isolation security test), and `examples/workflow-approval` (validate → agent
+  step → payment check → real human approval pause/resume → update, including a genuine
+  two-independent-engine-instance "process restart" test) — each with passing deterministic
+  integration tests and a real `demo` script actually run this session.
+- A systematic gap audit against the original task found and closed real gaps in the prior
+  session's draft: knowledge/memory narrowing was declared but never enforced; parallel
+  specialist dispatch was entirely unimplemented (an orphaned empty directory was the only
+  trace); `@gixcopilot/jobs` had zero test coverage despite already declaring its Redis
+  dependencies; no OpenTelemetry instrumentation existed anywhere in the repository; no
+  React hooks, examples, or `docs/phases/phase-10/` files existed at all despite ADR 0015
+  already citing two of the latter by name; and a broken `pnpm-workspace.yaml` placeholder
+  value was hard-failing `pnpm install` for the entire repository. See
+  [Issues](phases/phase-10/Phase_10_Issues.md) for the full list with evidence.
+- Full record: [Phase 10 docs](phases/phase-10/Phase_10_Docs.md),
+  [completion report](phases/phase-10/Phase_10_Status.md),
+  [ADR 0015](adr/0015-agent-and-workflow-runtime-architecture.md).
+
+## Current Validation (Phase 10 completion)
+
+Fresh `pnpm nx run-many -t lint,typecheck,test,build --skip-nx-cache` passed across all 39
+lint/typecheck projects and all 38 buildable/testable projects. **1080 Vitest tests passed,
+29 skipped** (checkpoint-postgres/jobs/vectorstore-pgvector Docker-gated integration suites,
+unreachable in this environment for this specific pass; three pre-existing optional
+real-OpenAI smoke tests without credentials), **zero failures**, across every project
+including every Phase 1–9 test, unmodified. `@gixcopilot/jobs` and
+`@gixcopilot/checkpoint-postgres`'s real-infrastructure suites (14 tests total) were run for
+real against genuine Redis/Postgres Testcontainers earlier in this same session and **passed
+for real**, before Docker became unreachable in this environment for the final pass —
+disclosed explicitly rather than assumed still-passing; see
+[Phase 10 Testing](phases/phase-10/Phase_10_Testing.md) for exact commands and results. All
+three examples' `demo` scripts were built and actually run against the deterministic mock
+provider this session, including direct confirmation of genuine concurrent parallel
+delegation in `multi-agent`'s event log and a real pause/approve/resume state mutation in
+`workflow-approval`. No example was exercised against a real OpenAI model this session
+(`OPENAI_API_KEY` unavailable in this environment) — disclosed explicitly, not assumed. The
+Chromium/Playwright browser suite was not re-run this session (no Phase 10 browser UI was
+added to it; its lint/typecheck targets were re-run and pass).
 
 ## Current Validation (Phase 9 completion)
 

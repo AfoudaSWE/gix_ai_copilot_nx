@@ -1,0 +1,34 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "multi-agent-demo",
+  "projectType": "application",
+  "sourceRoot": "examples/multi-agent/src",
+  "tags": ["scope:example", "type:app"],
+  "implicitDependencies": [
+    "protocol",
+    "agents",
+    "tools",
+    "security",
+    "provider",
+    "provider-mock",
+    "provider-openai"
+  ],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm run build", "cwd": "examples/multi-agent" }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm run typecheck", "cwd": "examples/multi-agent" }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm run test", "cwd": "examples/multi-agent" }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm run lint", "cwd": "examples/multi-agent" }
+    }
+  }
+}

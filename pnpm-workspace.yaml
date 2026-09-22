@@ -6,6 +6,7 @@ packages:
 allowBuilds:
   cpu-features: true
   esbuild: true
+  msgpackr-extract: true
   nx: true
   protobufjs: true
   ssh2: true

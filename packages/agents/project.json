@@ -1,0 +1,26 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "agents",
+  "projectType": "library",
+  "sourceRoot": "packages/agents/src",
+  "tags": ["scope:agents", "type:lib"],
+  "implicitDependencies": ["protocol", "core", "tools", "security", "provider", "provider-mock"],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm run build", "cwd": "packages/agents" }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm run typecheck", "cwd": "packages/agents" }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm run test", "cwd": "packages/agents" }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm run lint", "cwd": "packages/agents" }
+    }
+  }
+}

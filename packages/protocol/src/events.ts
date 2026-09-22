@@ -36,6 +36,12 @@ export interface CopilotEventBase {
   readonly sequence: number;
   readonly timestamp: string;
   readonly protocolVersion: ProtocolVersion;
+  /**
+   * Ancestry, added in Phase 10 - see the matching fields on `Run` in run.ts. Optional so
+   * every existing event shape (which has no parent) keeps working unmodified.
+   */
+  readonly rootRunId?: RunId;
+  readonly parentRunId?: RunId;
 }
 
 export interface RunStartedEvent extends CopilotEventBase {
@@ -172,6 +178,169 @@ export interface ApprovalExpiredEvent extends CopilotEventBase {
   readonly toolCallId: ToolCallId;
 }
 
+/**
+ * Agent lifecycle events, added in Phase 10 (see the agent-architecture skill and
+ * docs/adr/0015). These are genuine new facts about a run - not a projection of existing
+ * events the way generative-ui's `toProgressSteps()` projects tool-lifecycle events into UI
+ * progress - so they are modeled as first-class `CopilotEvent` variants rather than derived
+ * client-side. An agent run reuses the existing `run.*`/`tool.*`/`approval.*` events for
+ * everything below the agent layer (model calls, tool calls, approvals); these events only
+ * add the agent-specific facts those don't already carry.
+ */
+export interface AgentRunStartedEvent extends CopilotEventBase {
+  readonly type: 'agent.run.started';
+  readonly agentId: string;
+  readonly agentRunId: string;
+}
+
+export interface AgentRunCompletedEvent extends CopilotEventBase {
+  readonly type: 'agent.run.completed';
+  readonly agentId: string;
+  readonly agentRunId: string;
+}
+
+export interface AgentRunFailedEvent extends CopilotEventBase {
+  readonly type: 'agent.run.failed';
+  readonly agentId: string;
+  readonly agentRunId: string;
+  readonly error: PublicCopilotError;
+}
+
+export interface AgentRunCancelledEvent extends CopilotEventBase {
+  readonly type: 'agent.run.cancelled';
+  readonly agentId: string;
+  readonly agentRunId: string;
+}
+
+/**
+ * Delegation is `A -> B -> A` (B's result returns to A); handoff (below) is `A -> B` (B
+ * becomes the active agent). See Sections 56-65 of the Phase 10 spec and the
+ * agent-architecture skill's required `{fromAgent, toAgent, reason, correlationId}` shape.
+ */
+export interface AgentDelegationStartedEvent extends CopilotEventBase {
+  readonly type: 'agent.delegation.started';
+  readonly fromAgentId: string;
+  readonly toAgentId: string;
+  readonly delegationId: string;
+  readonly depth: number;
+}
+
+export interface AgentDelegationCompletedEvent extends CopilotEventBase {
+  readonly type: 'agent.delegation.completed';
+  readonly fromAgentId: string;
+  readonly toAgentId: string;
+  readonly delegationId: string;
+  readonly status: 'completed' | 'failed';
+  readonly error?: PublicCopilotError;
+}
+
+export interface AgentHandoffEvent extends CopilotEventBase {
+  readonly type: 'agent.handoff';
+  readonly fromAgentId: string;
+  readonly toAgentId: string;
+  readonly reason: string;
+}
+
+/**
+ * Emitted for every routing decision (deterministic or model-based) so it can be audited -
+ * Section 47/51 of the Phase 10 spec requires routing decisions to be inspectable, and a
+ * model-selected agent id must always have been validated against `candidateAgentIds`
+ * before it is trusted (Section 50, 182).
+ */
+export interface AgentRoutingDecidedEvent extends CopilotEventBase {
+  readonly type: 'agent.routing.decided';
+  readonly router: 'deterministic' | 'model';
+  readonly selectedAgentId: string;
+  readonly candidateAgentIds: readonly string[];
+  readonly reasonCode?: string;
+}
+
+/**
+ * Workflow lifecycle events, added in Phase 10 (see docs/adr/0015). A workflow "paused"
+ * state is a genuine explicit fact (not only inferrable from an unresolved
+ * `approval.requested`, since a pause can also be triggered by a checkpoint boundary or an
+ * explicit developer `pause()` call) so it gets its own event rather than being left to
+ * client-side inference the way Run-level approval pauses are (Section 87, 107).
+ */
+export interface WorkflowRunStartedEvent extends CopilotEventBase {
+  readonly type: 'workflow.run.started';
+  readonly workflowId: string;
+  readonly workflowRunId: string;
+}
+
+export interface WorkflowRunPausedEvent extends CopilotEventBase {
+  readonly type: 'workflow.run.paused';
+  readonly workflowId: string;
+  readonly workflowRunId: string;
+  readonly reason: 'approval' | 'checkpoint' | 'manual' | 'external-event';
+  readonly stepId?: string;
+}
+
+export interface WorkflowRunResumedEvent extends CopilotEventBase {
+  readonly type: 'workflow.run.resumed';
+  readonly workflowId: string;
+  readonly workflowRunId: string;
+}
+
+export interface WorkflowRunCompletedEvent extends CopilotEventBase {
+  readonly type: 'workflow.run.completed';
+  readonly workflowId: string;
+  readonly workflowRunId: string;
+}
+
+export interface WorkflowRunFailedEvent extends CopilotEventBase {
+  readonly type: 'workflow.run.failed';
+  readonly workflowId: string;
+  readonly workflowRunId: string;
+  readonly error: PublicCopilotError;
+}
+
+export interface WorkflowRunCancelledEvent extends CopilotEventBase {
+  readonly type: 'workflow.run.cancelled';
+  readonly workflowId: string;
+  readonly workflowRunId: string;
+}
+
+/**
+ * `attempt` (1-based) carries retry without a separate retry-event family; `phase` carries
+ * compensation without a separate compensation-event family - both reuse this one event
+ * triad rather than proliferating near-duplicate events (Sections 117, 121, 202).
+ */
+export interface WorkflowStepStartedEvent extends CopilotEventBase {
+  readonly type: 'workflow.step.started';
+  readonly workflowRunId: string;
+  readonly stepId: string;
+  readonly stepType: 'function' | 'tool' | 'agent' | 'approval' | 'condition' | 'parallel';
+  readonly attempt: number;
+  readonly phase?: 'forward' | 'compensation';
+}
+
+export interface WorkflowStepCompletedEvent extends CopilotEventBase {
+  readonly type: 'workflow.step.completed';
+  readonly workflowRunId: string;
+  readonly stepId: string;
+  readonly attempt: number;
+  readonly phase?: 'forward' | 'compensation';
+}
+
+export interface WorkflowStepFailedEvent extends CopilotEventBase {
+  readonly type: 'workflow.step.failed';
+  readonly workflowRunId: string;
+  readonly stepId: string;
+  readonly attempt: number;
+  readonly phase?: 'forward' | 'compensation';
+  readonly error: PublicCopilotError;
+  readonly willRetry: boolean;
+}
+
+/** One event per successful checkpoint write - the resumability audit trail (Section 100). */
+export interface WorkflowCheckpointSavedEvent extends CopilotEventBase {
+  readonly type: 'workflow.checkpoint.saved';
+  readonly workflowRunId: string;
+  readonly stepId: string;
+  readonly version: number;
+}
+
 export type CopilotEvent =
   | RunStartedEvent
   | RunCompletedEvent
@@ -188,7 +357,25 @@ export type CopilotEvent =
   | ApprovalRequestedEvent
   | ApprovalApprovedEvent
   | ApprovalRejectedEvent
-  | ApprovalExpiredEvent;
+  | ApprovalExpiredEvent
+  | AgentRunStartedEvent
+  | AgentRunCompletedEvent
+  | AgentRunFailedEvent
+  | AgentRunCancelledEvent
+  | AgentDelegationStartedEvent
+  | AgentDelegationCompletedEvent
+  | AgentHandoffEvent
+  | AgentRoutingDecidedEvent
+  | WorkflowRunStartedEvent
+  | WorkflowRunPausedEvent
+  | WorkflowRunResumedEvent
+  | WorkflowRunCompletedEvent
+  | WorkflowRunFailedEvent
+  | WorkflowRunCancelledEvent
+  | WorkflowStepStartedEvent
+  | WorkflowStepCompletedEvent
+  | WorkflowStepFailedEvent
+  | WorkflowCheckpointSavedEvent;
 
 export type CopilotEventType = CopilotEvent['type'];
 

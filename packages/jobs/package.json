@@ -1,0 +1,37 @@
+{
+  "name": "@gixcopilot/jobs",
+  "version": "0.1.0",
+  "private": true,
+  "description": "BullMQ/Redis JobExecutor adapter for @gixcopilot/workflows - background scheduling for workflow step execution, kept behind the workflows package's own JobExecutor port.",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.spec.*"
+  ],
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "typecheck": "tsc -b tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@gixcopilot/protocol": "workspace:*",
+    "@gixcopilot/workflows": "workspace:*",
+    "bullmq": "^5.63.1"
+  },
+  "devDependencies": {
+    "@testcontainers/redis": "^12.1.0",
+    "testcontainers": "^12.1.0",
+    "vitest": "5.0.1"
+  }
+}

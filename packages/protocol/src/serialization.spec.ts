@@ -56,6 +56,42 @@ function describeEventType(event: CopilotEvent): string {
       return `approval rejected (${event.approvalId})`;
     case 'approval.expired':
       return `approval expired (${event.approvalId})`;
+    case 'agent.run.started':
+      return `agent run started (${event.agentId})`;
+    case 'agent.run.completed':
+      return `agent run completed (${event.agentId})`;
+    case 'agent.run.failed':
+      return `agent run failed (${event.error.code})`;
+    case 'agent.run.cancelled':
+      return `agent run cancelled (${event.agentId})`;
+    case 'agent.delegation.started':
+      return `agent delegation started (${event.fromAgentId}->${event.toAgentId})`;
+    case 'agent.delegation.completed':
+      return `agent delegation completed (${event.status})`;
+    case 'agent.handoff':
+      return `agent handoff (${event.fromAgentId}->${event.toAgentId})`;
+    case 'agent.routing.decided':
+      return `agent routing decided (${event.selectedAgentId})`;
+    case 'workflow.run.started':
+      return `workflow run started (${event.workflowId})`;
+    case 'workflow.run.paused':
+      return `workflow run paused (${event.reason})`;
+    case 'workflow.run.resumed':
+      return `workflow run resumed (${event.workflowId})`;
+    case 'workflow.run.completed':
+      return `workflow run completed (${event.workflowId})`;
+    case 'workflow.run.failed':
+      return `workflow run failed (${event.error.code})`;
+    case 'workflow.run.cancelled':
+      return `workflow run cancelled (${event.workflowId})`;
+    case 'workflow.step.started':
+      return `workflow step started (${event.stepId}, attempt ${event.attempt})`;
+    case 'workflow.step.completed':
+      return `workflow step completed (${event.stepId})`;
+    case 'workflow.step.failed':
+      return `workflow step failed (${event.stepId})`;
+    case 'workflow.checkpoint.saved':
+      return `workflow checkpoint saved (${event.stepId}, v${event.version})`;
     default: {
       const exhaustive: never = event;
       throw new Error(`Unhandled event type: ${JSON.stringify(exhaustive)}`);

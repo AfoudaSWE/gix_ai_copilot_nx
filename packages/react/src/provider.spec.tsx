@@ -119,6 +119,24 @@ function fixture() {
       case 'approval.approved':
       case 'approval.rejected':
       case 'approval.expired':
+      case 'agent.run.started':
+      case 'agent.run.completed':
+      case 'agent.run.failed':
+      case 'agent.run.cancelled':
+      case 'agent.delegation.started':
+      case 'agent.delegation.completed':
+      case 'agent.handoff':
+      case 'agent.routing.decided':
+      case 'workflow.run.started':
+      case 'workflow.run.paused':
+      case 'workflow.run.resumed':
+      case 'workflow.run.completed':
+      case 'workflow.run.failed':
+      case 'workflow.run.cancelled':
+      case 'workflow.step.started':
+      case 'workflow.step.completed':
+      case 'workflow.step.failed':
+      case 'workflow.checkpoint.saved':
         throw new Error(`This test fixture does not construct "${type}" events.`);
     }
   }

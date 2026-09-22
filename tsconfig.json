@@ -35,6 +35,18 @@
       "path": "packages/memory"
     },
     {
+      "path": "packages/agents"
+    },
+    {
+      "path": "packages/workflows"
+    },
+    {
+      "path": "packages/checkpoint-postgres"
+    },
+    {
+      "path": "packages/jobs"
+    },
+    {
       "path": "packages/context"
     },
     {
@@ -60,6 +72,15 @@
     },
     {
       "path": "examples/model-streaming"
+    },
+    {
+      "path": "examples/agent-basic"
+    },
+    {
+      "path": "examples/multi-agent"
+    },
+    {
+      "path": "examples/workflow-approval"
     },
     {
       "path": "packages/react"

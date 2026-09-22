@@ -1,0 +1,37 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "agent-basic-demo",
+  "projectType": "application",
+  "sourceRoot": "examples/agent-basic/src",
+  "tags": ["scope:example", "type:app"],
+  "implicitDependencies": [
+    "protocol",
+    "agents",
+    "tools",
+    "security",
+    "provider",
+    "provider-mock",
+    "provider-openai",
+    "knowledge",
+    "rag",
+    "memory"
+  ],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm run build", "cwd": "examples/agent-basic" }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm run typecheck", "cwd": "examples/agent-basic" }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm run test", "cwd": "examples/agent-basic" }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm run lint", "cwd": "examples/agent-basic" }
+    }
+  }
+}

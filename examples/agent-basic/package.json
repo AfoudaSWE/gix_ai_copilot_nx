@@ -1,0 +1,30 @@
+{
+  "name": "@gixcopilot/agent-basic-demo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Phase 10 demonstration: a single agent (@gixcopilot/agents) using a model, a backend tool, knowledge (RAG), memory, and a trusted security context - defaulting to the deterministic mock provider (no credentials required) with optional real OpenAI.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "typecheck": "tsc -b tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint src",
+    "demo": "tsc -b tsconfig.json && node dist/main.js"
+  },
+  "dependencies": {
+    "@gixcopilot/agents": "workspace:*",
+    "@gixcopilot/knowledge": "workspace:*",
+    "@gixcopilot/memory": "workspace:*",
+    "@gixcopilot/protocol": "workspace:*",
+    "@gixcopilot/provider": "workspace:*",
+    "@gixcopilot/provider-mock": "workspace:*",
+    "@gixcopilot/provider-openai": "workspace:*",
+    "@gixcopilot/rag": "workspace:*",
+    "@gixcopilot/security": "workspace:*",
+    "@gixcopilot/tools": "workspace:*",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "vitest": "5.0.1"
+  }
+}
