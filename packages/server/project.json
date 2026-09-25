@@ -4,7 +4,7 @@
   "projectType": "library",
   "sourceRoot": "packages/server/src",
   "tags": ["scope:server", "type:lib"],
-  "implicitDependencies": ["protocol", "core", "provider", "tools", "security"],
+  "implicitDependencies": ["protocol", "core", "provider", "tools", "security", "telemetry"],
   "targets": {
     "build": {
       "executor": "nx:run-commands",

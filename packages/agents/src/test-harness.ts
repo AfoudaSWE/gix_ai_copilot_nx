@@ -4,6 +4,8 @@ import { createMockProvider } from '@gixcopilot/provider-mock';
 import type { MockProviderOptions } from '@gixcopilot/provider-mock';
 import { createStaticToolResolver, createToolRuntime } from '@gixcopilot/tools';
 import type { AnyToolDefinition, ToolResolver, ToolRuntime, ToolRuntimeMiddleware } from '@gixcopilot/tools';
+import { instrumentModelRuntime } from '@gixcopilot/telemetry';
+import type { TelemetryAdapter } from '@gixcopilot/telemetry';
 import { createAgentRegistry } from './registry.js';
 import type { AgentRegistry } from './registry.js';
 import { createAgentRuntime } from './runtime.js';
@@ -25,6 +27,8 @@ export interface CreateAgentTestHarnessOptions {
   readonly modelScripts?: Readonly<Record<string, AgentTestModelScript>>;
   readonly toolResolver?: ToolResolver;
   readonly toolMiddleware?: readonly ToolRuntimeMiddleware[];
+  readonly telemetry?: TelemetryAdapter;
+  readonly instrumentModel?: boolean;
 }
 
 export interface AgentTestHarness {
@@ -57,7 +61,10 @@ export function createAgentTestHarness(options: CreateAgentTestHarnessOptions): 
   const resolver = options.toolResolver ?? createStaticToolResolver(options.tools ?? []);
   const toolRuntime = createToolRuntime({ resolver, middleware: options.toolMiddleware });
 
-  const runtime = createAgentRuntime({ registry, modelRuntime, toolRuntime, toolResolver: resolver });
+  const tracedModel = options.telemetry && options.instrumentModel
+    ? instrumentModelRuntime(modelRuntime, options.telemetry)
+    : modelRuntime;
+  const runtime = createAgentRuntime({ registry, modelRuntime: { registry: modelRuntime.registry, stream: (request) => tracedModel.stream(request) }, toolRuntime, toolResolver: resolver, telemetry: options.telemetry });
 
   return { registry, modelRuntime, toolRuntime, runtime };
 }

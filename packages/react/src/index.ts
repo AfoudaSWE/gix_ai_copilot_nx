@@ -10,6 +10,7 @@ export {
   useApprovals,
   useCopilot,
   useCopilotChat,
+  useCopilotContextDiagnostics,
   useCopilotStatus,
   useMessages,
   usePendingApprovals,
@@ -31,6 +32,7 @@ export type {
   CopilotContextOptions,
   CopilotMessage,
   CopilotProviderProps,
+  ResolvedContextSummary,
   ToolCallState,
   WorkflowRunState,
   WorkflowStepState,
@@ -57,7 +59,8 @@ export type {
   UseGenerativeComponentOptions,
   UseToolRendererOptions,
 } from './generative-ui-hooks.js';
-export type { ToolRenderFn, ToolRenderState } from './internals.js';
+export { useCopilotInternals } from './internals.js';
+export type { CopilotInternals, ToolRenderFn, ToolRenderState } from './internals.js';
 
 // Re-exported so a consumer of the React SDK never needs a direct `@gixcopilot/context`
 // dependency just to type a `useCopilotContext`/`useCopilotState` call (Section 63).

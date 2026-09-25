@@ -33,6 +33,7 @@ export const workspaceAliases = {
   '@gixcopilot/provider-openai': `${workspaceRoot}packages/providers/openai/src/index.ts`,
   '@gixcopilot/agents': `${workspaceRoot}packages/agents/src/index.ts`,
   '@gixcopilot/workflows': `${workspaceRoot}packages/workflows/src/index.ts`,
+  '@gixcopilot/telemetry': `${workspaceRoot}packages/telemetry/src/index.ts`,
   '@gixcopilot/jobs': `${workspaceRoot}packages/jobs/src/index.ts`,
   '@gixcopilot/checkpoint-postgres': `${workspaceRoot}packages/checkpoint-postgres/src/index.ts`,
 };

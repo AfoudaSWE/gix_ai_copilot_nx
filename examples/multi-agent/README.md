@@ -10,7 +10,14 @@ Application, Payment, and Knowledge specialists, each with a deliberately differ
 pnpm --filter @gixcopilot/multi-agent-demo demo
 ```
 
-Uses the deterministic mock model provider. Edit `main.ts`'s `securityContext` to a bare
+Uses the deterministic mock model provider by default. For a real OpenAI run (every agent
+then uses the same OpenAI model; tools, delegation, and permissions are unchanged):
+
+```sh
+MODEL_PROVIDER=openai OPENAI_API_KEY=sk-... pnpm --filter @gixcopilot/multi-agent-demo demo
+```
+
+`MODEL_NAME` optionally overrides the default `gpt-4o-mini`. Edit `main.ts`'s `securityContext` to a bare
 `viewer` (no `payments.read` permission) to see the payment specialist's own tool call denied
 while the orchestrator still completes.
 

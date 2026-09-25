@@ -8,7 +8,12 @@ import type { Identity } from '@gixcopilot/security';
 import { applicationSpecialist, knowledgeSpecialist, orchestratorAgent, paymentSpecialist } from './agents.js';
 import { getApplicationTool, getPaymentTool, searchPolicyTool } from './tools.js';
 
-function buildRuntime(identity: Identity, paymentCalls: { count: number }) {
+interface PaymentCalls {
+  count: number;
+  readonly results: unknown[];
+}
+
+function buildRuntime(identity: Identity, paymentCalls: PaymentCalls, paymentArguments: Record<string, unknown> = {}) {
   const registry = createAgentRegistry();
   for (const agent of [orchestratorAgent, applicationSpecialist, paymentSpecialist, knowledgeSpecialist]) {
     registry.register(agent);
@@ -18,9 +23,12 @@ function buildRuntime(identity: Identity, paymentCalls: { count: number }) {
   // is a stronger assertion than inspecting the model's own (independently scripted) text.
   const spiedPaymentTool = {
     ...getPaymentTool,
-    execute: (input: { userId: string }, context: Parameters<typeof getPaymentTool.execute>[1]) => {
+    execute: (input: Parameters<typeof getPaymentTool.execute>[0], context: Parameters<typeof getPaymentTool.execute>[1]) => {
       paymentCalls.count += 1;
-      return getPaymentTool.execute(input, context);
+      return getPaymentTool.execute(input, context).then((output) => {
+        paymentCalls.results.push(output);
+        return output;
+      });
     },
   };
   const resolver = createPermissionAwareToolResolver(
@@ -53,7 +61,7 @@ function buildRuntime(identity: Identity, paymentCalls: { count: number }) {
         id: 'payment-model',
         scenario: (attempt) =>
           attempt === 1
-            ? { toolCalls: [{ id: 'c2', name: 'payments.get', arguments: { userId: 'user-1' } }] }
+            ? { toolCalls: [{ id: 'c2', name: 'payments.get', arguments: paymentArguments }] }
             : { chunks: ['Reported payment status.'] },
       }),
       createMockProvider({ id: 'knowledge-model', scenario: { chunks: ['n/a'] } }),
@@ -73,7 +81,7 @@ function buildRuntime(identity: Identity, paymentCalls: { count: number }) {
 describe('multi-agent: orchestrator delegates to specialists with different access', () => {
   it('an admin sees both application status and real payment verification', async () => {
     const admin: Identity = { subject: 'user-1', roles: ['admin'], permissions: ['payments.read'] };
-    const paymentCalls = { count: 0 };
+    const paymentCalls: PaymentCalls = { count: 0, results: [] };
     const runtime = buildRuntime(admin, paymentCalls);
 
     const events: { type: string; toAgentId?: string; status?: string }[] = [];
@@ -99,7 +107,7 @@ describe('multi-agent: orchestrator delegates to specialists with different acce
    */
   it('a viewer without payments.read never actually reaches the payment tool, even via delegation', async () => {
     const viewer: Identity = { subject: 'user-2', roles: ['viewer'], permissions: [] };
-    const paymentCalls = { count: 0 };
+    const paymentCalls: PaymentCalls = { count: 0, results: [] };
     const runtime = buildRuntime(viewer, paymentCalls);
 
     const result = await runtime.run({
@@ -113,5 +121,22 @@ describe('multi-agent: orchestrator delegates to specialists with different acce
     // ever reaching the real tool's execute().
     expect(result.status).toBe('completed');
     expect(paymentCalls.count).toBe(0);
+  });
+
+  /** Section 14, 59, 185: "my payment" resolves from the trusted SecurityContext - a model that
+   * supplies another user's id in the tool arguments cannot redirect the lookup. */
+  it('payments.get always resolves the trusted caller, ignoring a model-supplied user id', async () => {
+    const admin: Identity = { subject: 'user-1', roles: ['admin'], permissions: ['payments.read'] };
+    const paymentCalls: PaymentCalls = { count: 0, results: [] };
+    const runtime = buildRuntime(admin, paymentCalls, { userId: 'user-999' });
+
+    const result = await runtime.run({
+      agent: 'orchestrator',
+      input: { message: 'Check status and payment' },
+      securityContext: { tenant: { tenantId: 'demo' }, identity: admin },
+    });
+
+    expect(result.status).toBe('completed');
+    expect(paymentCalls.results).toEqual([{ found: true, verified: true, method: 'card' }]);
   });
 });

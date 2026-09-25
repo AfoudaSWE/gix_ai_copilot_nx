@@ -21,6 +21,7 @@ pnpm --filter @gixcopilot/react test
 pnpm --filter @gixcopilot/agent-basic-demo demo
 pnpm --filter @gixcopilot/multi-agent-demo demo
 pnpm --filter @gixcopilot/workflow-approval-demo demo
+pnpm --filter @gixcopilot/workflow-compensation-demo demo
 ```
 
 Each uses the deterministic mock model provider by default. For a real OpenAI run (any

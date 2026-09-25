@@ -7,6 +7,7 @@ import { defineWorkflow } from './definition.js';
 import { approvalStep, functionStep, toolStep } from './steps.js';
 import { createWorkflowTestHarness } from './test-harness.js';
 import { createWorkflowEngine } from './engine.js';
+import { createRecordingTelemetry } from '@gixcopilot/telemetry';
 
 /**
  * Verifies the OpenTelemetry instrumentation added to the engine (Section 149-152, 125-126):
@@ -64,7 +65,7 @@ describe('workflow engine OpenTelemetry spans', () => {
     }
   });
 
-  it('records a retroactively-timed workflow.approval_wait span using the real decision timestamp', async () => {
+  it('records a retroactively-timed approval.wait span using the real decision timestamp', async () => {
     const updateTool = defineTool({
       name: 'applications.update',
       description: 'Updates an application.',
@@ -116,12 +117,28 @@ describe('workflow engine OpenTelemetry spans', () => {
     await provider.forceFlush();
 
     const spans = exporter.getFinishedSpans();
-    const waitSpan = spans.find((span) => span.name === 'workflow.approval_wait');
+    const waitSpan = spans.find((span) => span.name === 'approval.wait');
     expect(waitSpan).toBeDefined();
     expect(waitSpan?.attributes['copilot.approval_status']).toBe('approved');
     expect(waitSpan?.attributes['copilot.run_id']).toBe(started.workflowRunId);
     // The span's duration reflects the real gap between approval creation and decision, not
     // whatever tiny wall-clock time this test itself took to call resume().
     expect(waitSpan?.endTime[0]).toBeGreaterThanOrEqual(waitSpan?.startTime[0] ?? 0);
+  });
+
+  it('records workflow completion and step metrics through the adapter', async () => {
+    const telemetry = createRecordingTelemetry({ now: () => new Date('2026-01-01T00:00:00Z'), nextId: (() => { let id = 0; return () => `id-${++id}`; })() });
+    const stateSchema = z.object({ count: z.number() });
+    const workflow = defineWorkflow({
+      id: 'recorded-workflow', version: '1', state: stateSchema,
+      initialState: () => ({ count: 0 }),
+      steps: [functionStep<{ count: number }>({ id: 'increment', run: ({ state }) => ({ count: state.count + 1 }) })],
+    });
+    const { engine } = createWorkflowTestHarness({ workflows: [workflow], telemetry });
+    const result = await engine.start({ workflowId: workflow.id, input: {}, securityContext: {} });
+    expect(result.status).toBe('completed');
+    expect(telemetry.session().events.filter((event) => event.type === 'run').map((event) => event.phase)).toEqual(['started', 'completed']);
+    expect(telemetry.session().metrics.counters['copilot.workflow.steps']).toBe(1);
+    expect(telemetry.session().spans.map((span) => span.name)).toContain('workflow.step');
   });
 });

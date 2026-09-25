@@ -91,6 +91,24 @@ and all ten phase documents. Generated `dist`, `node_modules`, `.tsbuildinfo` ar
   [Status](Phase_10_Status.md)).
 - `pnpm-lock.yaml` — new dependencies above.
 
+## Modified — prompt-completeness audit (2026-09-25)
+
+- `examples/multi-agent/src/main.ts` — `MODEL_PROVIDER=openai` real-model mode.
+- `examples/multi-agent/src/tools.ts` — `payments.get` resolves the trusted caller from the
+  runtime `executionContext`, never a model-supplied `userId`.
+- `examples/multi-agent/src/agents.ts` — payment specialist instructions say "current user".
+- `examples/multi-agent/src/integration.spec.ts` — forged-`userId` trusted-identity test.
+- `examples/multi-agent/README.md` — real OpenAI run instructions.
+- `examples/workflow-compensation/` — new (Section 175, Example 4): `src/{order-system,
+  workflow,engine,main,integration.spec}.ts`, README, package/project/tsconfig/vitest config;
+  registered in the root `tsconfig.json`.
+- `packages/jobs/src/bullmq-job-executor.ts` — unhandled-rejection fix on early `close()`.
+- `docs/phases/phase-10/Phase_10_{Docs,Handoff}.md` — compensation demo command.
+- `docs/phases/phase-10/Phase_10_{Status,Testing,Issues,Files}.md` — real-model results,
+  performance measurements, audit findings.
+- `docs/CHANGELOG_PHASES.md`, `docs/TECHNICAL_DEBT.md` — Phase 10 entries (were missing).
+- `docs/prompts/Phase_10_Prompt.md` — truncation repaired (see [Issues](Phase_10_Issues.md)).
+
 ## Files this review read but did not need to change
 
 `packages/protocol/src/{errors,events,index,run,serialization}.ts`,

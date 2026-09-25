@@ -15,6 +15,15 @@ import type {
   FinishReason,
 } from '@gixcopilot/protocol';
 import type { ReactNode } from 'react';
+import type { ContextDiagnostics, ContextExclusion, ResolvedContextItem } from '@gixcopilot/context';
+
+/** Serializable context metadata for the current run. Item content is never retained. */
+export interface ResolvedContextSummary {
+  readonly items: readonly Pick<ResolvedContextItem, 'id' | 'name' | 'scope' | 'priority' | 'sensitivity' | 'estimatedTokens' | 'truncated'>[];
+  readonly excluded: readonly Pick<ContextExclusion, 'id' | 'name' | 'scope' | 'reason'>[];
+  readonly estimatedTokens: number;
+  readonly diagnostics: ContextDiagnostics;
+}
 
 /** A protocol message with local presentation metadata; wire content is unchanged. */
 export interface CopilotMessage extends Message {
@@ -128,6 +137,8 @@ interface ChatSnapshotBase {
   readonly runId: string | null;
   readonly usage: Usage | undefined;
   readonly finishReason: FinishReason | undefined;
+  /** Resolved context metadata for this run, without any item text or values. */
+  readonly contextDiagnostics?: ResolvedContextSummary;
   /** Cleared at the start of every new run (Section 59) - this is per-turn activity, not a
    * persistent tool-call history across the whole conversation. */
   readonly toolCalls: readonly ToolCallState[];

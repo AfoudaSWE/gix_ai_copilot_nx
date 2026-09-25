@@ -3,24 +3,48 @@
   "name": "workflows",
   "projectType": "library",
   "sourceRoot": "packages/workflows/src",
-  "tags": ["scope:workflows", "type:lib"],
-  "implicitDependencies": ["protocol", "core", "tools", "security", "agents", "provider", "provider-mock"],
+  "tags": [
+    "scope:workflows",
+    "type:lib"
+  ],
+  "implicitDependencies": [
+    "protocol",
+    "core",
+    "tools",
+    "security",
+    "agents",
+    "provider",
+    "provider-mock",
+    "telemetry"
+  ],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run build", "cwd": "packages/workflows" }
+      "options": {
+        "command": "pnpm run build",
+        "cwd": "packages/workflows"
+      }
     },
     "typecheck": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run typecheck", "cwd": "packages/workflows" }
+      "options": {
+        "command": "pnpm run typecheck",
+        "cwd": "packages/workflows"
+      }
     },
     "test": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run test", "cwd": "packages/workflows" }
+      "options": {
+        "command": "pnpm run test",
+        "cwd": "packages/workflows"
+      }
     },
     "lint": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run lint", "cwd": "packages/workflows" }
+      "options": {
+        "command": "pnpm run lint",
+        "cwd": "packages/workflows"
+      }
     }
   }
 }

@@ -698,6 +698,28 @@ importers:
         specifier: 5.0.1
         version: 5.0.1(@opentelemetry/api@1.9.0)(@types/node@22.20.3)(jsdom@30.1.0)(vite@8.3.0(@types/node@22.20.3)(esbuild@0.28.2)(tsx@4.23.13)(yaml@2.9.1))
 
+  examples/workflow-compensation:
+    dependencies:
+      '@gixcopilot/protocol':
+        specifier: workspace:*
+        version: link:../../packages/protocol
+      '@gixcopilot/security':
+        specifier: workspace:*
+        version: link:../../packages/security
+      '@gixcopilot/tools':
+        specifier: workspace:*
+        version: link:../../packages/tools
+      '@gixcopilot/workflows':
+        specifier: workspace:*
+        version: link:../../packages/workflows
+      zod:
+        specifier: 4.6.5
+        version: 4.6.5
+    devDependencies:
+      vitest:
+        specifier: 5.0.1
+        version: 5.0.1(@opentelemetry/api@1.9.0)(@types/node@22.20.3)(jsdom@30.1.0)(vite@8.3.0(@types/node@22.20.3)(esbuild@0.28.2)(tsx@4.23.13)(yaml@2.9.1))
+
   packages/agents:
     dependencies:
       '@gixcopilot/core':
@@ -712,12 +734,12 @@ importers:
       '@gixcopilot/security':
         specifier: workspace:*
         version: link:../security
+      '@gixcopilot/telemetry':
+        specifier: workspace:*
+        version: link:../telemetry
       '@gixcopilot/tools':
         specifier: workspace:*
         version: link:../tools
-      '@opentelemetry/api':
-        specifier: 1.9.0
-        version: 1.9.0
       zod:
         specifier: 4.6.5
         version: 4.6.5
@@ -725,6 +747,9 @@ importers:
       '@gixcopilot/provider-mock':
         specifier: workspace:*
         version: link:../providers/mock
+      '@opentelemetry/api':
+        specifier: 1.9.0
+        version: 1.9.0
       '@opentelemetry/sdk-trace-base':
         specifier: 1.30.1
         version: 1.30.1(@opentelemetry/api@1.9.0)
@@ -1073,6 +1098,9 @@ importers:
       '@gixcopilot/security':
         specifier: workspace:*
         version: link:../security
+      '@gixcopilot/telemetry':
+        specifier: workspace:*
+        version: link:../telemetry
       '@gixcopilot/tools':
         specifier: workspace:*
         version: link:../tools
@@ -1083,6 +1111,22 @@ importers:
         specifier: 4.6.5
         version: 4.6.5
     devDependencies:
+      vitest:
+        specifier: 5.0.1
+        version: 5.0.1(@opentelemetry/api@1.9.0)(@types/node@22.20.3)(jsdom@30.1.0)(vite@8.3.0(@types/node@22.20.3)(esbuild@0.28.2)(tsx@4.23.13)(yaml@2.9.1))
+
+  packages/telemetry:
+    dependencies:
+      '@gixcopilot/protocol':
+        specifier: workspace:*
+        version: link:../protocol
+      '@opentelemetry/api':
+        specifier: 1.9.0
+        version: 1.9.0
+    devDependencies:
+      '@opentelemetry/sdk-trace-base':
+        specifier: 1.30.1
+        version: 1.30.1(@opentelemetry/api@1.9.0)
       vitest:
         specifier: 5.0.1
         version: 5.0.1(@opentelemetry/api@1.9.0)(@types/node@22.20.3)(jsdom@30.1.0)(vite@8.3.0(@types/node@22.20.3)(esbuild@0.28.2)(tsx@4.23.13)(yaml@2.9.1))
@@ -1185,12 +1229,12 @@ importers:
       '@gixcopilot/security':
         specifier: workspace:*
         version: link:../security
+      '@gixcopilot/telemetry':
+        specifier: workspace:*
+        version: link:../telemetry
       '@gixcopilot/tools':
         specifier: workspace:*
         version: link:../tools
-      '@opentelemetry/api':
-        specifier: 1.9.0
-        version: 1.9.0
       zod:
         specifier: 4.6.5
         version: 4.6.5
@@ -1201,6 +1245,9 @@ importers:
       '@gixcopilot/provider-mock':
         specifier: workspace:*
         version: link:../providers/mock
+      '@opentelemetry/api':
+        specifier: 1.9.0
+        version: 1.9.0
       '@opentelemetry/sdk-trace-base':
         specifier: 1.30.1
         version: 1.30.1(@opentelemetry/api@1.9.0)

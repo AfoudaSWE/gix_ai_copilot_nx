@@ -17,7 +17,7 @@ export const paymentSpecialist = defineAgent({
   id: 'payment-specialist',
   name: 'Payment Specialist',
   description: "Looks up a user's payment verification status.",
-  instructions: "Answer questions about a user's payment verification using payments.get.",
+  instructions: "Answer questions about the current user's payment verification using payments.get.",
   tools: ['payments.get'],
   model: { provider: 'payment-model', model: 'mock-model' },
 });

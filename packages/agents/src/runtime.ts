@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { CopilotError, createRunId, createThreadId } from '@gixcopilot/protocol';
-import type { PublicCopilotError, RunId, ThreadId, ToolResult } from '@gixcopilot/protocol';
-import type { Context } from '@opentelemetry/api';
+import type { PublicCopilotError, RunId, ThreadId, ToolResult, Usage } from '@gixcopilot/protocol';
+import { METRICS, SPAN_NAMES, addUsage, recordRun, withTelemetryMetadata } from '@gixcopilot/telemetry';
+import type { SpanHandle, TelemetryAdapter } from '@gixcopilot/telemetry';
 import { EventSequencer } from '@gixcopilot/core';
 import { toToolManifest } from '@gixcopilot/tools';
 import type { AnyToolDefinition, ToolResolver, ToolRuntime } from '@gixcopilot/tools';
@@ -13,7 +14,7 @@ import { isAgentEnabled, resolveAgentInstructions, resolveAgentToolNames } from 
 import type { AgentInstructionsContext } from './definition.js';
 import type { AgentExecutionContext } from './execution-context.js';
 import type { AgentRegistry } from './registry.js';
-import { endSpanError, endSpanOk, rootOtelContext, startChildSpan } from './tracing.js';
+import { defaultAgentTelemetry, endSpanError, endSpanOk, startChildSpan } from './tracing.js';
 import {
   assertDelegationLimit,
   assertDepthLimit,
@@ -79,10 +80,8 @@ export interface AgentRunOptions<TInput = unknown> {
    * dispatch, never by a fresh top-level caller. */
   readonly restrictToKnowledgeSources?: readonly string[];
   readonly restrictToMemoryTypes?: readonly ('working' | 'session' | 'durable' | 'semantic')[];
-  /** Internal - the OTel context this run's own "agent.run" span should nest under (Section
-   * 149-152); set automatically by delegation/handoff dispatch. A fresh top-level caller never
-   * sets this - it nests under whatever context is already active, if any. */
-  readonly otelParentContext?: Context;
+  /** Parent of this run's span, passed through delegation, handoff, or a host workflow. */
+  readonly parentSpan?: SpanHandle;
 }
 
 export interface AgentRunResult<TOutput = unknown> {
@@ -106,6 +105,7 @@ export interface AgentRuntime {
 
 export interface CreateAgentRuntimeOptions {
   readonly registry: AgentRegistry;
+  readonly telemetry?: TelemetryAdapter;
   readonly modelRuntime: ModelRuntime;
   /** Already wired with whatever middleware the caller needs (e.g. the Action Firewall via
    * `createActionFirewallMiddleware`, exactly as `@gixcopilot/server` does) - the agent
@@ -210,6 +210,7 @@ function delegationToolResultMessage(toolCallId: string, delegationResult: Agent
  * same runtime, which a `ToolDefinition.execute()` cannot have without a dependency cycle.
  */
 export function createAgentRuntime(options: CreateAgentRuntimeOptions): AgentRuntime {
+  const telemetry = options.telemetry ?? defaultAgentTelemetry;
   async function runAgent<TInput, TOutput>(
     runOptions: AgentRunOptions<TInput>,
   ): Promise<AgentRunResult<TOutput>> {
@@ -253,13 +254,16 @@ export function createAgentRuntime(options: CreateAgentRuntimeOptions): AgentRun
 
     emit(agentRunStartedEvent(correlation, sequencer, agent.id, runId));
 
-    const parentOtelContext = runOptions.otelParentContext ?? rootOtelContext();
-    const { span: runSpan, context: runOtelContext } = startChildSpan('agent.run', parentOtelContext, correlation, {
+    const startedAt = Date.now();
+    let usage: Usage | undefined;
+    const runSpan = startChildSpan(telemetry, SPAN_NAMES.agentRun, runOptions.parentSpan, correlation, {
       'copilot.agent_id': agent.id,
       'copilot.depth': depth,
       'copilot.tenant_id': runOptions.securityContext.tenant?.tenantId,
     });
 
+    recordRun(telemetry, { kind: 'agent', phase: 'started', correlation, label: agent.id });
+    telemetry.recordMetric({ name: 'copilot.agent.depth', kind: 'histogram', value: depth, attributes: { 'copilot.agent_id': agent.id } });
     const combinedController = new AbortController();
     let timedOut = false;
     const onExternalAbort = (): void => combinedController.abort();
@@ -347,22 +351,22 @@ export function createAgentRuntime(options: CreateAgentRuntimeOptions): AgentRun
       while (true) {
         const toolCallsThisTurn: ModelToolCall[] = [];
         let turnText = '';
+        let callUsage: Usage | undefined;
 
-        const modelCallSpan = startChildSpan('agent.model_call', runOtelContext, correlation, {
-          'copilot.iteration': iterations,
-        });
-        try {
-          for await (const event of options.modelRuntime.stream({
+        for await (const event of options.modelRuntime.stream({
             model: modelRef,
             messages,
             temperature: agent.model?.temperature,
             maxOutputTokens: agent.model?.maxOutputTokens,
             signal: combinedController.signal,
             tools: modelTools.length > 0 ? modelTools : undefined,
+            metadata: withTelemetryMetadata(runOptions.metadata, { correlation, parentSpan: runSpan }),
           })) {
             switch (event.type) {
               case 'model.started':
+                break;
               case 'usage.updated':
+                callUsage = event.usage;
                 break;
               case 'content.delta':
                 turnText += event.delta;
@@ -371,6 +375,7 @@ export function createAgentRuntime(options: CreateAgentRuntimeOptions): AgentRun
                 toolCallsThisTurn.push(event.toolCall);
                 break;
               case 'model.completed':
+                callUsage = event.usage ?? callUsage;
                 break;
               case 'model.failed':
                 throw new CopilotError(event.error.code, event.error.message, {
@@ -383,11 +388,7 @@ export function createAgentRuntime(options: CreateAgentRuntimeOptions): AgentRun
               }
             }
           }
-          endSpanOk(modelCallSpan.span);
-        } catch (error) {
-          endSpanError(modelCallSpan.span, error);
-          throw error;
-        }
+        usage = addUsage(usage ?? { inputTokens: 0, outputTokens: 0, totalTokens: 0 }, callUsage);
 
         aggregatedText += turnText;
 
@@ -449,7 +450,8 @@ export function createAgentRuntime(options: CreateAgentRuntimeOptions): AgentRun
               parsedArgs.success && parsedArgs.data.input !== undefined ? parsedArgs.data.input : { message: task };
             const delegationId = randomUUID();
             emit(agentDelegationStartedEvent(correlation, sequencer, agent.id, targetId, delegationId, depth + 1));
-            const delegationSpan = startChildSpan('agent.delegation', runOtelContext, correlation, {
+            telemetry.recordMetric({ name: METRICS.agentDelegations, kind: 'counter', value: 1, attributes: { 'copilot.agent_id': agent.id } });
+            const delegationSpan = startChildSpan(telemetry, SPAN_NAMES.agentDelegate, runSpan, correlation, {
               'copilot.to_agent_id': targetId,
             });
             return { call, targetId, nestedInput, delegationId, delegationSpan };
@@ -472,20 +474,20 @@ export function createAgentRuntime(options: CreateAgentRuntimeOptions): AgentRun
                   restrictToToolNames: toolNames,
                   restrictToKnowledgeSources: resolvedKnowledgeSources,
                   restrictToMemoryTypes: resolvedMemoryTypes,
-                  otelParentContext: dispatch.delegationSpan.context,
+                  parentSpan: dispatch.delegationSpan,
                 });
                 if (parallelPolicy === 'fail-fast' && result.status !== 'completed') batchController?.abort();
                 if (result.status === 'completed') {
-                  endSpanOk(dispatch.delegationSpan.span);
+                  endSpanOk(dispatch.delegationSpan);
                 } else {
                   endSpanError(
-                    dispatch.delegationSpan.span,
+                    dispatch.delegationSpan,
                     new Error(result.error?.message ?? `Delegation ended with status "${result.status}".`),
                   );
                 }
                 return result;
               } catch (error) {
-                endSpanError(dispatch.delegationSpan.span, error);
+                endSpanError(dispatch.delegationSpan, error);
                 batchController?.abort();
                 throw error;
               }
@@ -562,7 +564,8 @@ export function createAgentRuntime(options: CreateAgentRuntimeOptions): AgentRun
                 ? parsedArgs.data.input
                 : { message: reason };
             emit(agentHandoffEvent(correlation, sequencer, agent.id, targetId, reason));
-            const handoffSpan = startChildSpan('agent.handoff', runOtelContext, correlation, {
+            telemetry.recordMetric({ name: METRICS.agentHandoffs, kind: 'counter', value: 1, attributes: { 'copilot.agent_id': agent.id } });
+            const handoffSpan = startChildSpan(telemetry, SPAN_NAMES.agentHandoff, runSpan, correlation, {
               'copilot.to_agent_id': targetId,
             });
             let nestedResult: AgentRunResult<TOutput>;
@@ -581,14 +584,15 @@ export function createAgentRuntime(options: CreateAgentRuntimeOptions): AgentRun
                 restrictToToolNames: toolNames,
                 restrictToKnowledgeSources: resolvedKnowledgeSources,
                 restrictToMemoryTypes: resolvedMemoryTypes,
-                otelParentContext: handoffSpan.context,
+                parentSpan: handoffSpan,
               });
-              endSpanOk(handoffSpan.span);
+              endSpanOk(handoffSpan);
             } catch (error) {
-              endSpanError(handoffSpan.span, error);
+              endSpanError(handoffSpan, error);
               throw error;
             }
-            endSpanOk(runSpan);
+            runSpan.end(nestedResult.status === 'completed' ? 'ok' : nestedResult.status === 'cancelled' ? 'cancelled' : 'error');
+            recordRun(telemetry, { kind: 'agent', phase: nestedResult.status, correlation, label: agent.id, usage, latencyMs: Date.now() - startedAt, error: nestedResult.error });
             return { ...nestedResult, handoff: { toAgentId: targetId } };
           }
 
@@ -606,7 +610,8 @@ export function createAgentRuntime(options: CreateAgentRuntimeOptions): AgentRun
                 : { message: task };
             const delegationId = randomUUID();
             emit(agentDelegationStartedEvent(correlation, sequencer, agent.id, targetId, delegationId, depth + 1));
-            const delegationSpan = startChildSpan('agent.delegation', runOtelContext, correlation, {
+            telemetry.recordMetric({ name: METRICS.agentDelegations, kind: 'counter', value: 1, attributes: { 'copilot.agent_id': agent.id } });
+            const delegationSpan = startChildSpan(telemetry, SPAN_NAMES.agentDelegate, runSpan, correlation, {
               'copilot.to_agent_id': targetId,
             });
 
@@ -626,7 +631,7 @@ export function createAgentRuntime(options: CreateAgentRuntimeOptions): AgentRun
                 restrictToToolNames: toolNames,
                 restrictToKnowledgeSources: resolvedKnowledgeSources,
                 restrictToMemoryTypes: resolvedMemoryTypes,
-                otelParentContext: delegationSpan.context,
+                parentSpan: delegationSpan,
               });
               emit(
                 agentDelegationCompletedEvent(
@@ -639,7 +644,7 @@ export function createAgentRuntime(options: CreateAgentRuntimeOptions): AgentRun
                   delegationResult.error,
                 ),
               );
-              endSpanOk(delegationSpan.span);
+              endSpanOk(delegationSpan);
             } catch (error) {
               const copilotError = CopilotError.isCopilotError(error)
                 ? error
@@ -663,7 +668,7 @@ export function createAgentRuntime(options: CreateAgentRuntimeOptions): AgentRun
                 iterations: 0,
                 toolCallCount: 0,
               };
-              endSpanError(delegationSpan.span, error);
+              endSpanError(delegationSpan, error);
             }
 
             if (isAgentSafetyLimitError(delegationResult.error)) {
@@ -688,9 +693,6 @@ export function createAgentRuntime(options: CreateAgentRuntimeOptions): AgentRun
           // enforcement boundary rather than only a discovery-time courtesy: a delegated
           // agent that declares a broader tool list than its delegator can see is stopped
           // here, not merely un-offered.
-          const toolCallSpan = startChildSpan('agent.tool_call', runOtelContext, correlation, {
-            'copilot.tool_name': call.name,
-          });
           const result: ToolResult = toolNames.includes(call.name)
             ? await options.toolRuntime.execute({
                 toolCallId: call.id,
@@ -700,14 +702,14 @@ export function createAgentRuntime(options: CreateAgentRuntimeOptions): AgentRun
                   runId,
                   threadId,
                   signal: combinedController.signal,
-                  metadata: {
+                  metadata: withTelemetryMetadata({
                     securityContext: executionContext.securityContext,
                     executionContext,
                     // A knowledge/memory-performing tool reads its already-narrowed scope from
                     // here rather than re-deriving delegation narrowing itself (Section 60).
                     knowledgeSources: resolvedKnowledgeSources,
                     memoryTypes: resolvedMemoryTypes,
-                  },
+                  }, { correlation, parentSpan: runSpan }),
                 },
               })
             : {
@@ -715,11 +717,6 @@ export function createAgentRuntime(options: CreateAgentRuntimeOptions): AgentRun
                 toolCallId: call.id,
                 error: CopilotError.permissionDenied(call.name).toPublicJSON(),
               };
-          if (result.status === 'error') {
-            endSpanError(toolCallSpan.span, new Error(result.error.message));
-          } else {
-            endSpanOk(toolCallSpan.span);
-          }
           messages = [
             ...messages,
             { role: 'tool', content: [{ type: 'tool_result', toolCallId: call.id, result }] },
@@ -731,7 +728,21 @@ export function createAgentRuntime(options: CreateAgentRuntimeOptions): AgentRun
       if (agent.outputSchema) {
         try {
           const structured = await generateObject({
-            runtime: options.modelRuntime,
+            runtime: {
+              registry: options.modelRuntime.registry,
+              async *stream(request) {
+                let structuredUsage: Usage | undefined;
+                for await (const event of options.modelRuntime.stream({
+                  ...request,
+                  metadata: withTelemetryMetadata(request.metadata, { correlation, parentSpan: runSpan }),
+                })) {
+                  if (event.type === 'usage.updated') structuredUsage = event.usage;
+                  if (event.type === 'model.completed') structuredUsage = event.usage ?? structuredUsage;
+                  yield event;
+                }
+                usage = addUsage(usage ?? { inputTokens: 0, outputTokens: 0, totalTokens: 0 }, structuredUsage);
+              },
+            },
             model: modelRef,
             schema: agent.outputSchema,
             signal: combinedController.signal,
@@ -748,6 +759,8 @@ export function createAgentRuntime(options: CreateAgentRuntimeOptions): AgentRun
 
       emit(agentRunCompletedEvent(correlation, sequencer, agent.id, runId));
       endSpanOk(runSpan);
+      recordRun(telemetry, { kind: 'agent', phase: 'completed', correlation, label: agent.id, usage, latencyMs: Date.now() - startedAt });
+      telemetry.recordMetric({ name: METRICS.agentIterations, kind: 'histogram', value: iterations, attributes: { 'copilot.agent_id': agent.id } });
       return {
         runId,
         agentId: agent.id,
@@ -759,7 +772,8 @@ export function createAgentRuntime(options: CreateAgentRuntimeOptions): AgentRun
     } catch (error) {
       if (externalSignal?.aborted) {
         emit(agentRunCancelledEvent(correlation, sequencer, agent.id, runId));
-        endSpanError(runSpan, error);
+        runSpan.end('cancelled', error);
+        recordRun(telemetry, { kind: 'agent', phase: 'cancelled', correlation, label: agent.id, usage, latencyMs: Date.now() - startedAt });
         return { runId, agentId: agent.id, status: 'cancelled', iterations: 0, toolCallCount: budget.toolCalls };
       }
       const copilotError = timedOut
@@ -769,6 +783,7 @@ export function createAgentRuntime(options: CreateAgentRuntimeOptions): AgentRun
           : CopilotError.agentExecutionError(error instanceof Error ? error.message : String(error));
       emit(agentRunFailedEvent(correlation, sequencer, agent.id, runId, copilotError.toPublicJSON()));
       endSpanError(runSpan, copilotError);
+      recordRun(telemetry, { kind: 'agent', phase: 'failed', correlation, label: agent.id, usage, latencyMs: Date.now() - startedAt, error: copilotError.toPublicJSON() });
       return {
         runId,
         agentId: agent.id,

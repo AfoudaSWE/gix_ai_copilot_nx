@@ -41,6 +41,7 @@ pnpm --filter @gixcopilot/workflows test
 pnpm --filter @gixcopilot/agent-basic-demo demo
 pnpm --filter @gixcopilot/multi-agent-demo demo
 pnpm --filter @gixcopilot/workflow-approval-demo demo
+pnpm --filter @gixcopilot/workflow-compensation-demo demo
 ```
 
 `@gixcopilot/jobs` (real BullMQ/Redis) and `@gixcopilot/checkpoint-postgres` (real

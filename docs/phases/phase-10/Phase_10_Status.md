@@ -120,10 +120,16 @@ required documentation and examples, which did not exist before this review.
       → supervisor approval → update → complete; 3 passing tests including a genuine
       "process restart" (two independent engine instances sharing only persisted state);
       demo run recorded.
-- [ ] No example was exercised against a **real OpenAI model** this session
-      (`OPENAI_API_KEY` unavailable in this environment) — disclosed explicitly, not
-      assumed; every example supports it via the same env-var convention every prior phase
-      uses.
+- [x] `examples/workflow-compensation` (Section 175, Example 4) — reserve → charge → ship
+      fails → refund → release in reverse order, every step and compensation through the
+      Action Firewall; 3 passing tests; demo run recorded. Added in the prompt-completeness
+      audit (compensation was implemented but had no example).
+- [x] All three model-using examples run against a **real OpenAI model** (`gpt-4o-mini`,
+      `MODEL_PROVIDER=openai`) in the prompt-completeness audit — see
+      [Testing](Phase_10_Testing.md#real-openai-runs-section-210-212). `multi-agent` had no
+      real-model mode before that audit (the earlier claim that every example supported one
+      was wrong); it was added then, along with a fix that makes `payments.get` resolve the
+      trusted caller instead of a model-supplied user id.
 
 ### Testing (Section 176-212)
 
@@ -132,9 +138,21 @@ tool/depth limits, routing (incl. injection), delegation, handoff, security prop
 delegated-tool-security, parallel agents, planner validation/authorization, workflow
 definition/sequential/parallel/condition, approval/rejection, checkpoint/restart, version
 mismatch, retry/non-retryable, compensation, cancellation, tenant isolation, permission
-change, prompt injection, human-approval forgery. Real-model tests (Section 210-212) were
-not exercised this session (no credentials available) — disclosed above and in
-[Issues](Phase_10_Issues.md), not silently skipped.
+change, prompt injection, human-approval forgery. Real-model runs (Section 210-212) were
+exercised manually against real OpenAI in the prompt-completeness audit; automated tests
+still never require a paid API.
+
+### Performance (Section 213-214)
+
+- [x] Agent startup, model→tool→model, delegation overhead, parallel-vs-sequential
+      specialist latency, workflow step, checkpoint, pause and resume latency measured with
+      the deterministic mock provider; real-model end-to-end wall times recorded from the
+      OpenAI runs. See [Testing](Phase_10_Testing.md#performance-section-213).
+- [ ] Per-run token-usage aggregation (Section 214) was not in the Phase 10 runtime; it
+      arrives with the Phase 11 telemetry package.
+- [ ] BullMQ job-queue latency and Postgres checkpoint latency were not benchmarked (Docker
+      was not running during the audit); their functional Testcontainers suites passed in the
+      earlier session.
 
 ### Documentation (Section 235-240)
 

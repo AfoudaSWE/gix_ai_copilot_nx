@@ -2,7 +2,7 @@ import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest }
 import { CopilotError, asRunId, asThreadId } from '@gixcopilot/protocol';
 import type { ToolResult } from '@gixcopilot/protocol';
 import { createRuntime, type Runtime } from '@gixcopilot/core';
-import { createModelExecutor, type ModelRuntime } from '@gixcopilot/provider';
+import { createModelExecutor, type ModelRuntime, type ModelExecutionRequest } from '@gixcopilot/provider';
 import { createDefaultToolResolver, createStaticToolResolver, toToolManifest } from '@gixcopilot/tools';
 import type { ToolRegistry } from '@gixcopilot/tools';
 import {
@@ -25,6 +25,8 @@ import type {
 import { createRunRegistry } from './run-registry.js';
 import { createFrontendToolBridge, type FrontendToolBridge } from './frontend-tool-bridge.js';
 import { createToolCallingExecutor } from './tool-calling-executor.js';
+import { createFirewallTelemetry, createToolTelemetry, instrumentApprovalStore, instrumentModelRuntime, recordProtocolEvent, recordRun, SPAN_NAMES, withTelemetryMetadata } from '@gixcopilot/telemetry';
+import type { SpanHandle, TelemetryAdapter } from '@gixcopilot/telemetry';
 import { formatSseComment, formatSseFrame, SSE_RESPONSE_HEADERS } from './sse.js';
 import {
   approvalIdParamsSchema,
@@ -47,6 +49,8 @@ export interface ToolRuntimeDefaults {
 }
 
 export interface CreateServerOptions {
+  /** Optional tracing and diagnostic adapter; omitted by default. */
+  readonly telemetry?: TelemetryAdapter;
   /**
    * The runtime a request without a `model` field executes against (Phase 1 behavior, e.g.
    * the deterministic echo executor). The server has no opinion on what executor backs it -
@@ -96,8 +100,43 @@ function buildRun(
   frontendToolBridge: FrontendToolBridge,
   securityContext: SecurityContext,
   requestContext: unknown,
+  getParentSpan: () => SpanHandle | undefined,
 ) {
   const threadId = body.threadId !== undefined ? asThreadId(body.threadId) : undefined;
+  const telemetry = options.telemetry;
+  const configuredModelRuntime = options.modelRuntime;
+  const modelCorrelation: { runId?: string } = {};
+  const modelRuntime = configuredModelRuntime && telemetry?.enabled
+    ? instrumentModelRuntime({
+        registry: configuredModelRuntime.registry,
+        stream: (modelRequest: ModelExecutionRequest) => configuredModelRuntime.stream({
+          ...modelRequest,
+          metadata: withTelemetryMetadata(modelRequest.metadata, {
+            parentSpan: getParentSpan(),
+            correlation: { runId: modelCorrelation.runId, threadId, tenantId: securityContext.tenant?.tenantId },
+          }),
+        }),
+      }, telemetry)
+    : configuredModelRuntime;
+  const toolTelemetry = telemetry?.enabled ? createToolTelemetry(telemetry) : undefined;
+  const firewallTelemetry = options.actionFirewall && telemetry?.enabled
+    ? createFirewallTelemetry(telemetry, { tracker: toolTelemetry?.tracker })
+    : undefined;
+  const actionFirewall = firewallTelemetry && options.actionFirewall
+    ? (() => {
+        const instrumented = firewallTelemetry.instrument(options.actionFirewall);
+        return Object.assign(Object.create(Object.getPrototypeOf(instrumented) as object) as ActionFirewall, instrumented, {
+          evaluate: (actionRequest: Parameters<ActionFirewall['evaluate']>[0], current: Parameters<ActionFirewall['evaluate']>[1]) =>
+            instrumented.evaluate(actionRequest, {
+              ...current,
+              metadata: withTelemetryMetadata(current.metadata, {
+                parentSpan: getParentSpan(),
+                correlation: { runId: actionRequest.runId, threadId, tenantId: current.tenant?.tenantId },
+              }),
+            }),
+        });
+      })()
+    : options.actionFirewall;
 
   if (!body.model && !body.action) {
     return { ok: true as const, run: options.runtime.run({ threadId, messages: body.messages }) };
@@ -137,7 +176,11 @@ function buildRun(
 
   const executor = usesTools
     ? createToolCallingExecutor({
-        modelRuntime: options.modelRuntime,
+        modelRuntime,
+        telemetry,
+        toolTelemetry,
+        getParentSpan,
+        tenantId: securityContext.tenant?.tenantId,
         model: body.model,
         action: body.action,
         frontendDefinitions: options.frontendToolRegistry?.list(),
@@ -152,18 +195,20 @@ function buildRun(
         maxToolIterations: options.toolRuntimeDefaults?.maxToolIterations,
         frontendToolTimeoutMs: options.toolRuntimeDefaults?.frontendToolTimeoutMs,
         toolTimeoutMs: options.toolRuntimeDefaults?.defaultTimeoutMs,
-        actionFirewall: options.actionFirewall,
+        actionFirewall,
         approvals: options.approvals,
         securityContext,
         refreshSecurityContext: () => resolveSecurityContext(options, requestContext),
         approvalExpiresInMs: options.approvalExpiresInMs,
         dataPolicy: options.dataPolicy,
       })
-    : createModelExecutor({ runtime: options.modelRuntime as ModelRuntime, model: body.model });
+    : createModelExecutor({ runtime: modelRuntime as ModelRuntime, model: body.model });
 
+  const run = createRuntime({ executor }).run({ threadId, messages: body.messages });
+  modelCorrelation.runId = run.runId;
   return {
     ok: true as const,
-    run: createRuntime({ executor }).run({ threadId, messages: body.messages }),
+    run,
   };
 }
 
@@ -217,6 +262,9 @@ function canViewApproval(
  * create-then-subscribe flow.
  */
 export function createServer(options: CreateServerOptions): FastifyInstance {
+  if (options.approvals && options.telemetry?.enabled) {
+    options = { ...options, approvals: instrumentApprovalStore(options.approvals, options.telemetry) };
+  }
   const app = Fastify({ logger: options.logger ?? false });
   const registry = createRunRegistry();
   const frontendToolBridge = createFrontendToolBridge();
@@ -257,12 +305,23 @@ export function createServer(options: CreateServerOptions): FastifyInstance {
     }
 
     const securityContext = await resolveSecurityContext(options, request);
-    const built = buildRun(options, parsed.data, frontendToolBridge, securityContext, request);
+    let runSpan: SpanHandle | undefined;
+    const built = buildRun(options, parsed.data, frontendToolBridge, securityContext, request, () => runSpan);
     if (!built.ok) {
       await reply.status(400).send({ error: built.error.toPublicJSON() });
       return;
     }
     const { run } = built;
+    const telemetry = options.telemetry;
+    const correlation = { runId: run.runId, threadId: run.threadId, tenantId: securityContext.tenant?.tenantId };
+    const startedAt = Date.now();
+    let spanClosed = false;
+    let disconnected = false;
+    let streamFailed = false;
+    if (telemetry?.enabled) {
+      runSpan = telemetry.startSpan(SPAN_NAMES.run, { correlation, startedAt });
+      recordRun(telemetry, { kind: 'copilot', phase: 'started', correlation });
+    }
 
     registry.register(run);
     owners.set(run.runId, securityContext);
@@ -277,6 +336,7 @@ export function createServer(options: CreateServerOptions): FastifyInstance {
     // finished and are now seeing the connection's own normal teardown."
     const onResponseClosed = (): void => {
       if (!reply.raw.writableEnded) {
+        disconnected = true;
         run.cancel();
       }
     };
@@ -284,12 +344,34 @@ export function createServer(options: CreateServerOptions): FastifyInstance {
 
     try {
       for await (const event of run.events) {
+        if (telemetry?.enabled) {
+          recordProtocolEvent(telemetry, event, correlation);
+          if (event.type === 'run.completed') {
+            recordRun(telemetry, { kind: 'copilot', phase: 'completed', correlation, usage: event.usage, latencyMs: Date.now() - startedAt });
+            runSpan?.end('ok');
+            spanClosed = true;
+          } else if (event.type === 'run.failed') {
+            recordRun(telemetry, { kind: 'copilot', phase: 'failed', correlation, error: event.error, latencyMs: Date.now() - startedAt });
+            runSpan?.end('error', event.error.message);
+            spanClosed = true;
+          } else if (event.type === 'run.cancelled') {
+            recordRun(telemetry, { kind: 'copilot', phase: 'cancelled', correlation, latencyMs: Date.now() - startedAt });
+            runSpan?.end('cancelled');
+            spanClosed = true;
+          }
+        }
         reply.raw.write(formatSseFrame(event));
       }
     } catch (error) {
+      streamFailed = true;
       request.log.error({ err: error }, 'Unexpected error while streaming run events');
       reply.raw.write(formatSseComment('internal error - closing stream'));
     } finally {
+      if (telemetry?.enabled && !spanClosed) {
+        const phase = disconnected ? 'cancelled' : 'failed';
+        recordRun(telemetry, { kind: 'copilot', phase, correlation, latencyMs: Date.now() - startedAt });
+        runSpan?.end(disconnected ? 'cancelled' : 'error', streamFailed ? 'Unexpected streaming error' : undefined);
+      }
       reply.raw.off('close', onResponseClosed);
       registry.unregister(run.runId);
       owners.delete(run.runId);

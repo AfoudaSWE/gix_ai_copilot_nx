@@ -111,3 +111,17 @@ review (a broken `pnpm-workspace.yaml` install scaffold, an entirely-unimplement
 carried forward as debt. See [Phase 9 issues](phases/phase-09/Phase_9_Issues.md) for the complete
 scope and operational limits. Planned Phase 10+ capabilities (agents, multi-agent orchestration,
 DevTools, Angular, an enterprise management platform) remain outside this debt list.
+
+## Phase 10 completion-review limits
+
+Workflow `parallel` steps always run every branch to completion (`Promise.allSettled`); only
+agent-level parallel delegation supports true early-abort fail-fast. An orchestrator must
+declare the union of its specialists' tools as its own `tools` ceiling, because delegation
+intersects tool sets and never unions them. An approval wait is recorded as a retroactive span,
+not a live cross-process trace. `@gixcopilot/jobs` relies on BullMQ's own attempts and
+stalled-job handling, with no custom heartbeat/lease, and a closure scheduled in one process
+cannot be replayed from another after a crash; durable recovery comes from checkpoints plus
+`resume()`. BullMQ queue latency and Postgres checkpoint latency have functional
+Testcontainers coverage but no benchmark. No Temporal adapter, visual/YAML workflow builder,
+prompt-management platform, or budget enforcement beyond Phase 2 usage metadata; these are
+Phase 11/12 scope, not debt. See [Phase 10 issues](phases/phase-10/Phase_10_Issues.md).

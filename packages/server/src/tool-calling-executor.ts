@@ -26,8 +26,15 @@ import type {
   SecurityReason,
 } from '@gixcopilot/security';
 import type { FrontendToolBridge } from './frontend-tool-bridge.js';
+import { createToolTelemetry, withTelemetryMetadata } from '@gixcopilot/telemetry';
+import type { TelemetryAdapter, SpanHandle, ToolTelemetry } from '@gixcopilot/telemetry';
 
 export interface CreateToolCallingExecutorOptions {
+  readonly telemetry?: TelemetryAdapter;
+  readonly toolTelemetry?: ToolTelemetry;
+  readonly parentSpan?: SpanHandle;
+  readonly getParentSpan?: () => SpanHandle | undefined;
+  readonly tenantId?: string;
   readonly modelRuntime?: ModelRuntime;
   readonly action?: { readonly name: string; readonly arguments: Readonly<Record<string, unknown>> };
   readonly frontendDefinitions?: readonly AnyToolDefinition[];
@@ -203,17 +210,19 @@ export function createToolCallingExecutor(options: CreateToolCallingExecutorOpti
   return {
     async *execute(input: ExecutorInput, context: ExecutorContext) {
       const grants = new Map<string, ToolApprovalLevel>();
-      const toolRuntime = createToolRuntime({
-        middleware: options.actionFirewall ? [createActionFirewallMiddleware({
+      const toolTelemetry = options.toolTelemetry ?? (options.telemetry?.enabled ? createToolTelemetry(options.telemetry) : undefined);
+      const rawToolRuntime = createToolRuntime({
+        middleware: [...(options.actionFirewall ? [createActionFirewallMiddleware({
           firewall: options.actionFirewall,
           resolver: options.securityToolResolver ?? options.backendToolResolver,
           getContext: () => options.refreshSecurityContext?.() ?? options.securityContext ?? {},
           revalidation: true,
           hasApproval: (id, level) => { const grant = grants.get(id); return grant !== undefined && strongerApprovalLevel(grant, level) === grant; },
-        })] : [],
+        })] : []), ...(toolTelemetry ? [toolTelemetry.middleware] : [])],
         resolver: options.backendToolResolver,
         defaultTimeoutMs: options.toolTimeoutMs,
         onEvent: (event) => {
+          toolTelemetry?.onEvent(event);
           if (event.phase === 'completed' && options.dataPolicy) {
             context.onToolEvent?.({ ...event, result: options.dataPolicy.redact(event.result) });
             return;
@@ -221,6 +230,7 @@ export function createToolCallingExecutor(options: CreateToolCallingExecutorOpti
           context.onToolEvent?.(event);
         },
       });
+      const toolRuntime = toolTelemetry?.instrument(rawToolRuntime) ?? rawToolRuntime;
 
       let messages: ModelMessage[] = input.messages.map(({ role, content }) => ({
         role,
@@ -261,7 +271,9 @@ export function createToolCallingExecutor(options: CreateToolCallingExecutorOpti
           messages,
           temperature: options.temperature,
           maxOutputTokens: options.maxOutputTokens,
-          metadata: options.metadata,
+          metadata: options.telemetry?.enabled
+            ? withTelemetryMetadata(options.metadata, { parentSpan: options.getParentSpan?.() ?? options.parentSpan, correlation: { runId: context.runId, threadId: input.threadId, tenantId: options.tenantId } })
+            : options.metadata,
           timeoutMs: options.timeoutMs,
           signal: context.signal,
           tools: manifest.length > 0 ? toModelToolDefinitions(manifest) : undefined,
@@ -435,6 +447,10 @@ export function createToolCallingExecutor(options: CreateToolCallingExecutorOpti
         yield '';
 
         const results = await dispatchPlans(plans, {
+          telemetry: options.telemetry,
+          parentSpan: options.parentSpan,
+          getParentSpan: options.getParentSpan,
+          tenantId: options.tenantId,
           backendTools,
           frontendManifest: options.frontendTools,
           frontendDefinitions: options.frontendDefinitions,
@@ -464,6 +480,10 @@ export function createToolCallingExecutor(options: CreateToolCallingExecutorOpti
 }
 
 interface DispatchOptions {
+  readonly telemetry?: TelemetryAdapter;
+  readonly parentSpan?: SpanHandle;
+  readonly getParentSpan?: () => SpanHandle | undefined;
+  readonly tenantId?: string;
   readonly grants: Map<string, ToolApprovalLevel>;
   readonly backendTools: readonly AnyToolDefinition[];
   readonly frontendManifest: readonly ToolManifestEntry[];
@@ -665,7 +685,9 @@ async function dispatchCall(call: ToolCall, options: DispatchOptions): Promise<T
       runId: options.context.runId,
       threadId: options.threadId,
       signal: options.context.signal,
-      metadata: { securityContext: options.refreshSecurityContext ? await options.refreshSecurityContext() : options.securityContext },
+      metadata: options.telemetry?.enabled
+        ? withTelemetryMetadata({ securityContext: options.refreshSecurityContext ? await options.refreshSecurityContext() : options.securityContext }, { parentSpan: options.getParentSpan?.() ?? options.parentSpan, correlation: { runId: options.context.runId, threadId: options.threadId, tenantId: options.tenantId } })
+        : { securityContext: options.refreshSecurityContext ? await options.refreshSecurityContext() : options.securityContext },
     },
   });
   // Section 56: the model must see the same redacted data the client does - never the raw

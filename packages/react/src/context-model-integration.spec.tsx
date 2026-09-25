@@ -2,7 +2,7 @@ import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { CopilotClient, RunOptions } from '@gixcopilot/client';
 import type { ContentPart } from '@gixcopilot/protocol';
-import { CopilotProvider, useCopilotChat, useCopilotContext } from './index.js';
+import { CopilotProvider, useCopilotChat, useCopilotContext, useCopilotContextDiagnostics, useCopilotInternals } from './index.js';
 
 afterEach(() => {
   cleanup();
@@ -32,6 +32,38 @@ function stubClient(): { client: CopilotClient; runs: RunOptions[] } {
  * the same seam `provider.tsx` wires into the real HTTP client in production.
  */
 describe('resolved application context reaches the model request', () => {
+  it('exposes a content-free summary and clears it for a new run', async () => {
+    const { client } = stubClient();
+    const { result } = renderHook(
+      () => {
+        useCopilotContext({ id: 'selection', name: 'selection', scope: 'page', value: 'private-value' });
+        useCopilotContext({ id: 'disabled', name: 'disabled', scope: 'page', value: 'hidden-value', enabled: false });
+        return { chat: useCopilotChat(), diagnostics: useCopilotContextDiagnostics(), internals: useCopilotInternals() };
+      },
+      { wrapper: ({ children }) => <CopilotProvider client={client}>{children}</CopilotProvider> },
+    );
+
+    expect(result.current.diagnostics).toBeUndefined();
+    expect(result.current.internals.registry).toBeDefined();
+    await act(async () => {
+      result.current.chat.sendMessage('first');
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(result.current.diagnostics?.items).toEqual([expect.objectContaining({
+      id: 'selection', name: 'selection', scope: 'page', truncated: false,
+    })]);
+    expect(result.current.diagnostics?.excluded).toEqual([{ id: 'disabled', name: 'disabled', scope: 'page', reason: 'disabled' }]);
+    expect(result.current.diagnostics?.estimatedTokens).toBeGreaterThan(0);
+    expect(result.current.diagnostics?.diagnostics.itemsIncluded).toBe(1);
+    expect(JSON.stringify(result.current.diagnostics)).not.toContain('private-value');
+    expect(JSON.stringify(result.current.diagnostics)).not.toContain('hidden-value');
+    expect(JSON.stringify(result.current.diagnostics)).not.toContain('text');
+
+    act(() => { result.current.chat.sendMessage('second'); });
+    expect(result.current.diagnostics).toBeUndefined();
+  });
+
   it('prepends a system message with the resolved context ahead of conversation history', async () => {
     const { client, runs } = stubClient();
     const { result } = renderHook(

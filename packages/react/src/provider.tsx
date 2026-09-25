@@ -22,6 +22,7 @@ import type {
   CopilotChatResult,
   CopilotMessage,
   CopilotProviderProps,
+  ResolvedContextSummary,
   ToolCallState,
   WorkflowRunState,
 } from './types.js';
@@ -82,9 +83,7 @@ export function CopilotProvider({
       // Fast, fully synchronous path when nothing is registered (the common Phase 3 case):
       // no promise, no microtask, `client.run()` dispatches on the same tick it always did.
       if (internals.registry.list({ enabledOnly: true }).length === 0) return undefined;
-      return internals.engine
-        .resolve(internals.registry)
-        .then((resolved) => resolved.content || undefined);
+      return internals.engine.resolve(internals.registry);
     },
     [internals],
   );
@@ -145,6 +144,16 @@ export function useCopilotChat(): CopilotChatResult {
     store.getServerSnapshot,
   );
   return { ...snapshot, ...store.access };
+}
+
+/** Context metadata for the current run, without resolved item content. */
+export function useCopilotContextDiagnostics(): ResolvedContextSummary | undefined {
+  const store = useStore();
+  return useSyncExternalStore(
+    store.subscribe,
+    () => store.getSnapshot().contextDiagnostics,
+    () => store.getServerSnapshot().contextDiagnostics,
+  );
 }
 
 /** Subscribe only to message changes. */

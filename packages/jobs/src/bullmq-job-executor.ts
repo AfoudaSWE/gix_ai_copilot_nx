@@ -66,6 +66,9 @@ export function createBullMQJobExecutor(options: CreateBullMQJobExecutorOptions)
     { connection: options.connection, concurrency: options.concurrency ?? 1 },
   );
   const workerReady = worker.waitUntilReady();
+  // Observed here so closing before the worker connects is not an unhandled rejection;
+  // schedule() still awaits the original promise and sees the failure.
+  workerReady.catch(() => undefined);
 
   return {
     async schedule(jobId, work) {
@@ -100,6 +103,9 @@ export function createBullMQJobExecutor(options: CreateBullMQJobExecutorOptions)
     },
 
     async close() {
+      // Let every connection finish its handshake first: closing one mid-connect makes
+      // ioredis reject an internal command nobody awaits (an unhandled rejection).
+      await Promise.allSettled([workerReady, queue.waitUntilReady(), queueEvents.waitUntilReady()]);
       await worker.close();
       await queueEvents.close();
       await queue.close();

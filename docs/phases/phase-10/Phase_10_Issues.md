@@ -15,6 +15,17 @@
 | No re-authorization test proved a workflow `resume()` stops a caller whose permission was revoked between pause and resume, and no test literally proved a forged `{"approved": true}` value can't advance an approval step | Added `reauthorization.spec.ts` — a real `ActionFirewall` wired via `createActionFirewallMiddleware`, a revoked-vs-retained permission pair of tests, and two forgery-resistance tests (state-embedded `approved: true`, and a tool result's free-text field never influencing a condition step) |
 | No test exercised agent-run cancellation (mid-model-call or mid-tool-call) or agent timeout, despite the code paths existing and being load-bearing | Added three tests to `runtime.spec.ts`; all passed on the first run, confirming the existing (untested) cancellation/timeout code was already correct |
 
+## Resolved in the prompt-completeness audit (2026-09-25)
+
+| Finding | Resolution / evidence |
+| --- | --- |
+| `examples/multi-agent` had no real-model mode at all, although the docs claimed every example supported `MODEL_PROVIDER=openai` (Section 168, 211) | Added the same `MODEL_PROVIDER`/`OPENAI_API_KEY`/`MODEL_NAME` switch the other examples use; real OpenAI run recorded in [Testing](Phase_10_Testing.md#real-openai-runs-section-210-212) |
+| `examples/multi-agent`'s `payments.get` took `userId` from model arguments; against real OpenAI the model invented `user-123` for "verify my payment" (Section 14, 59, 185: identity comes only from trusted context) | Tool now takes no user id and reads the caller from the runtime-supplied `executionContext`; new forged-`userId` test; real re-run returned the correct record |
+| Compensation was implemented but had no example (Section 175, Example 4) | Added `examples/workflow-compensation` with 3 tests (success, reverse-order compensation, a denied charge leaving only the reservation to compensate) |
+| `jobs:test` intermittently failed the full-repo run with an unhandled ioredis `Connection is closed` rejection although every test passed: `waitUntilReady()` was started eagerly but only awaited by `schedule()` | `bullmq-job-executor.ts` now observes that promise and waits for all connections to settle in `close()`; clean on repeated and full runs (see [Testing](Phase_10_Testing.md)) |
+| No latency measurements existed (Section 213) | Measured and recorded in [Testing](Phase_10_Testing.md#performance-section-213) |
+| `docs/prompts/Phase_10_Prompt.md` was cut off mid-Section 240 and had ~2,500 lines of a pasted session transcript appended | Transcript removed; Section 240 completed; closing sections reconstructed from the fixed template of prior phases, marked as reconstructed (same approach as Phase 9's prompt) |
+
 ## A behavior worth knowing, not a bug
 
 **An orchestrator that declares no tools of its own silently gives every delegated

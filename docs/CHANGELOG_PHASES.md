@@ -11,10 +11,24 @@
 | 07 — Enterprise Security & HITL | Framework-independent `@gixcopilot/security` (AI Action Firewall, RBAC + ABAC policy engine, five-level HITL approval state machine, dry-run/preview, PII redaction, rate limiting, audit trail), enforced in `@gixcopilot/server`'s tool-calling dispatch step for backend/frontend/direct-invoked actions alike, `ApprovalCard`/`SecurityDenial` UI, enterprise example spanning every risk/approval tier verified live over real HTTP | [Phase 7](phases/phase-07/Phase_7_Docs.md) |
 | 08 — OpenAPI + MCP + Integrations | `@gixcopilot/openapi` (spec -> canonical tool generation with conservative exposure defaults, an SSRF-safe HTTP executor, and no second approval mechanism), `@gixcopilot/mcp` (official SDK wrapped behind project-owned types, deny-by-default exposure), `@gixcopilot/integrations` (uniform integration registry); `jsonSchemaToZod`/`toToolNameSegment`/`CredentialProvider` promoted into `@gixcopilot/tools` as shared primitives; `examples/openapi` and `examples/mcp` prove the full Model -> Generated Tool -> real execution chain end to end | [Phase 8](phases/phase-08/Phase_8_Docs.md) |
 | 09 — Knowledge + RAG + Memory | `@gixcopilot/knowledge` (source/document/loader contracts: text/markdown/PDF/DOCX/HTML/web/API/database/object-storage/MCP-resource, SSRF-guarded web loading), `@gixcopilot/rag` (chunking, embeddings, storage-agnostic `VectorStore`, permission-aware retrieval with SQL + application ACL/tenant filtering, reranking, citations, Context Engine integration), `@gixcopilot/vectorstore-pgvector` (PostgreSQL + pgvector adapter, SQL-level ACL enforcement, atomic reindex), `@gixcopilot/memory` (working/session/durable/semantic memory, owner+tenant security, credential write-policy, explicit-consent persistence service); `useCitations`/`<Citation />`/`<CitationList />`/`<SourcePreview />` added with no react/ui -> rag/memory dependency; `examples/react-rag` proves permission-aware RAG, memory precedence, MCP-resource ingestion and prompt-injection containment end to end, verified against real OpenAI + real pgvector | [Phase 9](phases/phase-09/Phase_9_Docs.md) |
+| 10 — Agents + Multi-Agent + Workflows | `@gixcopilot/agents` (`defineAgent`, registry, runtime with iteration/tool/delegation/depth/timeout limits and cancellation, deterministic + model routing, delegation and handoff with least-privilege tool/knowledge/memory intersection, same-turn parallel specialists with fail-fast/collect-results, planner/executor with plan validation, OpenTelemetry spans), `@gixcopilot/workflows` (function/tool/agent/approval/condition/parallel steps, DAG validation, checkpoints, version-checked idempotent resume, re-authorization on resume, retry, compensation, tenant isolation, Phase 7 approvals reused), `@gixcopilot/checkpoint-postgres` (Drizzle/Postgres checkpoint store with optimistic concurrency), `@gixcopilot/jobs` (BullMQ executor + dead-letter behind a `JobExecutor` port; inline default); agent/workflow progress hooks in `@gixcopilot/react`; `agent-basic`, `multi-agent`, `workflow-approval` examples verified against real OpenAI, plus a deterministic `workflow-compensation` example | [Phase 10](phases/phase-10/Phase_10_Docs.md) |
 
 The authoritative completion state is [PROJECT_STATUS.md](PROJECT_STATUS.md).
-Phase 10 and later remain locked/not started. This file records phases, not npm releases;
+Phase 11 and later are recorded here once complete. This file records phases, not npm releases;
 the workspace packages remain private.
+
+## Phase 10 completion review
+
+Fixed a broken `pnpm-workspace.yaml` placeholder that hard-failed `pnpm install`. Closed gaps
+in the prior draft: knowledge/memory narrowing on delegation was declared but never enforced,
+parallel specialist dispatch did not exist, `@gixcopilot/jobs` had no tests, and there was no
+OpenTelemetry instrumentation, React progress hooks, examples, or phase documents. A prompt
+audit then added a real-model mode to `multi-agent`, fixed its payment tool to take the
+caller from trusted context rather than model arguments (found by a real OpenAI run), recorded
+performance measurements, added the missing compensation example, fixed an intermittent
+unhandled rejection in the BullMQ executor's `close()`, and repaired the truncated Phase 10
+prompt file. All three examples
+pass against real OpenAI.
 
 ## Phase 9 completion review
 

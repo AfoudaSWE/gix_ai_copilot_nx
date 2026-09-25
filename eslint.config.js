@@ -49,6 +49,7 @@ import eslintConfigPrettier from 'eslint-config-prettier';
  * depend on all of these; react may depend on protocol + client + context + tools +
  * generative-ui; examples may depend on anything. This is the executable form of the
  * dependency-direction diagram in docs/architecture/overview.md.
+ * Telemetry depends only on protocol and itself; examples may use telemetry.
  */
 export default tseslint.config(
   {
@@ -170,6 +171,7 @@ export default tseslint.config(
                 'scope:security',
                 'scope:provider',
                 'scope:provider-adapter',
+                'scope:telemetry',
                 'scope:agents',
               ],
             },
@@ -181,8 +183,13 @@ export default tseslint.config(
                 'scope:tools',
                 'scope:security',
                 'scope:agents',
+                'scope:telemetry',
                 'scope:workflows',
               ],
+            },
+            {
+              sourceTag: 'scope:telemetry',
+              onlyDependOnLibsWithTags: ['scope:protocol', 'scope:telemetry'],
             },
             {
               sourceTag: 'scope:jobs',
@@ -199,6 +206,7 @@ export default tseslint.config(
             {
               sourceTag: 'scope:server',
               onlyDependOnLibsWithTags: [
+                'scope:telemetry',
                 'scope:protocol',
                 'scope:core',
                 'scope:server',
@@ -239,6 +247,7 @@ export default tseslint.config(
                 'scope:memory',
                 'scope:agents',
                 'scope:workflows',
+                'scope:telemetry',
                 'scope:jobs',
                 'scope:checkpoint-postgres',
                 'scope:example',

@@ -4,15 +4,34 @@
     "composite": true,
     "rootDir": "src",
     "outDir": "dist",
-    "types": ["node"]
+    "types": [
+      "node"
+    ]
   },
-  "include": ["src/**/*.ts"],
+  "include": [
+    "src/**/*.ts"
+  ],
   "references": [
-    { "path": "../protocol" },
-    { "path": "../core" },
-    { "path": "../tools" },
-    { "path": "../security" },
-    { "path": "../providers/provider-core" },
-    { "path": "../providers/mock" }
+    {
+      "path": "../protocol"
+    },
+    {
+      "path": "../core"
+    },
+    {
+      "path": "../tools"
+    },
+    {
+      "path": "../security"
+    },
+    {
+      "path": "../providers/provider-core"
+    },
+    {
+      "path": "../providers/mock"
+    },
+    {
+      "path": "../telemetry"
+    }
   ]
 }

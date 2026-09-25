@@ -19,7 +19,7 @@ Phase 07 - Enterprise Security & HITL          COMPLETE
 Phase 08 - OpenAPI + MCP + Integrations        COMPLETE
 Phase 09 - Knowledge + RAG + Memory            COMPLETE
 Phase 10 - Agents + Multi-Agent + Workflows    COMPLETE
-Phase 11 - DevTools + Testing + Evals + Obs.   NOT STARTED / LOCKED
+Phase 11 - DevTools + Testing + Evals + Obs.   IN PROGRESS
 Phase 12 - Production Platform + Ecosystem     NOT STARTED / LOCKED
 ```
 
@@ -347,6 +347,21 @@ delegation in `multi-agent`'s event log and a real pause/approve/resume state mu
 (`OPENAI_API_KEY` unavailable in this environment) — disclosed explicitly, not assumed. The
 Chromium/Playwright browser suite was not re-run this session (no Phase 10 browser UI was
 added to it; its lint/typecheck targets were re-run and pass).
+
+## Phase 10 prompt-completeness audit (2026-09-25)
+
+An audit of `docs/prompts/Phase_10_Prompt.md` against the repository closed the remaining
+gaps: `examples/multi-agent` gained a real-OpenAI mode and its `payments.get` now takes the
+caller from trusted context instead of a model-supplied user id (a real run had the model
+invent one); `examples/workflow-compensation` was added (Section 175); latency was measured
+(Section 213); an intermittent unhandled rejection in `@gixcopilot/jobs`' `close()` was
+fixed; `CHANGELOG_PHASES.md`/`TECHNICAL_DEBT.md` gained their missing Phase 10 entries; and the
+truncated prompt file was repaired. **All three model-using examples passed against real
+OpenAI (`gpt-4o-mini`).** Fresh `nx run-many -t lint,typecheck,test,build --skip-nx-cache`:
+41/41 projects pass, **1154 tests passed, 4 skipped (optional OpenAI smoke tests), 0
+failed**, with Docker available so the Redis/Postgres Testcontainers suites ran for real.
+This ran on a working tree that also contains in-progress Phase 11 changes. See
+[Phase 10 Testing](phases/phase-10/Phase_10_Testing.md).
 
 ## Current Validation (Phase 9 completion)
 

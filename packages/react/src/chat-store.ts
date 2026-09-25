@@ -2,6 +2,7 @@ import type { ClientModelReference, ClientRun, CopilotClient } from '@gixcopilot
 import { CopilotError, createMessageId, createThreadId } from '@gixcopilot/protocol';
 import type { CopilotEvent, PublicCopilotError, ToolResult, ToolManifestEntry } from '@gixcopilot/protocol';
 import type { ToolRuntime } from '@gixcopilot/tools';
+import type { ResolvedContext } from '@gixcopilot/context';
 import type {
   AgentHandoffState,
   AgentRunState,
@@ -9,6 +10,7 @@ import type {
   ChatSnapshot,
   CopilotAccess,
   CopilotMessage,
+  ResolvedContextSummary,
   ToolCallState,
   WorkflowRunState,
   WorkflowStepState,
@@ -43,12 +45,11 @@ interface ChatStore {
 }
 
 /**
- * Resolves Phase 4 application context (if any) into a single content string to prepend as
+ * Resolves Phase 4 application context (if any) to prepend its content as
  * a leading `system` message, or `undefined` when there is nothing to add - so a provider
  * with no registered context sends exactly the same request Phase 3 always sent (Section
- * 64). Deliberately typed as a plain function, not a `@gixcopilot/context` type: this file
- * stays free of any context-package import, and `provider.tsx` is the only place that
- * bridges the two (Section 33's "structured system message" placement decision - see
+ * 64). The provider bridges its context engine into this function (Section 33's
+ * "structured system message" placement decision - see
  * docs/adr/0009-context-and-state-architecture.md).
  *
  * May return synchronously (`undefined`, when nothing is registered) instead of a `Promise`
@@ -56,7 +57,17 @@ interface ChatStore {
  * items dispatches `client.run()` on the exact same tick Phase 3 always did, not one
  * microtask later.
  */
-export type ResolveContextMessage = () => Promise<string | undefined> | string | undefined;
+export type ResolveContextMessage = () => Promise<ResolvedContext | undefined> | ResolvedContext | undefined;
+
+function summarizeContext(resolved: ResolvedContext): ResolvedContextSummary {
+  return {
+    items: resolved.items.map(({ id, name, scope, priority, sensitivity, estimatedTokens, truncated }) =>
+      ({ id, name, scope, priority, sensitivity, estimatedTokens, truncated })),
+    excluded: resolved.excluded.map(({ id, name, scope, reason }) => ({ id, name, scope, reason })),
+    estimatedTokens: resolved.estimatedTokens,
+    diagnostics: { ...resolved.diagnostics },
+  };
+}
 
 /** Internal presentation store. Transport and runtime behavior stay in the client. */
 export function createChatStore(
@@ -515,8 +526,10 @@ export function createChatStore(
     try {
       if (active !== token || !enabled) return;
       const contextResult = resolveContextMessage?.();
-      const contextContent = contextResult instanceof Promise ? await contextResult : contextResult;
+      const resolvedContext = contextResult instanceof Promise ? await contextResult : contextResult;
       if (active !== token) return; // Re-check: stop()/a new send may have run during the await.
+      if (resolvedContext) publish({ ...state, contextDiagnostics: summarizeContext(resolvedContext) });
+      const contextContent = resolvedContext?.content;
       const historyMessages = history.map(({ role, content }) => ({ role, content }));
       const messages = contextContent
         ? [{ role: 'system' as const, content: [{ type: 'text' as const, text: contextContent }] }, ...historyMessages]
@@ -576,6 +589,7 @@ export function createChatStore(
       runId: null,
       usage: undefined,
       finishReason: undefined,
+      contextDiagnostics: undefined,
       toolCalls: [],
       approvals: [],
       agentRuns: [],

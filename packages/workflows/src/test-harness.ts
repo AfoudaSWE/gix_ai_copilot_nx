@@ -3,6 +3,7 @@ import type { AnyToolDefinition, ToolResolver, ToolRuntime, ToolRuntimeMiddlewar
 import { createInMemoryApprovalStore } from '@gixcopilot/security';
 import type { ApprovalStore } from '@gixcopilot/security';
 import type { AgentRuntime } from '@gixcopilot/agents';
+import type { TelemetryAdapter } from '@gixcopilot/telemetry';
 import { createInMemoryCheckpointStore } from './checkpoint.js';
 import type { CheckpointStore } from './checkpoint.js';
 import { createInlineJobExecutor } from './jobs.js';
@@ -19,6 +20,7 @@ export interface CreateWorkflowTestHarnessOptions {
   readonly agentRuntime?: AgentRuntime;
   readonly checkpointStore?: CheckpointStore;
   readonly retryPolicy?: RetryPolicy;
+  readonly telemetry?: TelemetryAdapter;
 }
 
 export interface WorkflowTestHarness {
@@ -47,6 +49,7 @@ export function createWorkflowTestHarness(options: CreateWorkflowTestHarnessOpti
     agentRuntime: options.agentRuntime,
     approvals,
     retryPolicy: options.retryPolicy,
+    telemetry: options.telemetry,
   });
   for (const workflow of options.workflows) engine.register(workflow);
 

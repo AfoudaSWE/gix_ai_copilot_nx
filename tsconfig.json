@@ -41,6 +41,9 @@
       "path": "packages/workflows"
     },
     {
+      "path": "packages/telemetry"
+    },
+    {
       "path": "packages/checkpoint-postgres"
     },
     {
@@ -81,6 +84,9 @@
     },
     {
       "path": "examples/workflow-approval"
+    },
+    {
+      "path": "examples/workflow-compensation"
     },
     {
       "path": "packages/react"

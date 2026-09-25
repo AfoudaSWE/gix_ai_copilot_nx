@@ -1,6 +1,7 @@
 import { CopilotError, createRunId, createThreadId, createToolCallId } from '@gixcopilot/protocol';
 import type { PublicCopilotError } from '@gixcopilot/protocol';
-import type { Context } from '@opentelemetry/api';
+import { METRICS, SPAN_NAMES, recordRun, withTelemetryMetadata } from '@gixcopilot/telemetry';
+import type { SpanHandle, TelemetryAdapter } from '@gixcopilot/telemetry';
 import type { ToolRuntime } from '@gixcopilot/tools';
 import type { AgentRuntime } from '@gixcopilot/agents';
 import type { ApprovalStore, SecurityContext } from '@gixcopilot/security';
@@ -37,10 +38,11 @@ import {
   workflowStepStartedEvent,
 } from './events.js';
 import type { WorkflowEventCorrelation, WorkflowEventListener } from './events.js';
-import { endSpanError, endSpanOk, recordHistoricalSpan, rootOtelContext, startChildSpan } from './tracing.js';
+import { defaultWorkflowTelemetry, endSpanError, endSpanOk, recordHistoricalSpan, startChildSpan } from './tracing.js';
 import type { WorkflowSpanCorrelation } from './tracing.js';
 
 export interface CreateWorkflowEngineOptions {
+  readonly telemetry?: TelemetryAdapter;
   readonly checkpointStore?: CheckpointStore;
   readonly jobExecutor?: JobExecutor;
   /** Required only if any registered workflow has a `'tool'` step. Every real tool call
@@ -147,6 +149,8 @@ function withStepRecord(
  * scratch (Section 110, 198, 209).
  */
 export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}): WorkflowEngine {
+  const telemetry = options.telemetry ?? defaultWorkflowTelemetry;
+  const metric = (name: string, value = 1): void => telemetry.recordMetric({ name, kind: 'counter', value, attributes: {} });
   const checkpointStore = options.checkpointStore ?? createInMemoryCheckpointStore();
   const jobExecutor = options.jobExecutor ?? createInlineJobExecutor();
   const retryPolicy = options.retryPolicy ?? DEFAULT_WORKFLOW_RETRY_POLICY;
@@ -192,7 +196,7 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
     correlation: WorkflowEventCorrelation,
     emit: WorkflowEventListener,
     sequence: () => number,
-    otelContext: Context,
+    parentSpan: SpanHandle | undefined,
     spanCorrelation: WorkflowSpanCorrelation,
   ): Promise<{ checkpoint: WorkflowCheckpoint<TState>; paused: boolean }> {
     const priorAttempt = stepRecord(checkpoint.steps, step.id)?.attempt ?? 0;
@@ -205,7 +209,8 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
     }
 
     emit(workflowStepStartedEvent(correlation, sequence(), checkpoint.workflowRunId, step.id, step.type, attempt));
-    const stepSpan = startChildSpan('workflow.step', otelContext, spanCorrelation, {
+    metric(METRICS.workflowSteps);
+    const stepSpan = startChildSpan(telemetry, SPAN_NAMES.workflowStep, parentSpan, spanCorrelation, {
       'copilot.step_id': step.id,
       'copilot.step_type': step.type,
       'copilot.attempt': attempt,
@@ -214,19 +219,19 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
     try {
       if (step.type === 'approval') {
         const outcome = await runApprovalStep(checkpoint, step, context, correlation, emit, sequence, attempt);
-        endSpanOk(stepSpan.span);
+        endSpanOk(stepSpan);
         return outcome;
       }
 
-      const newState = await runStepBody(step, context, stepSpan.context);
+      const newState = await runStepBody(step, context, stepSpan);
       const steps = withStepRecord(checkpoint.steps, step.id, 'completed', attempt);
       const saved = await saveCheckpoint({ ...checkpoint, state: newState, steps });
       emit(workflowCheckpointSavedEvent(correlation, sequence(), checkpoint.workflowRunId, step.id, saved.version));
       emit(workflowStepCompletedEvent(correlation, sequence(), checkpoint.workflowRunId, step.id, attempt));
-      endSpanOk(stepSpan.span);
+      endSpanOk(stepSpan);
       return { checkpoint: saved, paused: false };
     } catch (caught) {
-      endSpanError(stepSpan.span, caught);
+      endSpanError(stepSpan, caught);
       const error = CopilotError.isCopilotError(caught)
         ? caught
         : CopilotError.workflowStepExecutionError(caught instanceof Error ? caught.message : String(caught), {
@@ -246,10 +251,11 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
       );
 
       if (retryable) {
+        metric(METRICS.workflowRetries);
         const steps = withStepRecord(checkpoint.steps, step.id, 'pending', attempt, error.toPublicJSON());
         const saved = await saveCheckpoint({ ...checkpoint, steps });
         await sleep(computeStepBackoffMs(retryPolicy, attempt), context.signal);
-        return runStepJob(definition, saved, step, context, correlation, emit, sequence, otelContext, spanCorrelation);
+        return runStepJob(definition, saved, step, context, correlation, emit, sequence, parentSpan, spanCorrelation);
       }
 
       const steps = withStepRecord(checkpoint.steps, step.id, 'failed', attempt, error.toPublicJSON());
@@ -261,15 +267,15 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
   async function runStepBody<TState>(
     step: WorkflowStep<TState>,
     context: WorkflowStepContext<TState>,
-    otelContext: Context,
+    parentSpan: SpanHandle | undefined,
   ): Promise<TState> {
     switch (step.type) {
       case 'function':
         return runFunctionStep(step, context);
       case 'tool':
-        return runToolStep(step, context, false);
+        return runToolStep(step, context, false, parentSpan);
       case 'agent':
-        return runAgentStep(step, context, otelContext);
+        return runAgentStep(step, context, parentSpan);
       case 'condition':
         return runConditionStep(step, context);
       case 'parallel':
@@ -291,6 +297,7 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
     step: ToolStep<TState>,
     context: WorkflowStepContext<TState>,
     compensating: boolean,
+    parentSpan?: SpanHandle,
   ): Promise<TState> {
     if (!options.toolRuntime) {
       throw CopilotError.workflowStepExecutionError('No ToolRuntime was configured for a tool step.', {
@@ -305,7 +312,7 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
       context: {
         runId: context.workflowRunId,
         signal: context.signal,
-        metadata: { securityContext: context.securityContext },
+        metadata: withTelemetryMetadata({ securityContext: context.securityContext }, { correlation: { runId: context.workflowRunId, tenantId: context.securityContext.tenant?.tenantId }, parentSpan }),
       },
     });
     if (result.status === 'error') {
@@ -320,7 +327,7 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
   async function runAgentStep<TState>(
     step: AgentStep<TState>,
     context: WorkflowStepContext<TState>,
-    otelContext: Context,
+    parentSpan: SpanHandle | undefined,
   ): Promise<TState> {
     if (!options.agentRuntime) {
       throw CopilotError.workflowStepExecutionError('No AgentRuntime was configured for an agent step.', {
@@ -336,7 +343,7 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
       // 151's "Agent Step > Agent Run") - `AgentRunOptions.otelParentContext` is an internal
       // field `@gixcopilot/agents` itself only ever sets on delegation/handoff, but nothing
       // stops a trusted host (this engine) from setting it too.
-      otelParentContext: otelContext,
+      parentSpan,
     });
     if (result.status !== 'completed') {
       throw new CopilotError(
@@ -405,6 +412,7 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
   }
 
   async function saveCheckpoint<TState>(checkpoint: WorkflowCheckpoint<TState>): Promise<WorkflowCheckpoint<TState>> {
+    metric(METRICS.workflowCheckpoints);
     return checkpointStore.save({ ...checkpoint, updatedAt: new Date().toISOString() });
   }
 
@@ -418,6 +426,7 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
   ): Promise<void> {
     const plan = buildCompensationPlan(definition.steps, checkpoint.steps);
     for (const step of plan) {
+      metric(METRICS.workflowCompensations);
       emit(workflowStepStartedEvent(correlation, sequence(), checkpoint.workflowRunId, step.id, 'tool', 1, 'compensation'));
       try {
         await runToolStep(step as ToolStep<TState>, context, true);
@@ -475,16 +484,21 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
     // span per continuous IN-PROCESS execution segment, not a single span for the run's entire
     // lifetime; every segment still carries the same `copilot.run_id` correlation attribute,
     // so they remain joinable in a trace backend even though not literally one span tree.
-    const runSpan = startChildSpan('workflow.run', rootOtelContext(), spanCorrelation, {
+    const runSpan = startChildSpan(telemetry, SPAN_NAMES.workflowRun, undefined, spanCorrelation, {
       'copilot.workflow_version': definition.version,
     });
+    const startedAt = Date.now();
+    const report = (phase: 'started' | 'completed' | 'failed' | 'cancelled', error?: PublicCopilotError): void =>
+      recordRun(telemetry, { kind: 'workflow', phase, correlation: { runId: checkpoint.workflowRunId, tenantId: checkpoint.tenantId }, label: definition.id, latencyMs: phase === 'started' ? undefined : Date.now() - startedAt, error });
+    report('started');
 
     while (true) {
       if (signal.aborted) {
         const steps = checkpoint.steps;
         checkpoint = await saveCheckpoint({ ...checkpoint, status: 'cancelled', steps });
         emit(workflowRunCancelledEvent(correlation, sequence(), checkpoint.workflowId, checkpoint.workflowRunId));
-        endSpanError(runSpan.span, new Error('Workflow run cancelled.'));
+        endSpanError(runSpan, new Error('Workflow run cancelled.'));
+        report('cancelled');
         return checkpoint;
       }
 
@@ -493,7 +507,8 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
         const output = definition.toOutput ? definition.toOutput(checkpoint.state) : checkpoint.state;
         checkpoint = await saveCheckpoint({ ...checkpoint, status: 'completed', state: output as TState });
         emit(workflowRunCompletedEvent(correlation, sequence(), checkpoint.workflowId, checkpoint.workflowRunId));
-        endSpanOk(runSpan.span);
+        endSpanOk(runSpan);
+        report('completed');
         return checkpoint;
       }
 
@@ -515,7 +530,7 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
             correlation,
             emit,
             sequence,
-            runSpan.context,
+            runSpan,
             spanCorrelation,
           );
         } else {
@@ -530,7 +545,7 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
               correlation,
               emit,
               sequence,
-              runSpan.context,
+              runSpan,
               spanCorrelation,
             );
           });
@@ -547,13 +562,14 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
 
         checkpoint = await saveCheckpoint({ ...failed, status: 'failed', error });
         emit(workflowRunFailedEvent(correlation, sequence(), checkpoint.workflowId, checkpoint.workflowRunId, error));
-        endSpanError(runSpan.span, caught);
+        endSpanError(runSpan, caught);
+        report('failed', error);
         return checkpoint;
       }
 
       checkpoint = outcome.checkpoint;
       if (outcome.paused) {
-        endSpanOk(runSpan.span);
+        endSpanOk(runSpan);
         return checkpoint;
       }
     }
@@ -567,7 +583,7 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
     correlation: WorkflowEventCorrelation,
     emit: WorkflowEventListener,
     sequence: () => number,
-    otelContext: Context,
+    parentSpan: SpanHandle | undefined,
     spanCorrelation: WorkflowSpanCorrelation,
   ): Promise<{ checkpoint: WorkflowCheckpoint<TState>; paused: boolean }> {
     const byId = new Map(definition.steps.map((candidate) => [candidate.id, candidate as WorkflowStep<TState>]));
@@ -578,7 +594,7 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
     // this runtime except that `'fail-fast'` is the illustrative default (Section 96).
     const attempt = (stepRecord(checkpoint.steps, step.id)?.attempt ?? 0) + 1;
     emit(workflowStepStartedEvent(correlation, sequence(), checkpoint.workflowRunId, step.id, 'parallel', attempt));
-    const parallelSpan = startChildSpan('workflow.step', otelContext, spanCorrelation, {
+    const parallelSpan = startChildSpan(telemetry, SPAN_NAMES.workflowStep, parentSpan, spanCorrelation, {
       'copilot.step_id': step.id,
       'copilot.step_type': 'parallel',
       'copilot.attempt': attempt,
@@ -589,17 +605,17 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
         const branchStep = byId.get(branchId);
         if (!branchStep) throw CopilotError.workflowStepNotFound(branchId);
         const branchContext: WorkflowStepContext<TState> = { ...context, state: checkpoint.state };
-        const branchSpan = startChildSpan('workflow.step', parallelSpan.context, spanCorrelation, {
+        const branchSpan = startChildSpan(telemetry, SPAN_NAMES.workflowStep, parallelSpan, spanCorrelation, {
           'copilot.step_id': branchId,
           'copilot.step_type': branchStep.type,
           'copilot.parallel_branch_of': step.id,
         });
         try {
-          const result = await runStepBody(branchStep, branchContext, branchSpan.context);
-          endSpanOk(branchSpan.span);
+          const result = await runStepBody(branchStep, branchContext, branchSpan);
+          endSpanOk(branchSpan);
           return result;
         } catch (error) {
-          endSpanError(branchSpan.span, error);
+          endSpanError(branchSpan, error);
           throw error;
         }
       }),
@@ -638,14 +654,14 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
       emit(
         workflowStepFailedEvent(correlation, sequence(), checkpoint.workflowRunId, step.id, attempt, firstError.toPublicJSON(), false),
       );
-      endSpanError(parallelSpan.span, firstError);
+      endSpanError(parallelSpan, firstError);
       throw Object.assign(firstError, { __checkpoint: saved });
     }
 
     const steps = withStepRecord(current.steps, step.id, 'completed', attempt);
     const saved = await saveCheckpoint({ ...current, state: mergedState, steps });
     emit(workflowStepCompletedEvent(correlation, sequence(), checkpoint.workflowRunId, step.id, attempt));
-    endSpanOk(parallelSpan.span);
+    endSpanOk(parallelSpan);
     return { checkpoint: saved, paused: false };
   }
 
@@ -726,14 +742,16 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
         // retroactively now that the real decision timestamp is known, using the persisted
         // `ApprovalRequest`'s own timestamps rather than "now".
         recordHistoricalSpan(
-          'workflow.approval_wait',
-          rootOtelContext(),
+          telemetry,
+          SPAN_NAMES.approvalWait,
+          undefined,
           { workflowRunId: existing.workflowRunId, workflowId: existing.workflowId, tenantId: existing.tenantId },
           new Date(approval.createdAt),
           new Date(approval.approvals.at(-1)?.at ?? Date.now()),
-          { 'copilot.step_id': existing.pendingApproval.stepId, 'copilot.approval_status': approval.status },
+          { 'copilot.step_id': existing.pendingApproval.stepId, 'copilot.approval_id': existing.pendingApproval.approvalId, 'copilot.approval_status': approval.status },
           approval.status === 'approved',
         );
+        telemetry.recordMetric({ name: METRICS.approvalWaitMs, kind: 'histogram', value: Math.max(0, new Date(approval.approvals.at(-1)?.at ?? Date.now()).getTime() - new Date(approval.createdAt).getTime()), attributes: { 'copilot.workflow_id': existing.workflowId } });
         seq += 1;
         if (approval.status === 'approved') {
           const steps = withStepRecord(existing.steps, existing.pendingApproval.stepId, 'completed', stepRecord(existing.steps, existing.pendingApproval.stepId)?.attempt ?? 1);
@@ -748,6 +766,7 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
           await runCompensation(definition, withFailedStep, context, correlation, (event) => resumeOptions.onEvent?.(event), () => { seq += 1; return seq; });
           checkpoint = await checkpointStore.save({ ...withFailedStep, status: approval.status === 'cancelled' ? 'cancelled' : 'failed', error, pendingApproval: undefined });
           resumeOptions.onEvent?.(workflowRunFailedEvent(correlation, seq, checkpoint.workflowId, checkpoint.workflowRunId, error));
+          recordRun(telemetry, { kind: 'workflow', phase: checkpoint.status === 'cancelled' ? 'cancelled' : 'failed', correlation: { runId: workflowRunId, tenantId: checkpoint.tenantId }, label: checkpoint.workflowId, error });
           return checkpoint;
         }
       } else {
@@ -767,7 +786,9 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
       if (existing.pendingApproval && options.approvals) {
         await options.approvals.cancel(existing.pendingApproval.approvalId).catch(() => undefined);
       }
-      return checkpointStore.save({ ...existing, status: 'cancelled' });
+      const cancelled = await checkpointStore.save({ ...existing, status: 'cancelled' });
+      recordRun(telemetry, { kind: 'workflow', phase: 'cancelled', correlation: { runId: workflowRunId, tenantId: existing.tenantId }, label: existing.workflowId });
+      return cancelled;
     },
 
     async getCheckpoint(workflowRunId, securityContext) {

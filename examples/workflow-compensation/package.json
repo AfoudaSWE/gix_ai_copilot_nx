@@ -1,0 +1,24 @@
+{
+  "name": "@gixcopilot/workflow-compensation-demo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Phase 10 demonstration: workflow compensation (@gixcopilot/workflows) - reserve inventory, charge payment, a shipment that fails, then refund and release in reverse order, every step and compensation through the Action Firewall.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "typecheck": "tsc -b tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint src",
+    "demo": "tsc -b tsconfig.json && node dist/main.js"
+  },
+  "dependencies": {
+    "@gixcopilot/protocol": "workspace:*",
+    "@gixcopilot/security": "workspace:*",
+    "@gixcopilot/tools": "workspace:*",
+    "@gixcopilot/workflows": "workspace:*",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "vitest": "5.0.1"
+  }
+}

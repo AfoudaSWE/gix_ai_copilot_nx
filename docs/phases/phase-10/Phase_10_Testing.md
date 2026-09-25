@@ -97,11 +97,90 @@ deterministic mock provider:
   supervisor approval was granted, `resume()` correctly completed the run and applied the
   real state mutation (`APP-1024` → `approved`).
 
-## Not run this session (disclosed, not assumed)
+## Prompt-completeness audit validation (2026-09-25)
 
-- **No example was run against a real OpenAI model.** `OPENAI_API_KEY` was not available in
-  this environment. Every example supports `MODEL_PROVIDER=openai`/`OPENAI_API_KEY`
-  (Section 168-169, 210-212) but this specific run was not exercised live.
+```sh
+npx nx run-many -t lint,typecheck,test,build --skip-nx-cache   # 41 projects
+```
+
+**41/41 projects pass lint, typecheck, test and build. 1154 Vitest tests passed, 4
+skipped, 0 failed.** The 4 skipped tests are the optional real-OpenAI smoke tests, which need
+a key in the environment. Docker was running, so the `jobs` and `checkpoint-postgres`
+Testcontainers suites ran against real Redis and Postgres.
+
+The first two full runs failed `jobs:test` with an unhandled ioredis `Connection is closed`
+rejection, while all 9 `jobs` tests passed. `bullmq-job-executor.ts` started
+`worker.waitUntilReady()` eagerly but only `schedule()` awaited it, so closing an executor
+before its connections were ready leaked a rejection. Fixed by observing that promise and by
+waiting for all three connections to settle in `close()`. After the fix, three isolated
+`jobs` runs, a 30-iteration create/close stress test and the full run above were clean.
+Because the full-load failure was intermittent, one clean full run supports the fix but does
+not prove it.
+
+`examples/workflow-compensation` demo (mock-free, deterministic): the shipment failed, then
+`[compensation] charge-payment` and `[compensation] reserve-inventory` ran in that order;
+stock returned to 10; the ledger shows the charge and the refund; no shipment created.
+
+## Real OpenAI runs (Section 210-212)
+
+Run manually during the prompt-completeness audit (2026-09-25) with
+`MODEL_PROVIDER=openai`, `gpt-4o-mini`, and the key from the git-ignored example `.env`.
+Automated tests still use only the mock provider.
+
+```sh
+MODEL_PROVIDER=openai OPENAI_API_KEY=sk-... pnpm --filter @gixcopilot/agent-basic-demo demo
+MODEL_PROVIDER=openai OPENAI_API_KEY=sk-... pnpm --filter @gixcopilot/multi-agent-demo demo
+MODEL_PROVIDER=openai OPENAI_API_KEY=sk-... pnpm --filter @gixcopilot/workflow-approval-demo demo
+```
+
+| Example | Result | Wall time (incl. `tsc -b` + Node start) |
+| --- | --- | --- |
+| agent-basic (Section 210) | **PASS** — completed; answer grounded in the tool result ("APP-1024 is currently under review ... Jordan Miles") | 7.9 s |
+| multi-agent (Section 211) | **PASS** (after fix) — orchestrator fanned out to all three specialists in one turn; all three delegations completed; answer combined application status, verified card payment, and approval policy | 7.5 s |
+| workflow-approval (Section 212) | **PASS** — real model only in the agent step; deterministic validate → agent → payment → prepare → paused at approval → approved → resumed → update → completed | 4.5 s |
+
+The first multi-agent run surfaced a real defect: `payments.get` took `userId` from model
+arguments, and the real model invented `user-123` for "verify my payment", so the lookup
+found nothing. Identity must come from the trusted runtime context (Section 14, 59, 185), so
+the tool now reads the caller from the `executionContext` the agent runtime attaches to every
+tool call, and ignores any model-supplied id. A new test in
+`examples/multi-agent/src/integration.spec.ts` passes a forged `userId: 'user-999'` and
+asserts the trusted caller's record is returned. The re-run returned the correct verified
+payment.
+
+## Performance (Section 213)
+
+In-process, deterministic mock provider (no network), Node 22.15.0, Windows 11; built
+`dist/` output; 10 warm-up iterations then n samples. Measures SDK overhead, not model
+latency.
+
+| Measurement | n | p50 | p95 |
+| --- | --- | --- | --- |
+| Agent startup (new registry + runtime) + single text-only run | 200 | 0.065 ms | 0.153 ms |
+| Agent run: model → tool → model | 200 | 0.121 ms | 0.231 ms |
+| Delegation A → B → A | 200 | 0.178 ms | 0.396 ms |
+| 3 specialists, 50 ms model each, **parallel** (one turn) | 30 | 63.7 ms | 66.6 ms |
+| 3 specialists, 50 ms model each, **sequential** (three turns) | 30 | 180.6 ms | 193.7 ms |
+| Workflow: 10 function steps, checkpointed after each | 200 | 0.253 ms | 0.707 ms |
+| In-memory checkpoint save (CAS) + load | 200 | 0.001 ms | 0.001 ms |
+| Workflow start → pause at approval | 100 | 0.029 ms | 0.092 ms |
+| Resume after approval → tool step → complete | 50 | 0.067 ms | 0.154 ms |
+
+Runtime overhead is sub-millisecond everywhere; end-to-end latency is dominated by the
+model (the real runs above). Parallel delegation cuts three independent 50 ms specialists
+from ~181 ms to ~64 ms.
+
+Token usage (Section 214): the Phase 10 runtime as committed only passed `usage.updated`
+events through and did **not** aggregate usage per run. Per-run aggregation (`addUsage`, with
+each child run recording its own usage so the root does not double-count) arrives with the
+in-progress Phase 11 `@gixcopilot/telemetry` work, not Phase 10.
+
+## Not run (disclosed, not assumed)
+
+- **BullMQ job-queue latency and Postgres checkpoint/resume latency were not benchmarked.**
+  Docker was not running during the prompt-completeness audit, so the `jobs` and
+  `checkpoint-postgres` Testcontainers suites skipped there; they passed with Docker in the
+  earlier session (see above).
 - **The Chromium/Playwright browser suite (`react-e2e`) was not re-run this session** — no
   Phase 10 browser UI surface was added to it; its lint/typecheck targets were re-run above
   and pass.

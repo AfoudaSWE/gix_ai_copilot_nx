@@ -1,7 +1,9 @@
 import { createAgentRegistry, createAgentRuntime } from '@gixcopilot/agents';
+import type { AgentDefinition } from '@gixcopilot/agents';
 import type { CopilotEvent } from '@gixcopilot/protocol';
 import { createModelRuntime } from '@gixcopilot/provider';
 import { createMockProvider } from '@gixcopilot/provider-mock';
+import { createOpenAIProvider } from '@gixcopilot/provider-openai';
 import { createStaticToolResolver, createToolRuntime } from '@gixcopilot/tools';
 import { createPermissionAwareToolResolver } from '@gixcopilot/security';
 import type { SecurityContext } from '@gixcopilot/security';
@@ -55,9 +57,19 @@ function printEvent(event: CopilotEvent): void {
 }
 
 async function main(): Promise<void> {
+  const providerId = process.env['MODEL_PROVIDER'] ?? 'mock';
+  const openaiApiKey = process.env['OPENAI_API_KEY'];
+  const usingOpenAI = providerId === 'openai' && Boolean(openaiApiKey);
+  const modelName = usingOpenAI ? (process.env['MODEL_NAME'] ?? 'gpt-4o-mini') : 'mock-model';
+
+  // With a real model every agent routes through the one OpenAI provider (Section 168, 211);
+  // only the model selection changes - instructions, tools, and delegation stay as declared.
+  const withModel = (agent: AgentDefinition): AgentDefinition =>
+    usingOpenAI ? { ...agent, model: { provider: 'openai', model: modelName } } : agent;
+
   const registry = createAgentRegistry();
   for (const agent of [orchestratorAgent, applicationSpecialist, paymentSpecialist, knowledgeSpecialist]) {
-    registry.register(agent);
+    registry.register(withModel(agent));
   }
 
   // An admin identity - can see payment data. Swap for a bare 'viewer' with no permissions to
@@ -83,7 +95,7 @@ async function main(): Promise<void> {
             ? {
                 toolCalls: [
                   { id: 'd1', name: 'agent.delegate.application-specialist', arguments: { task: 'Check APP-1024 status' } },
-                  { id: 'd2', name: 'agent.delegate.payment-specialist', arguments: { task: 'Check payment verification for user-1' } },
+                  { id: 'd2', name: 'agent.delegate.payment-specialist', arguments: { task: 'Check my payment verification' } },
                   { id: 'd3', name: 'agent.delegate.knowledge-specialist', arguments: { task: 'Explain the approval policy' } },
                 ],
               }
@@ -104,7 +116,7 @@ async function main(): Promise<void> {
         id: 'payment-model',
         scenario: (attempt) =>
           attempt === 1
-            ? { toolCalls: [{ id: 'c2', name: 'payments.get', arguments: { userId: 'user-1' } }] }
+            ? { toolCalls: [{ id: 'c2', name: 'payments.get', arguments: {} }] }
             : { chunks: ['Payment is verified.'] },
       }),
       createMockProvider({
@@ -118,9 +130,10 @@ async function main(): Promise<void> {
                 ],
               },
       }),
+      ...(openaiApiKey ? [createOpenAIProvider({ apiKey: openaiApiKey })] : []),
     ],
-    defaultProvider: 'orchestrator-model',
-    defaultModel: 'mock-model',
+    defaultProvider: usingOpenAI ? 'openai' : 'orchestrator-model',
+    defaultModel: modelName,
   });
 
   const runtime = createAgentRuntime({ registry, modelRuntime, toolRuntime, toolResolver: resolver });
@@ -135,6 +148,7 @@ async function main(): Promise<void> {
 
   console.log(`\nStatus: ${result.status}`);
   if (result.status === 'completed') console.log(`Answer: ${String(result.output)}`);
+  if (result.status === 'failed') console.log(`Error: ${result.error?.code} - ${result.error?.message}`);
 }
 
 main().catch((error: unknown) => {

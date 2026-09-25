@@ -12,6 +12,7 @@
     { "path": "../core" },
     { "path": "../providers/provider-core" },
     { "path": "../tools" },
-    { "path": "../security" }
+    { "path": "../security" },
+    { "path": "../telemetry" }
   ]
 }
