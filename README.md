@@ -3,23 +3,18 @@
 A production-grade, TypeScript-first AI Copilot & Agent SDK. Framework-independent core,
 with React/Angular, Node.js server, and LLM provider adapters layered on top.
 
-> **Current status: Phase 6 — Generative UI & Shared State COMPLETE.** Phases 1–6 are
-> complete. Phase 4 added a framework-independent context/state engine
-> (`@gixcopilot/context`); Phase 5 added a canonical tool architecture
-> (`@gixcopilot/tools`) with backend/frontend tool calling; Phase 6 lets the model safely
-> drive UI (a trusted component registry, `@gixcopilot/generative-ui`) and propose
-> AI-writable state changes with revision/conflict handling — both carried entirely over
-> Phase 5's existing tool-calling pipeline, with no protocol/core/server/client/provider
-> change. There is still no Action Firewall, RBAC/HITL, OpenAPI/MCP integration, RAG, or
-> agents. The foundation remains a transport-independent protocol, a
-> framework-independent core runtime, an HTTP/SSE server, a streaming client, and a real
-> model execution layer (retry, timeout, cancellation, usage, latency, normalized errors)
-> proven against both a deterministic mock provider and real OpenAI streaming. See
-> [`docs/architecture/overview.md`](docs/architecture/overview.md),
-> [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md), and the [ADRs](docs/adr/) for the
-> reasoning behind these choices, and
+> **Current status: Phase 11 — DevTools + Testing + Evals + Observability COMPLETE.**
+> Phases 1–11 are complete; Phase 12 (production platform and ecosystem) is locked. On top of
+> the protocol, core runtime, server, client, model runtime, React SDK, context, tools and
+> generative UI, the SDK now has an Action Firewall with RBAC/ABAC and HITL approvals (Phase 7),
+> OpenAPI and MCP integrations (Phase 8), permission-aware RAG and memory (Phase 9), agents,
+> multi-agent orchestration and durable workflows (Phase 10), and telemetry, DevTools, a
+> deterministic testing SDK and an evaluation framework (Phase 11). Always check
+> [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) for authoritative phase state; see
+> [`docs/architecture/overview.md`](docs/architecture/overview.md) and the [ADRs](docs/adr/)
+> for the reasoning, and
 > [`.claude/skills/ai-copilot-project/SKILL.md`](.claude/skills/ai-copilot-project/SKILL.md)
-> for the full 12-phase roadmap and engineering standards.
+> for the 12-phase roadmap.
 
 ## Capabilities So Far
 
@@ -58,6 +53,19 @@ Client -> Server -> Core -> (default executor | Model Runtime -> Provider) -> SS
 - **`examples/react-context`** — application-aware chat example (Phase 4).
 - **`examples/react-tools`** — backend/frontend tool calling example (Phase 5).
 - **`examples/react-generative-ui`** — generative UI + AI-writable state example (Phase 6).
+- **Phases 7–10** — `@gixcopilot/security`, `openapi`, `mcp`, `integrations`, `knowledge`,
+  `rag`, `vectorstore-pgvector`, `memory`, `agents`, `workflows`, `jobs`,
+  `checkpoint-postgres`; see each phase's docs under `docs/phases/`.
+- **`@gixcopilot/telemetry`** (Phase 11) — the `TelemetryAdapter` port (no-op, OpenTelemetry,
+  in-memory recording), semantic conventions, safe redaction, sampling, metrics, cost
+  estimation, and instrumentation wrappers for every runtime seam.
+- **`@gixcopilot/devtools`** (Phase 11) — read-only, viewer-scoped inspectors over recorded
+  diagnostics, safe debug bundles, and an opt-in authenticated `/server` transport;
+  **`apps/devtools`** is the React DevTools UI.
+- **`@gixcopilot/testing`** (Phase 11) — deterministic test models, tool mocks, security/RAG/
+  memory/approval fixtures, agent and workflow simulation, and side-effect-free replay.
+- **`@gixcopilot/evals`** (Phase 11) — datasets, evaluators, reports, baseline comparison and CI
+  gates in which security is a hard gate.
 - **`examples/protocol-demo`** — the Phase 1 proof (no AI), CLI + integration test.
 - **`examples/model-streaming`** — the Phase 2 proof (mock by default, optional real
   OpenAI), CLI + mandatory mock integration test + optional real-provider smoke test.
@@ -75,6 +83,12 @@ packages/
   context/              @gixcopilot/context (framework-independent context/state engine)
   tools/                @gixcopilot/tools (framework-independent canonical tool architecture)
   generative-ui/        @gixcopilot/generative-ui (framework-independent generative UI/state-patch bridge)
+  security/ openapi/ mcp/ integrations/ knowledge/ rag/ memory/   (Phases 7-9)
+  vectorstores/pgvector/  agents/ workflows/ jobs/ checkpoint-postgres/   (Phases 9-10)
+  telemetry/            @gixcopilot/telemetry (Phase 11)
+  devtools/             @gixcopilot/devtools (+ /server) (Phase 11)
+  testing/              @gixcopilot/testing (Phase 11)
+  evals/                @gixcopilot/evals (Phase 11)
   providers/
     provider-core/      @gixcopilot/provider
     mock/               @gixcopilot/provider-mock
@@ -87,6 +101,11 @@ examples/
   react-context/         Phase 4 application-context example + mock server + integration test
   react-tools/           Phase 5 backend/frontend tool example + mock server + integration tests
   react-generative-ui/   Phase 6 generative-UI/state-patch example + mock server + integration tests
+  ...                   Phase 7-10 examples (react-enterprise, openapi, mcp, react-rag, agent-basic, multi-agent, workflow-*)
+  devtools/             Phase 11 DevTools demo host + execution-generated trace
+  evals/                Phase 11 evaluation example (deterministic + live OpenAI)
+apps/
+  devtools/             Phase 11 React DevTools UI
 docs/
   architecture/         architecture overview
   adr/                  architecture decision records

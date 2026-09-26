@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto';
 import type { CopilotEvent, FinishReason, PublicCopilotError, Usage } from '@gixcopilot/protocol';
 import type { Correlation } from './conventions.js';
 
@@ -278,7 +277,7 @@ export function diagnostic<T extends DiagnosticEvent>(
   now: () => Date = () => new Date(),
 ): T {
   return {
-    id: randomUUID(),
+    id: globalThis.crypto.randomUUID(),
     timestamp: now().toISOString(),
     diagnosticVersion: DIAGNOSTIC_VERSION,
     ...body,

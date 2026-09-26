@@ -4,7 +4,7 @@
   "projectType": "application",
   "sourceRoot": "tests/browser",
   "tags": ["scope:example", "type:app"],
-  "implicitDependencies": ["react-basic", "react-custom-ui"],
+  "implicitDependencies": ["react-basic", "react-custom-ui", "devtools-demo", "devtools-app"],
   "targets": {
     "typecheck": {
       "executor": "nx:run-commands",

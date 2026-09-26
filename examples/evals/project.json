@@ -1,0 +1,14 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "evals-demo",
+  "projectType": "application",
+  "sourceRoot": "examples/evals/src",
+  "tags": ["scope:example", "type:app"],
+  "implicitDependencies": ["protocol", "core", "agents", "workflows", "tools", "security", "provider", "provider-openai", "knowledge", "rag", "memory", "telemetry", "testing", "evals"],
+  "targets": {
+    "build": { "executor": "nx:run-commands", "options": { "command": "pnpm run build", "cwd": "examples/evals" } },
+    "typecheck": { "executor": "nx:run-commands", "options": { "command": "pnpm run typecheck", "cwd": "examples/evals" } },
+    "test": { "executor": "nx:run-commands", "options": { "command": "pnpm run test", "cwd": "examples/evals" } },
+    "lint": { "executor": "nx:run-commands", "options": { "command": "pnpm run lint", "cwd": "examples/evals" } }
+  }
+}

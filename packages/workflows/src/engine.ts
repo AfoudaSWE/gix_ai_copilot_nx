@@ -1,6 +1,6 @@
 import { CopilotError, createRunId, createThreadId, createToolCallId } from '@gixcopilot/protocol';
 import type { PublicCopilotError } from '@gixcopilot/protocol';
-import { METRICS, SPAN_NAMES, recordRun, withTelemetryMetadata } from '@gixcopilot/telemetry';
+import { METRICS, SPAN_NAMES, recordProtocolEvent, recordRun, withTelemetryMetadata } from '@gixcopilot/telemetry';
 import type { SpanHandle, TelemetryAdapter } from '@gixcopilot/telemetry';
 import type { ToolRuntime } from '@gixcopilot/tools';
 import type { AgentRuntime } from '@gixcopilot/agents';
@@ -151,6 +151,15 @@ function withStepRecord(
 export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}): WorkflowEngine {
   const telemetry = options.telemetry ?? defaultWorkflowTelemetry;
   const metric = (name: string, value = 1): void => telemetry.recordMetric({ name, kind: 'counter', value, attributes: {} });
+  // Every event a caller receives also reaches the diagnostics channel (Phase 11 Section 149)
+  // so DevTools' workflow graph is built from exactly what was emitted.
+  const observeEvents = (listener: WorkflowEventListener | undefined, tenantId: string | undefined): WorkflowEventListener | undefined =>
+    telemetry.enabled
+      ? (event) => {
+          recordProtocolEvent(telemetry, event, { tenantId });
+          listener?.(event);
+        }
+      : listener;
   const checkpointStore = options.checkpointStore ?? createInMemoryCheckpointStore();
   const jobExecutor = options.jobExecutor ?? createInlineJobExecutor();
   const retryPolicy = options.retryPolicy ?? DEFAULT_WORKFLOW_RETRY_POLICY;
@@ -486,6 +495,11 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
     // so they remain joinable in a trace backend even though not literally one span tree.
     const runSpan = startChildSpan(telemetry, SPAN_NAMES.workflowRun, undefined, spanCorrelation, {
       'copilot.workflow_version': definition.version,
+      // Graph shape for DevTools/eval reproducibility (Phase 11 Section 148): ids, types and
+      // dependency edges only - `id:type:dep1|dep2`, comma-separated.
+      'copilot.workflow.steps': definition.steps
+        .map((step) => `${step.id}:${step.type}:${(step.dependencies ?? []).join('|')}`)
+        .join(','),
     });
     const startedAt = Date.now();
     const report = (phase: 'started' | 'completed' | 'failed' | 'cancelled', error?: PublicCopilotError): void =>
@@ -706,10 +720,11 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
       const saved = await checkpointStore.save(initial);
 
       const correlation: WorkflowEventCorrelation = { runId: workflowRunId, threadId: createThreadId() };
-      startOptions.onEvent?.(workflowRunStartedEvent(correlation, 1, definition.id, workflowRunId));
+      const onEvent = observeEvents(startOptions.onEvent, initial.tenantId);
+      onEvent?.(workflowRunStartedEvent(correlation, 1, definition.id, workflowRunId));
 
       const signal = startOptions.signal ?? new AbortController().signal;
-      return runLoop(definition, saved, startOptions.securityContext, signal, startOptions.onEvent);
+      return runLoop(definition, saved, startOptions.securityContext, signal, onEvent);
     },
 
     async resume(workflowRunId, resumeOptions = {}) {
@@ -729,6 +744,7 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
       const securityContext = resumeOptions.securityContext ?? { tenant: existing.tenantId ? { tenantId: existing.tenantId } : undefined };
       const correlation: WorkflowEventCorrelation = { runId: workflowRunId, threadId: createThreadId() };
       let seq = 0;
+      const onEvent = observeEvents(resumeOptions.onEvent, existing.tenantId);
 
       let checkpoint = existing;
       if (existing.status === 'waiting_for_approval' && existing.pendingApproval && options.approvals) {
@@ -756,26 +772,26 @@ export function createWorkflowEngine(options: CreateWorkflowEngineOptions = {}):
         if (approval.status === 'approved') {
           const steps = withStepRecord(existing.steps, existing.pendingApproval.stepId, 'completed', stepRecord(existing.steps, existing.pendingApproval.stepId)?.attempt ?? 1);
           checkpoint = await checkpointStore.save({ ...existing, status: 'running', steps, pendingApproval: undefined });
-          resumeOptions.onEvent?.(workflowRunResumedEvent(correlation, seq, checkpoint.workflowId, checkpoint.workflowRunId));
+          onEvent?.(workflowRunResumedEvent(correlation, seq, checkpoint.workflowId, checkpoint.workflowRunId));
         } else {
           const code = approval.status === 'expired' ? 'WORKFLOW_APPROVAL_EXPIRED' : approval.status === 'cancelled' ? 'WORKFLOW_CANCELLED' : 'APPROVAL_REJECTED';
           const error = new CopilotError(code, `Approval for step "${existing.pendingApproval.stepId}" was ${approval.status}.`).toPublicJSON();
           const steps = withStepRecord(existing.steps, existing.pendingApproval.stepId, 'failed', stepRecord(existing.steps, existing.pendingApproval.stepId)?.attempt ?? 1, error);
           const context: WorkflowStepContext = { state: existing.state, workflowRunId, securityContext, signal: resumeOptions.signal ?? new AbortController().signal };
           const withFailedStep = { ...existing, steps };
-          await runCompensation(definition, withFailedStep, context, correlation, (event) => resumeOptions.onEvent?.(event), () => { seq += 1; return seq; });
+          await runCompensation(definition, withFailedStep, context, correlation, (event) => onEvent?.(event), () => { seq += 1; return seq; });
           checkpoint = await checkpointStore.save({ ...withFailedStep, status: approval.status === 'cancelled' ? 'cancelled' : 'failed', error, pendingApproval: undefined });
-          resumeOptions.onEvent?.(workflowRunFailedEvent(correlation, seq, checkpoint.workflowId, checkpoint.workflowRunId, error));
+          onEvent?.(workflowRunFailedEvent(correlation, seq, checkpoint.workflowId, checkpoint.workflowRunId, error));
           recordRun(telemetry, { kind: 'workflow', phase: checkpoint.status === 'cancelled' ? 'cancelled' : 'failed', correlation: { runId: workflowRunId, tenantId: checkpoint.tenantId }, label: checkpoint.workflowId, error });
           return checkpoint;
         }
       } else {
         checkpoint = await checkpointStore.save({ ...existing, status: 'running' });
-        resumeOptions.onEvent?.(workflowRunResumedEvent(correlation, 1, checkpoint.workflowId, checkpoint.workflowRunId));
+        onEvent?.(workflowRunResumedEvent(correlation, 1, checkpoint.workflowId, checkpoint.workflowRunId));
       }
 
       const signal = resumeOptions.signal ?? new AbortController().signal;
-      return runLoop(definition, checkpoint, securityContext, signal, resumeOptions.onEvent);
+      return runLoop(definition, checkpoint, securityContext, signal, onEvent);
     },
 
     async cancel(workflowRunId, securityContext) {

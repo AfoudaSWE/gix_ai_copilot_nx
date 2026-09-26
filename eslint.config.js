@@ -192,6 +192,46 @@ export default tseslint.config(
               onlyDependOnLibsWithTags: ['scope:protocol', 'scope:telemetry'],
             },
             {
+              // Observes the runtime only through telemetry diagnostics - never imports a
+              // runtime package, so it cannot become the runtime (Phase 11 Section 7).
+              sourceTag: 'scope:devtools',
+              onlyDependOnLibsWithTags: ['scope:protocol', 'scope:telemetry', 'scope:devtools'],
+            },
+            {
+              // The DevTools UI consumes the DevTools API/bundles only - never server or
+              // runtime internals (Phase 11 Section 26). Eval reports are loaded as JSON.
+              sourceTag: 'scope:devtools-app',
+              onlyDependOnLibsWithTags: ['scope:protocol', 'scope:telemetry', 'scope:devtools', 'scope:evals'],
+            },
+            {
+              // Generic eval core: no agents/provider-SDK dependency (Section 226). It reuses
+              // DevTools' diagnostics projection to build execution records.
+              sourceTag: 'scope:evals',
+              onlyDependOnLibsWithTags: ['scope:protocol', 'scope:telemetry', 'scope:devtools', 'scope:evals'],
+            },
+            {
+              // Test-only leaf: may compose every runtime package, but nothing depends on it.
+              sourceTag: 'scope:testing',
+              onlyDependOnLibsWithTags: [
+                'scope:protocol',
+                'scope:core',
+                'scope:server',
+                'scope:context',
+                'scope:tools',
+                'scope:security',
+                'scope:knowledge',
+                'scope:rag',
+                'scope:memory',
+                'scope:provider',
+                'scope:provider-adapter',
+                'scope:agents',
+                'scope:workflows',
+                'scope:telemetry',
+                'scope:devtools',
+                'scope:testing',
+              ],
+            },
+            {
               sourceTag: 'scope:jobs',
               onlyDependOnLibsWithTags: ['scope:protocol', 'scope:workflows', 'scope:jobs'],
             },
@@ -250,6 +290,9 @@ export default tseslint.config(
                 'scope:telemetry',
                 'scope:jobs',
                 'scope:checkpoint-postgres',
+                'scope:devtools',
+                'scope:testing',
+                'scope:evals',
                 'scope:example',
               ],
             },

@@ -1,0 +1,48 @@
+{
+  "name": "@gixcopilot/testing",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Deterministic testing SDK for AI Copilot applications - request-aware test models, tool mocks and assertions, security/RAG/memory/approval fixtures, agent and workflow simulation, a one-call copilot harness, and side-effect-free replay of recorded runs.",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.spec*"
+  ],
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "typecheck": "tsc -b tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@gixcopilot/agents": "workspace:*",
+    "@gixcopilot/core": "workspace:*",
+    "@gixcopilot/devtools": "workspace:*",
+    "@gixcopilot/knowledge": "workspace:*",
+    "@gixcopilot/memory": "workspace:*",
+    "@gixcopilot/protocol": "workspace:*",
+    "@gixcopilot/provider": "workspace:*",
+    "@gixcopilot/rag": "workspace:*",
+    "@gixcopilot/security": "workspace:*",
+    "@gixcopilot/telemetry": "workspace:*",
+    "@gixcopilot/tools": "workspace:*",
+    "@gixcopilot/workflows": "workspace:*",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@gixcopilot/context": "workspace:*",
+    "@gixcopilot/server": "workspace:*",
+    "fastify": "5.12.5",
+    "vitest": "5.0.1"
+  }
+}

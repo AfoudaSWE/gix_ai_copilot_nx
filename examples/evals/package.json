@@ -1,0 +1,34 @@
+{
+  "name": "@gixcopilot/evals-demo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Phase 11 demonstration: evaluating an application support copilot (@gixcopilot/evals) - a deterministic, versioned dataset with adversarial security cases, baseline comparison, CI gates, and an optional live OpenAI evaluation through the existing provider adapter.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "typecheck": "tsc -b tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint src",
+    "eval": "tsc -b tsconfig.json && node --env-file-if-exists=.env dist/main.js"
+  },
+  "dependencies": {
+    "@gixcopilot/agents": "workspace:*",
+    "@gixcopilot/core": "workspace:*",
+    "@gixcopilot/evals": "workspace:*",
+    "@gixcopilot/knowledge": "workspace:*",
+    "@gixcopilot/memory": "workspace:*",
+    "@gixcopilot/protocol": "workspace:*",
+    "@gixcopilot/provider": "workspace:*",
+    "@gixcopilot/provider-openai": "workspace:*",
+    "@gixcopilot/rag": "workspace:*",
+    "@gixcopilot/security": "workspace:*",
+    "@gixcopilot/telemetry": "workspace:*",
+    "@gixcopilot/testing": "workspace:*",
+    "@gixcopilot/tools": "workspace:*",
+    "@gixcopilot/workflows": "workspace:*",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "vitest": "5.0.1"
+  }
+}

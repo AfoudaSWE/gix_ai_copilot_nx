@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { CopilotError, createRunId, createThreadId } from '@gixcopilot/protocol';
 import type { PublicCopilotError, RunId, ThreadId, ToolResult, Usage } from '@gixcopilot/protocol';
-import { METRICS, SPAN_NAMES, addUsage, recordRun, withTelemetryMetadata } from '@gixcopilot/telemetry';
+import { METRICS, SPAN_NAMES, addUsage, recordProtocolEvent, recordRun, withTelemetryMetadata } from '@gixcopilot/telemetry';
 import type { SpanHandle, TelemetryAdapter } from '@gixcopilot/telemetry';
 import { EventSequencer } from '@gixcopilot/core';
 import { toToolManifest } from '@gixcopilot/tools';
@@ -250,7 +250,13 @@ export function createAgentRuntime(options: CreateAgentRuntimeOptions): AgentRun
     const externalSignal = runOptions.signal;
     const sequencer = new EventSequencer();
     const correlation: AgentEventCorrelation = { runId, threadId, rootRunId, parentRunId };
-    const emit = (event: Parameters<AgentEventListener>[0]): void => runOptions.onEvent?.(event);
+    const tenantId = runOptions.securityContext.tenant?.tenantId;
+    // The same events a caller receives also reach the diagnostics channel (Phase 11 Section
+    // 149), so DevTools' agent tree/delegation views read exactly what was emitted.
+    const emit = (event: Parameters<AgentEventListener>[0]): void => {
+      if (telemetry.enabled) recordProtocolEvent(telemetry, event, { tenantId });
+      runOptions.onEvent?.(event);
+    };
 
     emit(agentRunStartedEvent(correlation, sequencer, agent.id, runId));
 
@@ -317,6 +323,21 @@ export function createAgentRuntime(options: CreateAgentRuntimeOptions): AgentRun
       const resolvedMemoryTypes = runOptions.restrictToMemoryTypes
         ? intersectMemoryTypes(agent.memory?.types, runOptions.restrictToMemoryTypes)
         : (agent.memory?.types ?? []);
+
+      // What this agent could see and was bound by (Phase 11 Section 147, 220) - identifiers
+      // and limits only, never instructions or prompt text.
+      runSpan.setAttributes({
+        'copilot.agent.version': agent.metadata?.version,
+        'copilot.agent.visible_tools': toolNames.join(','),
+        'copilot.agent.knowledge_sources': resolvedKnowledgeSources.join(','),
+        'copilot.agent.memory_types': resolvedMemoryTypes.join(','),
+        'copilot.model.provider': agent.model?.provider,
+        'copilot.model.name': agent.model?.model,
+        'copilot.agent.max_iterations': limits.maxIterations,
+        'copilot.agent.max_tool_calls': limits.maxToolCalls,
+        'copilot.agent.max_delegations': limits.maxDelegations,
+        'copilot.agent.max_depth': limits.maxDepth,
+      });
 
       const executionContext: AgentExecutionContext = {
         runId,

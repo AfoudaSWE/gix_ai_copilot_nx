@@ -30,5 +30,17 @@ export default defineConfig({
       url: 'http://127.0.0.1:5174',
       reuseExistingServer: false,
     },
+    {
+      // Phase 11: the DevTools demo app, seeded with a real execution-generated session.
+      command: 'node examples/devtools/dist/main.js',
+      url: 'http://127.0.0.1:4100/health',
+      reuseExistingServer: false,
+      env: { SEED_SCENARIO: '1', DEVTOOLS_TOKEN: 'e2e-devtools-token', PORT: '4100' },
+    },
+    {
+      command: 'node apps/devtools/node_modules/vite/bin/vite.js apps/devtools --config apps/devtools/vite.config.ts',
+      url: 'http://127.0.0.1:5180',
+      reuseExistingServer: false,
+    },
   ],
 });

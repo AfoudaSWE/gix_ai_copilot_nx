@@ -19,7 +19,7 @@ Phase 07 - Enterprise Security & HITL          COMPLETE
 Phase 08 - OpenAPI + MCP + Integrations        COMPLETE
 Phase 09 - Knowledge + RAG + Memory            COMPLETE
 Phase 10 - Agents + Multi-Agent + Workflows    COMPLETE
-Phase 11 - DevTools + Testing + Evals + Obs.   IN PROGRESS
+Phase 11 - DevTools + Testing + Evals + Obs.   COMPLETE
 Phase 12 - Production Platform + Ecosystem     NOT STARTED / LOCKED
 ```
 
@@ -326,6 +326,47 @@ phase is started without an explicit instruction naming it.
 - Full record: [Phase 10 docs](phases/phase-10/Phase_10_Docs.md),
   [completion report](phases/phase-10/Phase_10_Status.md),
   [ADR 0015](adr/0015-agent-and-workflow-runtime-architecture.md).
+
+## Phase 11 — DevTools + Testing + Evals + Observability (COMPLETE)
+
+- `@gixcopilot/telemetry` (begun before this session) completed: span-only head sampling,
+  structured logs, browser-safe ids. Two redaction bugs fixed: token counts and retrieval ACL
+  counts had been blanked as `[REDACTED]`. Agents and workflows now record their events and run
+  facts (visible tools, model, limits, step graph) to the internal diagnostics channel. The
+  public protocol is unchanged.
+- `@gixcopilot/devtools`: read-only, tenant- and subject-scoped inspectors for runs, messages,
+  context budget, state history, tools with firewall trail, generative UI, RAG, citations,
+  memory, agent tree, delegations and handoffs, workflow graph, events, traces and errors.
+  Also safe debug bundles, and an opt-in, authenticated, production-refusing, read-only
+  Fastify transport.
+- `apps/devtools`: an accessible React DevTools UI (keyboard tablist, focus management, RTL,
+  reduced motion, responsive), verified in Chromium.
+- `@gixcopilot/testing`: request-aware test models with failure simulation; tool mocks and
+  assertions; real-stack security, RAG, memory and approval fixtures; agent and workflow
+  simulation; a copilot harness; and replay that never repeats side effects.
+- `@gixcopilot/evals`: versioned datasets, execution records derived from recordings, 24
+  deterministic evaluators plus an optional LLM judge, reports, baseline comparison,
+  experiments, and CI gates in which security is an unconditional hard gate.
+- `examples/devtools` (one app, one inspected session, execution-generated trace) and
+  `examples/evals` (deterministic and live evaluation, with adversarial cases).
+- Found through tests and a real browser run, and fixed: DevTools resume projection,
+  firewall-blocked calls missing from the tool view, cross-run tool-call id joins, and an
+  O(runs x events) projection (588 ms to 6 ms on 23,000 events).
+- Records: [Phase 11 docs](phases/phase-11/Phase_11_Docs.md),
+  [completion report](phases/phase-11/Phase_11_Status.md), ADRs
+  [0016](adr/0016-telemetry-and-diagnostics-architecture.md) to
+  [0019](adr/0019-evaluation-model-and-security-hard-gates.md).
+
+## Current Validation (Phase 11 completion)
+
+Before any Phase 11 change: 41/41 projects, 1,154 tests passed, 4 skipped. Final tree:
+**47/47 projects pass lint, typecheck, test and build; 1,251 tests passed, 29 skipped, 0 failed**.
+The skips are the Docker-gated Testcontainers suites (Docker was not running; their code is
+unchanged since they passed in Phase 10) and optional OpenAI smoke tests with no key.
+Playwright: 8/8 passed. Live OpenAI eval (gpt-4o-mini, 15 cases x 2): the first run scored 13/15
+(too-literal expectation and weak test embeddings in live mode; both fixed); later runs scored
+15/15. Every live run had zero security violations. See
+[Phase 11 Testing](phases/phase-11/Phase_11_Testing.md).
 
 ## Current Validation (Phase 10 completion)
 

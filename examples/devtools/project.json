@@ -1,0 +1,14 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "devtools-demo",
+  "projectType": "application",
+  "sourceRoot": "examples/devtools/src",
+  "tags": ["scope:example", "type:app"],
+  "implicitDependencies": ["protocol", "core", "server", "agents", "workflows", "tools", "security", "context", "provider", "provider-openai", "knowledge", "rag", "memory", "telemetry", "devtools", "testing"],
+  "targets": {
+    "build": { "executor": "nx:run-commands", "options": { "command": "pnpm run build", "cwd": "examples/devtools" } },
+    "typecheck": { "executor": "nx:run-commands", "options": { "command": "pnpm run typecheck", "cwd": "examples/devtools" } },
+    "test": { "executor": "nx:run-commands", "options": { "command": "pnpm run test", "cwd": "examples/devtools" } },
+    "lint": { "executor": "nx:run-commands", "options": { "command": "pnpm run lint", "cwd": "examples/devtools" } }
+  }
+}

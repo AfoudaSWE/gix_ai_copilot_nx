@@ -44,6 +44,15 @@
       "path": "packages/telemetry"
     },
     {
+      "path": "packages/devtools"
+    },
+    {
+      "path": "packages/testing"
+    },
+    {
+      "path": "packages/evals"
+    },
+    {
       "path": "packages/checkpoint-postgres"
     },
     {
@@ -87,6 +96,12 @@
     },
     {
       "path": "examples/workflow-compensation"
+    },
+    {
+      "path": "examples/evals"
+    },
+    {
+      "path": "examples/devtools"
     },
     {
       "path": "packages/react"

@@ -43,6 +43,9 @@ export { ZERO_USAGE, addUsage, sumUsage, aggregateRunTreeUsage } from './usage.j
 export type { RunUsageEntry, RunTreeUsage } from './usage.js';
 
 export { createOpenTelemetryAdapter } from './otel.js';
+export { alwaysSample, neverSample, createRatioSampler } from './sampling.js';
+export type { TraceSampler } from './sampling.js';
+export { recordLog } from './logs.js';
 export type { OpenTelemetryAdapterOptions } from './otel.js';
 
 export { createRecordingTelemetry } from './recording.js';

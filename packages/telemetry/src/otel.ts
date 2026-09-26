@@ -5,6 +5,7 @@ import { compactAttributes, correlationAttributes } from './conventions.js';
 import type { Attributes } from './conventions.js';
 import { createRedactionPolicy } from './redaction.js';
 import type { RedactionPolicy, TelemetryMode } from './redaction.js';
+import type { TraceSampler } from './sampling.js';
 
 export interface OpenTelemetryAdapterOptions {
   readonly instrumentationName?: string;
@@ -12,7 +13,7 @@ export interface OpenTelemetryAdapterOptions {
   readonly redaction?: RedactionPolicy;
   /** Head sampling (Section 159): return `false` to drop a root span and its whole subtree.
    * Child spans of an unsampled parent are never sampled regardless. */
-  readonly shouldSample?: (name: string, attributes: Readonly<Record<string, string | number | boolean>>) => boolean;
+  readonly shouldSample?: TraceSampler;
 }
 
 const spanContexts = new WeakMap<SpanHandle, Context>();

@@ -1,0 +1,14 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "devtools-app",
+  "projectType": "application",
+  "sourceRoot": "apps/devtools/src",
+  "tags": ["scope:devtools-app", "type:app"],
+  "implicitDependencies": ["protocol", "telemetry", "devtools", "evals"],
+  "targets": {
+    "build": { "executor": "nx:run-commands", "options": { "command": "pnpm run build", "cwd": "apps/devtools" }, "outputs": ["{projectRoot}/dist", "{projectRoot}/web-dist"] },
+    "typecheck": { "executor": "nx:run-commands", "options": { "command": "pnpm run typecheck", "cwd": "apps/devtools" } },
+    "test": { "executor": "nx:run-commands", "options": { "command": "pnpm run test", "cwd": "apps/devtools" } },
+    "lint": { "executor": "nx:run-commands", "options": { "command": "pnpm run lint", "cwd": "apps/devtools" } }
+  }
+}

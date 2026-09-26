@@ -1,0 +1,14 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "evals",
+  "projectType": "library",
+  "sourceRoot": "packages/evals/src",
+  "tags": ["scope:evals", "type:lib"],
+  "implicitDependencies": ["protocol", "telemetry", "devtools"],
+  "targets": {
+    "build": { "executor": "nx:run-commands", "options": { "command": "pnpm run build", "cwd": "packages/evals" } },
+    "typecheck": { "executor": "nx:run-commands", "options": { "command": "pnpm run typecheck", "cwd": "packages/evals" } },
+    "test": { "executor": "nx:run-commands", "options": { "command": "pnpm run test", "cwd": "packages/evals" } },
+    "lint": { "executor": "nx:run-commands", "options": { "command": "pnpm run lint", "cwd": "packages/evals" } }
+  }
+}

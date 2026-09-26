@@ -125,3 +125,17 @@ cannot be replayed from another after a crash; durable recovery comes from check
 Testcontainers coverage but no benchmark. No Temporal adapter, visual/YAML workflow builder,
 prompt-management platform, or budget enforcement beyond Phase 2 usage metadata; these are
 Phase 11/12 scope, not debt. See [Phase 10 issues](phases/phase-10/Phase_10_Issues.md).
+
+## Phase 11 completion-review limits
+
+The Phase 5 tool runtime rejects a timed-out tool call but does not abort the signal passed to
+the tool, so a timed-out tool keeps running; found through Phase 11 tool mocks and left
+unchanged because it is Phase 5 behavior. Approval-wait spans are separate traces joined by run
+id, not nested under the request. Tenant-scoped DevTools live streaming re-projects the session
+per event. The recording adapter is a bounded in-memory ring buffer, not durable storage or
+audit retention. Groundedness is a lexical evidence-overlap heuristic, and an LLM judge is
+optional and also heuristic. Recorded replay requires a payload-capturing recording and can
+diverge when a replay takes a different path. There is no CLI (`pnpm eval` is the foundation;
+the CLI is Phase 12), and manual tool execution from DevTools is intentionally not provided. See
+[Phase 11 issues](phases/phase-11/Phase_11_Issues.md).
+

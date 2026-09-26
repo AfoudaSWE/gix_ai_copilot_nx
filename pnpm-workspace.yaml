@@ -3,6 +3,7 @@ packages:
   - "packages/providers/*"
   - "packages/vectorstores/*"
   - "examples/*"
+  - "apps/*"
 allowBuilds:
   cpu-features: true
   esbuild: true

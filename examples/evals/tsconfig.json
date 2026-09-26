@@ -1,0 +1,26 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts"],
+  "references": [
+    { "path": "../../packages/protocol" },
+    { "path": "../../packages/core" },
+    { "path": "../../packages/agents" },
+    { "path": "../../packages/workflows" },
+    { "path": "../../packages/tools" },
+    { "path": "../../packages/security" },
+    { "path": "../../packages/providers/provider-core" },
+    { "path": "../../packages/providers/openai" },
+    { "path": "../../packages/knowledge" },
+    { "path": "../../packages/rag" },
+    { "path": "../../packages/memory" },
+    { "path": "../../packages/telemetry" },
+    { "path": "../../packages/testing" },
+    { "path": "../../packages/evals" }
+  ]
+}

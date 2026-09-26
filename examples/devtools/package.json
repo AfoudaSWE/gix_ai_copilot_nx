@@ -1,0 +1,38 @@
+{
+  "name": "@gixcopilot/devtools-demo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Phase 11 demonstration: one application (chat, tools, firewall, approvals, generative UI, RAG, memory, multi-agent, workflow, context, state) recording into one telemetry session that DevTools inspects - with an opt-in, token-protected DevTools endpoint and an execution-generated trace bundle.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "typecheck": "tsc -b tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint src",
+    "start": "tsc -b tsconfig.json && node --env-file-if-exists=.env dist/main.js",
+    "trace": "tsc -b tsconfig.json && node dist/export-trace.js"
+  },
+  "dependencies": {
+    "@gixcopilot/agents": "workspace:*",
+    "@gixcopilot/context": "workspace:*",
+    "@gixcopilot/core": "workspace:*",
+    "@gixcopilot/devtools": "workspace:*",
+    "@gixcopilot/knowledge": "workspace:*",
+    "@gixcopilot/memory": "workspace:*",
+    "@gixcopilot/protocol": "workspace:*",
+    "@gixcopilot/provider": "workspace:*",
+    "@gixcopilot/provider-openai": "workspace:*",
+    "@gixcopilot/rag": "workspace:*",
+    "@gixcopilot/security": "workspace:*",
+    "@gixcopilot/server": "workspace:*",
+    "@gixcopilot/telemetry": "workspace:*",
+    "@gixcopilot/testing": "workspace:*",
+    "@gixcopilot/tools": "workspace:*",
+    "@gixcopilot/workflows": "workspace:*",
+    "fastify": "5.12.5",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "vitest": "5.0.1"
+  }
+}

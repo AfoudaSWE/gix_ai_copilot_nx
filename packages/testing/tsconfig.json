@@ -1,0 +1,26 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts"],
+  "references": [
+    { "path": "../protocol" },
+    { "path": "../telemetry" },
+    { "path": "../devtools" },
+    { "path": "../agents" },
+    { "path": "../workflows" },
+    { "path": "../tools" },
+    { "path": "../security" },
+    { "path": "../rag" },
+    { "path": "../knowledge" },
+    { "path": "../memory" },
+    { "path": "../providers/provider-core" },
+    { "path": "../server" },
+    { "path": "../core" },
+    { "path": "../context" }
+  ]
+}

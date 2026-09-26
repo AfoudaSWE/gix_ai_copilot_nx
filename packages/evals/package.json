@@ -1,0 +1,35 @@
+{
+  "name": "@gixcopilot/evals",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Evaluation framework for AI Copilot applications - versioned datasets, execution records derived from recorded diagnostics, deterministic evaluators (tools, permission compliance, RAG, citations, memory, agents, workflows, UI, latency, tokens, cost), baseline comparison, experiments, reports and CI gates with non-negotiable security hard gates.",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.spec*"
+  ],
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "typecheck": "tsc -b tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@gixcopilot/devtools": "workspace:*",
+    "@gixcopilot/protocol": "workspace:*",
+    "@gixcopilot/telemetry": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "5.0.1"
+  }
+}

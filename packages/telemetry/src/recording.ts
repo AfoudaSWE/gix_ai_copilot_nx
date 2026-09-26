@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto';
 import type { MetricRecord, SpanHandle, SpanStatus, StartSpanOptions, TelemetryAdapter } from './adapter.js';
 import { compactAttributes, correlationAttributes } from './conventions.js';
 import type { Attributes, AttributeValue } from './conventions.js';
@@ -8,6 +7,7 @@ import { createMetricsCollector } from './metrics.js';
 import type { MetricsSummary } from './metrics.js';
 import { createRedactionPolicy } from './redaction.js';
 import type { RedactionPolicy, TelemetryMode } from './redaction.js';
+import type { TraceSampler } from './sampling.js';
 
 export interface RecordingTelemetryOptions {
   readonly mode?: TelemetryMode;
@@ -17,6 +17,9 @@ export interface RecordingTelemetryOptions {
   readonly now?: () => Date;
   /** Deterministic id source for tests (Section 87). */
   readonly nextId?: () => string;
+  /** Head sampling for spans (Section 159). Diagnostic events are never sampled - DevTools
+   * inspectors and evals need the complete record even when most traces are dropped. */
+  readonly shouldSample?: TraceSampler;
 }
 
 export interface TelemetrySession {
@@ -51,7 +54,8 @@ export function createRecordingTelemetry(options: RecordingTelemetryOptions = {}
   const redaction = options.redaction ?? createRedactionPolicy({ mode: options.mode });
   const capacity = options.capacity ?? 5_000;
   const now = options.now ?? ((): Date => new Date());
-  const nextId = options.nextId ?? ((): string => randomUUID());
+  const nextId = options.nextId ?? ((): string => globalThis.crypto.randomUUID());
+  const unsampled = new WeakSet<SpanHandle>();
   const startedAt = now().toISOString();
   const events: DiagnosticEvent[] = [];
   const spans: SpanDiagnostic[] = [];
@@ -92,6 +96,7 @@ export function createRecordingTelemetry(options: RecordingTelemetryOptions = {}
         ...correlationAttributes(startOptions?.correlation),
         ...compactAttributes(startOptions?.attributes),
       };
+      const sampled = parent ? !unsampled.has(parent) : (options.shouldSample?.(name, attributes) ?? true);
       const record: OpenSpan = { handle: undefined as unknown as SpanHandle, attributes, events: [] };
       const handle: SpanHandle = {
         name,
@@ -106,7 +111,7 @@ export function createRecordingTelemetry(options: RecordingTelemetryOptions = {}
           record.events.push({ name: eventName, attributes: compactAttributes(eventAttributes), at: now().getTime() });
         },
         end(status: SpanStatus = 'ok', error?: unknown, endedAt?: number) {
-          if (!enabled) return;
+          if (!enabled || !sampled) return;
           const endedAtMs = endedAt ?? now().getTime();
           const ended = diagnostic<SpanDiagnostic>(
             {
@@ -132,7 +137,8 @@ export function createRecordingTelemetry(options: RecordingTelemetryOptions = {}
       };
       (record as { handle: SpanHandle }).handle = handle;
       open.set(handle, record);
-      if (enabled) {
+      if (!sampled) unsampled.add(handle);
+      if (enabled && sampled) {
         emit(
           diagnostic<SpanDiagnostic>(
             {

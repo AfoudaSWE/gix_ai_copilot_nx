@@ -1,0 +1,47 @@
+{
+  "name": "@gixcopilot/devtools",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Framework-independent DevTools core for the AI Copilot SDK - projects the telemetry diagnostics stream into inspectable runs, messages, context, state, tools, security, RAG, memory, agents, workflows, events and traces; safe debug-bundle export/import; and an opt-in, authenticated, read-only Fastify transport.",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server/index.d.ts",
+      "default": "./dist/server/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.spec*"
+  ],
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "typecheck": "tsc -b tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@gixcopilot/protocol": "workspace:*",
+    "@gixcopilot/telemetry": "workspace:*"
+  },
+  "peerDependencies": {
+    "fastify": "5.12.5"
+  },
+  "peerDependenciesMeta": {
+    "fastify": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "fastify": "5.12.5",
+    "vitest": "5.0.1"
+  }
+}

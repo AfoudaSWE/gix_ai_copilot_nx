@@ -106,7 +106,11 @@ const TOKEN_COUNT_KEYS = new Set(['inputtokens', 'outputtokens', 'totaltokens', 
 function isSecretKey(key: string, extra: readonly string[], value?: unknown): boolean {
   // Guard the short generic 'auth' pattern against false positives like 'author'.
   const normalized = key.toLowerCase();
-  if (typeof value === 'number' && TOKEN_COUNT_KEYS.has(normalized)) return false;
+  // A boolean can never carry a secret (`authenticated: true`). A number under a "token" or
+  // "auth" key is a count (`copilot.tokens.input`, a retrieval's `authorizedCount`), never a
+  // credential. Numeric passwords, cvv, ssn and card numbers stay masked.
+  if (typeof value === 'boolean') return false;
+  if (typeof value === 'number' && (TOKEN_COUNT_KEYS.has(normalized) || normalized.includes('token') || normalized.includes('auth'))) return false;
   if (normalized === 'author' || normalized === 'authors') return false;
   return matchesAny(key, SECRET_KEY_PATTERNS) || matchesAny(key, extra);
 }

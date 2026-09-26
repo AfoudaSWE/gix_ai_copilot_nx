@@ -110,4 +110,16 @@ describe('createRedactionPolicy', () => {
     const policy = createRedactionPolicy();
     expect(policy.payload({ name: 'applications.get', author: 'team' })).toEqual({ name: 'applications.get', author: 'team' });
   });
+
+  it('keeps numeric token counts (span attributes) while still masking numeric card data', () => {
+    const policy = createRedactionPolicy();
+    const scrubbed = policy.scrub({ 'copilot.tokens.input': 12, 'copilot.tokens.total': 15, authorizedCount: 2, authenticated: true, cvv: 123, password: 1234, accessToken: 'tok_abcdef' }) as Record<string, unknown>;
+    expect(scrubbed['authorizedCount']).toBe(2);
+    expect(scrubbed['authenticated']).toBe(true);
+    expect(scrubbed['password']).toBe(REDACTED);
+    expect(scrubbed['copilot.tokens.input']).toBe(12);
+    expect(scrubbed['copilot.tokens.total']).toBe(15);
+    expect(scrubbed['cvv']).toBe(REDACTED);
+    expect(scrubbed['accessToken']).toBe(REDACTED);
+  });
 });

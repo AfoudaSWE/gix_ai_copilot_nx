@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto';
 import { CopilotError } from '@gixcopilot/protocol';
 import type { TelemetryAdapter } from '../adapter.js';
 import { ATTR, SPAN_NAMES } from '../conventions.js';
@@ -84,7 +83,7 @@ export function createRetrieverTelemetry(telemetry: TelemetryAdapter, options: {
         async retrieve(query, context) {
           const meta = readTelemetryMetadata(context.telemetry) ?? readTelemetryMetadata(context.securityContext.metadata);
           const startedAt = now();
-          const retrievalId = randomUUID();
+          const retrievalId = globalThis.crypto.randomUUID();
           const correlation = { tenantId: context.securityContext.tenant?.tenantId, ...meta?.correlation };
           const span = telemetry.startSpan(SPAN_NAMES.ragRetrieve, {
             parent: meta?.parentSpan,
