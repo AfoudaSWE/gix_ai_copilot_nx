@@ -14,6 +14,13 @@ export type CopilotErrorCode =
   | 'PROVIDER_ERROR'
   | 'AUTHENTICATION_ERROR'
   | 'RATE_LIMITED'
+  /**
+   * Added in Phase 12 (usage policies) - returned by server admission control, separately
+   * from RATE_LIMITED: a quota is a volume cap over a period (e.g. tokens per month), a budget
+   * is an estimated-cost cap. Neither exposes infrastructure details.
+   */
+  | 'QUOTA_EXCEEDED'
+  | 'BUDGET_EXCEEDED'
   | 'MODEL_NOT_FOUND'
   | 'CONTEXT_LIMIT_EXCEEDED'
   | 'TIMEOUT'
@@ -193,6 +200,16 @@ export class CopilotError extends Error {
     metadata?: CopilotErrorMetadata,
   ): CopilotError {
     return new CopilotError('RATE_LIMITED', message, { retryable: true, metadata });
+  }
+
+  /** Phase 12 - a usage quota for the current period is used up. Retryable after the period resets. */
+  static quotaExceeded(message = 'Usage quota exceeded for this period.', metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('QUOTA_EXCEEDED', message, { retryable: false, metadata });
+  }
+
+  /** Phase 12 - an estimated-cost budget blocks further usage for the current period. */
+  static budgetExceeded(message = 'Usage budget exceeded for this period.', metadata?: CopilotErrorMetadata): CopilotError {
+    return new CopilotError('BUDGET_EXCEEDED', message, { retryable: false, metadata });
   }
 
   static modelNotFound(message: string, metadata?: CopilotErrorMetadata): CopilotError {

@@ -1,0 +1,1 @@
+{ "/api/copilot": { "target": "http://127.0.0.1:4319", "pathRewrite": { "^/api/copilot": "" }, "changeOrigin": true } }

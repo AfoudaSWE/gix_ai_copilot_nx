@@ -1,6 +1,8 @@
-import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
+import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest, type FastifyServerOptions } from 'fastify';
+
+type FastifyLoggerOptions = Exclude<FastifyServerOptions['logger'], boolean | undefined>;
 import { CopilotError, asRunId, asThreadId } from '@gixcopilot/protocol';
-import type { ToolResult } from '@gixcopilot/protocol';
+import type { CopilotEvent, ToolResult, Usage } from '@gixcopilot/protocol';
 import { createRuntime, type Runtime } from '@gixcopilot/core';
 import { createModelExecutor, type ModelRuntime, type ModelExecutionRequest } from '@gixcopilot/provider';
 import { createDefaultToolResolver, createStaticToolResolver, toToolManifest } from '@gixcopilot/tools';
@@ -75,7 +77,9 @@ export interface CreateServerOptions {
   /** Safe, tenant-scoped history from the configured audit adapter. */
   readonly actionHistory?: { list(): readonly AuditRecord[] };
   readonly toolRuntimeDefaults?: ToolRuntimeDefaults;
-  readonly logger?: boolean;
+  /** `true` for Fastify's default JSON logger, or Fastify logger options (Phase 12: e.g. base
+   * fields and redaction paths for structured production logs). Default off. */
+  readonly logger?: boolean | FastifyLoggerOptions;
   /**
    * Phase 7 (Section 13-14): resolves the trusted identity for each `POST /runs` request.
    * Omitted entirely, every run executes with an unauthenticated `SecurityContext` ({}) -
@@ -92,6 +96,54 @@ export interface CreateServerOptions {
   readonly approvalExpiresInMs?: number;
   /** Section 56 - redacts a backend tool's successful result before it reaches the model or client. */
   readonly dataPolicy?: DataPolicy;
+  /**
+   * Phase 12 - the model used when a run request names none. Lets the server, not the
+   * browser, choose the model (production deployments usually should). Omitted: a request
+   * without `model` runs on `runtime` exactly as before.
+   */
+  readonly defaultModel?: { readonly provider: string; readonly model: string };
+  /**
+   * Phase 12 - reject run requests without an authenticated identity (401). Production
+   * deployments should set this; the default keeps earlier phases' anonymous behavior.
+   */
+  readonly requireAuthentication?: boolean;
+  /**
+   * Phase 12 - admission control evaluated after authentication and before any model call
+   * (rate limits, quotas, budgets). A rejection is returned as a structured error.
+   */
+  readonly admission?: RunAdmission;
+  /**
+   * Phase 12 - observers of each run's events (conversation persistence, usage accounting).
+   * Observer failures are logged and never break the run; pending observer work is flushed
+   * before the response ends.
+   */
+  readonly runObservers?: readonly RunObserver[];
+}
+
+/** What admission control and run observers learn about a run. Tenant comes only from the
+ * authenticated `securityContext`, never from the request body. */
+export interface RunInfo {
+  readonly runId: string;
+  readonly threadId?: string;
+  readonly securityContext: SecurityContext;
+  readonly model?: { readonly provider: string; readonly model: string };
+  readonly messages: CreateRunRequestBody['messages'];
+  readonly action?: string;
+  readonly startedAt: string;
+}
+
+export type AdmissionDecision =
+  | { readonly ok: true; readonly model?: { readonly provider: string; readonly model: string } }
+  | { readonly ok: false; readonly error: CopilotError; readonly status?: number };
+
+export interface RunAdmission {
+  admit(info: Omit<RunInfo, 'runId' | 'threadId' | 'startedAt'>): Promise<AdmissionDecision>;
+}
+
+export interface RunObserver {
+  onRunStarted?(info: RunInfo): void | Promise<void>;
+  onEvent?(event: CopilotEvent, info: RunInfo): void | Promise<void>;
+  onRunEnded?(info: RunInfo, outcome: { readonly status: 'completed' | 'failed' | 'cancelled'; readonly usage?: Usage }): void | Promise<void>;
 }
 
 function buildRun(
@@ -138,7 +190,8 @@ function buildRun(
       })()
     : options.actionFirewall;
 
-  if (!body.model && !body.action) {
+  const requestedModel = body.model ?? options.defaultModel;
+  if (!requestedModel && !body.action) {
     return { ok: true as const, run: options.runtime.run({ threadId, messages: body.messages }) };
   }
 
@@ -146,7 +199,7 @@ function buildRun(
     return {
       ok: false as const,
       error: CopilotError.validation('This server is not configured for model execution.', {
-        provider: body.model?.provider,
+        provider: requestedModel?.provider,
       }),
     };
   }
@@ -181,7 +234,7 @@ function buildRun(
         toolTelemetry,
         getParentSpan,
         tenantId: securityContext.tenant?.tenantId,
-        model: body.model,
+        model: requestedModel,
         action: body.action,
         frontendDefinitions: options.frontendToolRegistry?.list(),
         backendToolResolver,
@@ -202,7 +255,7 @@ function buildRun(
         approvalExpiresInMs: options.approvalExpiresInMs,
         dataPolicy: options.dataPolicy,
       })
-    : createModelExecutor({ runtime: modelRuntime as ModelRuntime, model: body.model });
+    : createModelExecutor({ runtime: modelRuntime as ModelRuntime, model: requestedModel });
 
   const run = createRuntime({ executor }).run({ threadId, messages: body.messages });
   modelCorrelation.runId = run.runId;
@@ -305,8 +358,27 @@ export function createServer(options: CreateServerOptions): FastifyInstance {
     }
 
     const securityContext = await resolveSecurityContext(options, request);
+    if (options.requireAuthentication && !securityContext.identity) {
+      await reply.status(401).send({ error: CopilotError.authentication().toPublicJSON() });
+      return;
+    }
+    let body = parsed.data;
+    if (options.admission) {
+      const decision = await options.admission.admit({
+        securityContext,
+        model: body.model ?? options.defaultModel,
+        messages: body.messages,
+        action: body.action?.name,
+      });
+      if (!decision.ok) {
+        await reply.status(decision.status ?? 429).send({ error: decision.error.toPublicJSON() });
+        return;
+      }
+      // An explicit admission policy (e.g. a budget's "route cheaper" action) may pick the model.
+      if (decision.model) body = { ...body, model: decision.model };
+    }
     let runSpan: SpanHandle | undefined;
-    const built = buildRun(options, parsed.data, frontendToolBridge, securityContext, request, () => runSpan);
+    const built = buildRun(options, body, frontendToolBridge, securityContext, request, () => runSpan);
     if (!built.ok) {
       await reply.status(400).send({ error: built.error.toPublicJSON() });
       return;
@@ -322,6 +394,34 @@ export function createServer(options: CreateServerOptions): FastifyInstance {
       runSpan = telemetry.startSpan(SPAN_NAMES.run, { correlation, startedAt });
       recordRun(telemetry, { kind: 'copilot', phase: 'started', correlation });
     }
+
+    const observers = options.runObservers ?? [];
+    const runInfo: RunInfo = {
+      runId: run.runId,
+      threadId: run.threadId,
+      securityContext,
+      model: body.model ?? options.defaultModel,
+      messages: body.messages,
+      action: body.action?.name,
+      startedAt: new Date(startedAt).toISOString(),
+    };
+    const pendingObservations: Promise<unknown>[] = [];
+    const observe = (call: (observer: RunObserver) => void | Promise<void>): void => {
+      for (const observer of observers) {
+        try {
+          const result = call(observer);
+          if (result) pendingObservations.push(result.catch((error: unknown) => request.log.error({ err: error }, 'run observer failed')));
+        } catch (error) {
+          request.log.error({ err: error }, 'run observer failed');
+        }
+      }
+    };
+    let outcome: { status: 'completed' | 'failed' | 'cancelled'; usage?: Usage } = { status: 'failed' };
+    observe((observer) => observer.onRunStarted?.(runInfo));
+    // Start hooks can create durable parent records needed by end hooks. Preserve that
+    // lifecycle ordering before streaming, while observer failures remain non-fatal.
+    await Promise.all(pendingObservations);
+    pendingObservations.length = 0;
 
     registry.register(run);
     owners.set(run.runId, securityContext);
@@ -344,6 +444,11 @@ export function createServer(options: CreateServerOptions): FastifyInstance {
 
     try {
       for await (const event of run.events) {
+        if (observers.length > 0) {
+          observe((observer) => observer.onEvent?.(event, runInfo));
+          if (event.type === 'run.completed') outcome = { status: 'completed', usage: event.usage };
+          else if (event.type === 'run.cancelled') outcome = { status: 'cancelled' };
+        }
         if (telemetry?.enabled) {
           recordProtocolEvent(telemetry, event, correlation);
           if (event.type === 'run.completed') {
@@ -375,6 +480,11 @@ export function createServer(options: CreateServerOptions): FastifyInstance {
       reply.raw.off('close', onResponseClosed);
       registry.unregister(run.runId);
       owners.delete(run.runId);
+      if (observers.length > 0) {
+        if (disconnected && outcome.status === 'failed') outcome = { status: 'cancelled' };
+        observe((observer) => observer.onRunEnded?.(runInfo, outcome));
+        await Promise.all(pendingObservations);
+      }
       reply.raw.end();
     }
   });

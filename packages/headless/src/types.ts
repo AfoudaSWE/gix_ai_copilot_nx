@@ -1,0 +1,197 @@
+/**
+ * Framework-neutral chat types shared by every framework adapter (React, Angular). Moved
+ * here from `@gixcopilot/react` in Phase 12; `@gixcopilot/react` re-exports them unchanged.
+ */
+import type { CopilotClient } from '@gixcopilot/client';
+import type {
+  Message,
+  PublicCopilotError,
+  RunId,
+  Thread,
+  ToolActionPreview,
+  ToolActionRisk,
+  ToolActionReversibility,
+  ToolApprovalLevel,
+  ToolCallId,
+  ToolResult,
+  ToolSource,
+  Usage,
+  FinishReason,
+} from '@gixcopilot/protocol';
+import type { ContextDiagnostics, ContextExclusion, ResolvedContextItem } from '@gixcopilot/context';
+
+/** Serializable context metadata for the current run. Item content is never retained. */
+export interface ResolvedContextSummary {
+  readonly items: readonly Pick<ResolvedContextItem, 'id' | 'name' | 'scope' | 'priority' | 'sensitivity' | 'estimatedTokens' | 'truncated'>[];
+  readonly excluded: readonly Pick<ContextExclusion, 'id' | 'name' | 'scope' | 'reason'>[];
+  readonly estimatedTokens: number;
+  readonly diagnostics: ContextDiagnostics;
+}
+
+/** A protocol message with local presentation metadata; wire content is unchanged. */
+export interface CopilotMessage extends Message {
+  readonly status: 'complete' | 'streaming' | 'stopped' | 'error';
+}
+
+/** Exactly one generation state is observable at a time. */
+export type ChatStatus = 'idle' | 'submitting' | 'streaming' | 'waiting_for_approval' | 'completed' | 'stopped' | 'error';
+
+/**
+ * Headless tool activity state (Section 59-61, added in Phase 5) - a generic timeline of
+ * every tool call in the current run, regardless of origin, for a custom/headless UI (or the
+ * default `CopilotChat` activity rendering) to display without parsing raw protocol events
+ * itself. `arguments`/`result` are present for an advanced consumer that explicitly wants
+ * them; the *default* UI intentionally does not render them (Section 60).
+ */
+export interface ToolCallState {
+  readonly id: ToolCallId;
+  readonly name: string;
+  readonly source: ToolSource;
+  readonly status: 'requested' | 'running' | 'succeeded' | 'failed';
+  readonly arguments: Readonly<Record<string, unknown>>;
+  readonly result?: unknown;
+  readonly error?: PublicCopilotError;
+}
+
+/**
+ * Headless approval state (Phase 7, Section 76, 81-82) - a per-run timeline of every action
+ * that paused for human approval, mirroring `ToolCallState`'s own pattern so a custom/
+ * headless approval UI never needs to parse raw `approval.*` protocol events itself.
+ */
+export interface ApprovalState {
+  readonly approvalId: string;
+  readonly toolCallId: ToolCallId;
+  readonly action: string;
+  readonly approvalLevel: ToolApprovalLevel;
+  readonly summary: string;
+  readonly status: 'pending' | 'approved' | 'rejected' | 'expired' | 'cancelled';
+  readonly risk?: ToolActionRisk;
+  readonly reversibility?: ToolActionReversibility;
+  readonly expiresAt?: string;
+  readonly preview?: ToolActionPreview;
+  readonly decidedBy?: string;
+}
+
+/**
+ * Headless agent-run progress (Phase 10, Section 139-143) - one entry per agent run that
+ * occurred during the current client run, including every delegated/handed-off child run
+ * (each carries its own `agentRunId`; `rootRunId`/`parentRunId` let a consumer reconstruct
+ * the tree if it wants one). Mirrors `ToolCallState`'s "generic timeline, no
+ * chain-of-thought" posture (Section 18, 140) - only structured facts, never raw model
+ * reasoning.
+ */
+export interface AgentRunState {
+  readonly agentRunId: string;
+  readonly agentId: string;
+  readonly rootRunId?: RunId;
+  readonly parentRunId?: RunId;
+  readonly status: 'running' | 'completed' | 'failed' | 'cancelled';
+  readonly error?: PublicCopilotError;
+}
+
+/** One delegation (A -> B -> A, Section 56-58) observed during the current client run. */
+export interface AgentDelegationState {
+  readonly delegationId: string;
+  readonly fromAgentId: string;
+  readonly toAgentId: string;
+  readonly depth: number;
+  readonly status: 'started' | 'completed' | 'failed';
+  readonly error?: PublicCopilotError;
+}
+
+/** One handoff (A -> B, B becomes active, Section 61-65) observed during the current client
+ * run. */
+export interface AgentHandoffState {
+  readonly fromAgentId: string;
+  readonly toAgentId: string;
+  readonly reason: string;
+}
+
+/**
+ * Headless workflow-step progress (Phase 10, Section 139-143) - one entry per step attempt of
+ * the current workflow run. `attempt`/`phase` mirror the underlying
+ * `workflow.step.*` events (Section 117, 121, 202's retry/compensation reuse of this one
+ * event triad).
+ */
+export interface WorkflowStepState {
+  readonly stepId: string;
+  readonly stepType: 'function' | 'tool' | 'agent' | 'approval' | 'condition' | 'parallel';
+  readonly status: 'running' | 'completed' | 'failed';
+  readonly attempt: number;
+  readonly phase?: 'forward' | 'compensation';
+  readonly error?: PublicCopilotError;
+  readonly willRetry?: boolean;
+}
+
+/** Headless workflow-run progress (Phase 10, Section 139-143), mirroring `AgentRunState`. */
+export interface WorkflowRunState {
+  readonly workflowRunId: string;
+  readonly workflowId: string;
+  readonly status: 'running' | 'paused' | 'completed' | 'failed' | 'cancelled';
+  readonly pauseReason?: 'approval' | 'checkpoint' | 'manual' | 'external-event';
+  readonly pausedStepId?: string;
+  readonly error?: PublicCopilotError;
+  readonly steps: readonly WorkflowStepState[];
+}
+
+interface ChatSnapshotBase {
+  readonly messages: readonly CopilotMessage[];
+  readonly thread: Thread | null;
+  readonly runId: string | null;
+  readonly usage: Usage | undefined;
+  readonly finishReason: FinishReason | undefined;
+  /** Resolved context metadata for this run, without any item text or values. */
+  readonly contextDiagnostics?: ResolvedContextSummary;
+  /** Cleared at the start of every new run (Section 59) - this is per-turn activity, not a
+   * persistent tool-call history across the whole conversation. */
+  readonly toolCalls: readonly ToolCallState[];
+  /** Cleared at the start of every new run, same as `toolCalls` above. */
+  readonly approvals: readonly ApprovalState[];
+  /** Cleared at the start of every new run, same as `toolCalls` above (Phase 10). */
+  readonly agentRuns: readonly AgentRunState[];
+  readonly agentDelegations: readonly AgentDelegationState[];
+  readonly agentHandoffs: readonly AgentHandoffState[];
+  readonly workflowRuns: readonly WorkflowRunState[];
+}
+
+/** Immutable chat snapshot. Errors exist only in the error state. */
+export type ChatSnapshot = ChatSnapshotBase &
+  (
+    | { readonly status: Exclude<ChatStatus, 'error'>; readonly error: null }
+    | { readonly status: 'error'; readonly error: PublicCopilotError }
+  );
+
+/** Actions are stable for the lifetime of a provider configuration. */
+export interface ChatActions {
+  readonly invokeTool: (name: string, args: Readonly<Record<string, unknown>>) => Promise<ToolResult>;
+  /** Accept a nonblank user turn unless busy/disposed. True means accepted, not completed. */
+  readonly sendMessage: (text: string) => boolean;
+  /** Cancel the actual client run, preserving partial text. */
+  readonly stop: () => void;
+  /** Replay the failed turn with the same user message and replace its partial answer. */
+  readonly retry: () => boolean;
+  /** Replace the latest completed/stopped answer by replaying its user turn. */
+  readonly regenerate: () => boolean;
+  /** Cancel and reset local history/thread; does not delete server data. */
+  readonly clear: () => void;
+  /** Phase 7, Section 83 - approves a pending action. Resolves once the server accepts the
+   * decision; the resulting state update itself still arrives as an `approval.approved`
+   * event on the run, same as any other server-driven state change. */
+  readonly approveAction: (approvalId: string, comment?: string) => Promise<void>;
+  readonly rejectAction: (approvalId: string, comment?: string) => Promise<void>;
+}
+
+/** Full headless chat subscription plus stable actions. */
+export type CopilotChatResult = ChatSnapshot & ChatActions;
+
+/** Stable SDK access without subscribing to token updates. */
+export interface CopilotAccess extends ChatActions {
+  readonly client: CopilotClient;
+}
+
+/** Phase 4 application-context tuning (Section 25). Omit for the engine's own default. */
+export interface CopilotContextOptions {
+  readonly dataPolicy?: { redact(data: unknown): unknown };
+  /** Total token budget resolved application context may consume. Default 8000. */
+  readonly maxContextTokens?: number;
+}

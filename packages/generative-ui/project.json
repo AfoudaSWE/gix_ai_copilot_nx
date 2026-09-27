@@ -3,24 +3,36 @@
   "name": "generative-ui",
   "projectType": "library",
   "sourceRoot": "packages/generative-ui/src",
-  "tags": ["scope:generative-ui", "type:lib"],
+  "tags": ["scope:generative-ui", "type:lib", "platform:neutral"],
   "implicitDependencies": ["protocol", "tools", "context"],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run build", "cwd": "packages/generative-ui" }
+      "options": {
+        "command": "pnpm run build",
+        "cwd": "packages/generative-ui"
+      }
     },
     "typecheck": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run typecheck", "cwd": "packages/generative-ui" }
+      "options": {
+        "command": "pnpm run typecheck",
+        "cwd": "packages/generative-ui"
+      }
     },
     "test": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run test", "cwd": "packages/generative-ui" }
+      "options": {
+        "command": "pnpm run test",
+        "cwd": "packages/generative-ui"
+      }
     },
     "lint": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run lint", "cwd": "packages/generative-ui" }
+      "options": {
+        "command": "pnpm run lint",
+        "cwd": "packages/generative-ui"
+      }
     }
   }
 }

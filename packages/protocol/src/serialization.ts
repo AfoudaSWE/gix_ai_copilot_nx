@@ -71,6 +71,8 @@ const publicCopilotErrorSchema = z.object({
     'PROVIDER_ERROR',
     'AUTHENTICATION_ERROR',
     'RATE_LIMITED',
+    'QUOTA_EXCEEDED',
+    'BUDGET_EXCEEDED',
     'MODEL_NOT_FOUND',
     'CONTEXT_LIMIT_EXCEEDED',
     'TIMEOUT',

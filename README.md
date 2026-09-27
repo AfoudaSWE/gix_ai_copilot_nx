@@ -1,15 +1,16 @@
 # AI Copilot SDK
 
-A production-grade, TypeScript-first AI Copilot & Agent SDK. Framework-independent core,
-with React/Angular, Node.js server, and LLM provider adapters layered on top.
+A TypeScript-first AI Copilot & Agent SDK with a framework-independent core and
+React, Angular, Node.js server, and LLM provider adapters layered on top.
+It exists to connect application context and authorized actions to model-driven conversations
+without treating model output as authority.
 
-> **Current status: Phase 11 — DevTools + Testing + Evals + Observability COMPLETE.**
-> Phases 1–11 are complete; Phase 12 (production platform and ecosystem) is locked. On top of
-> the protocol, core runtime, server, client, model runtime, React SDK, context, tools and
-> generative UI, the SDK now has an Action Firewall with RBAC/ABAC and HITL approvals (Phase 7),
-> OpenAPI and MCP integrations (Phase 8), permission-aware RAG and memory (Phase 9), agents,
-> multi-agent orchestration and durable workflows (Phase 10), and telemetry, DevTools, a
-> deterministic testing SDK and an evaluation framework (Phase 11). Always check
+> **Current status: Phase 12 — Production Platform + Ecosystem COMPLETE.**
+> Phases 1–11 are complete. Phase 12 adds Angular and Node SDKs, a CLI, multi-tenant
+> persistence, Redis workers, model routing and usage enforcement, a management API and
+> platform, production deployment, release tooling and a documentation portal. The owner
+> chose proprietary distribution and no public npm publication; the previously committed
+> real credential was rotated and its exposure reviewed per the owner. Always check
 > [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) for authoritative phase state; see
 > [`docs/architecture/overview.md`](docs/architecture/overview.md) and the [ADRs](docs/adr/)
 > for the reasoning, and
@@ -66,6 +67,13 @@ Client -> Server -> Core -> (default executor | Model Runtime -> Provider) -> SS
   memory/approval fixtures, agent and workflow simulation, and side-effect-free replay.
 - **`@gixcopilot/evals`** (Phase 11) — datasets, evaluators, reports, baseline comparison and CI
   gates in which security is a hard gate.
+- **Phase 12 SDKs** — `@gixcopilot/headless` shares framework-neutral behavior between
+  React and `@gixcopilot/angular`; `@gixcopilot/node` provides in-process and HTTP use;
+  `@gixcopilot/cli` scaffolds projects, agents and tools.
+- **Phase 12 production** — `@gixcopilot/config`, `tenancy`, `persistence-postgres`, `redis`,
+  `model-router`, `usage`, and `management` power `apps/api`, `apps/worker` and the
+  `apps/platform` control-plane UI. `apps/docs` serves the [developer guides](docs/guides/getting-started.md)
+  and [production guides](docs/production/DEPLOYMENT.md).
 - **`examples/protocol-demo`** — the Phase 1 proof (no AI), CLI + integration test.
 - **`examples/model-streaming`** — the Phase 2 proof (mock by default, optional real
   OpenAI), CLI + mandatory mock integration test + optional real-provider smoke test.
@@ -78,7 +86,11 @@ packages/
   core/                 @gixcopilot/core
   client/               @gixcopilot/client
   server/               @gixcopilot/server
-  react/                @gixcopilot/react (headless)
+  headless/             @gixcopilot/headless (shared chat behavior)
+  react/                @gixcopilot/react (React hooks and provider)
+  angular/              @gixcopilot/angular (Angular signals and components)
+  node/                 @gixcopilot/node (Node integration)
+  cli/                  @gixcopilot/cli (aicopilot command)
   ui/                   @gixcopilot/ui (optional components + CSS)
   context/              @gixcopilot/context (framework-independent context/state engine)
   tools/                @gixcopilot/tools (framework-independent canonical tool architecture)
@@ -89,6 +101,7 @@ packages/
   devtools/             @gixcopilot/devtools (+ /server) (Phase 11)
   testing/              @gixcopilot/testing (Phase 11)
   evals/                @gixcopilot/evals (Phase 11)
+  config/ tenancy/ persistence-postgres/ redis/ model-router/ usage/ management/ (Phase 12)
   providers/
     provider-core/      @gixcopilot/provider
     mock/               @gixcopilot/provider-mock
@@ -180,7 +193,30 @@ export function App() {
 
 The runtime URL is a base URL; requests go to `/api/copilot/runs`. See the
 [React API](docs/phases/phase-03/Phase_3_API.md) for custom clients and headless hooks.
-Packages remain private workspace packages; no npm release was performed.
+Packages are validated as local tarballs for internal use. Public npm publication is
+excluded by the owner's proprietary distribution decision; see [Releasing](docs/RELEASING.md).
+
+## Phase 12 developer and production guides
+
+- Start with [Getting started](docs/guides/getting-started.md) and the [examples](docs/guides/examples.md).
+- SDK guides: [React](docs/guides/react.md), [Angular](docs/guides/angular.md), and [Node](docs/guides/node.md).
+- Application features: [tools](docs/guides/tools.md), [generative UI](docs/guides/generative-ui.md), [security](docs/guides/security.md), [OpenAPI](docs/guides/openapi.md), [MCP](docs/guides/mcp.md), [RAG](docs/guides/rag.md), [memory](docs/guides/memory.md), [agents](docs/guides/agents.md), and [workflows](docs/guides/workflows.md).
+- Operations: [CLI](docs/guides/cli.md), [platform](docs/guides/platform.md), [DevTools](docs/guides/devtools.md), [testing](docs/guides/testing.md), [evaluations](docs/guides/evaluations.md), [production](docs/guides/production.md), and [deployment](docs/production/DEPLOYMENT.md).
+- [API reference](docs/reference/api.md), [versioning](docs/VERSIONING.md), and [release process](docs/RELEASING.md). Contributors should read [AGENTS.md](AGENTS.md).
+
+## Capability maturity
+
+These labels describe the current repository evidence, not a published support promise.
+No public npm release has occurred.
+
+| Capability | Status | Main package or app |
+| --- | --- | --- |
+| Protocol, streaming, React | Beta | `protocol`, `core`, `server`, `client`, `react`, `ui` |
+| Tools, generative UI, Action Firewall | Beta | `tools`, `generative-ui`, `security` |
+| OpenAPI, MCP, RAG, memory | Beta | `openapi`, `mcp`, `rag`, `memory` |
+| Agents, workflows, DevTools, evaluations | Beta | `agents`, `workflows`, `devtools`, `evals` |
+| Angular and Node SDKs, CLI | Beta | `angular`, `node`, `cli` |
+| Management platform and production deployment | Experimental | `management`, `apps/platform`, `apps/api`, `apps/worker` |
 
 ## Testing
 
@@ -213,4 +249,4 @@ from one phase to the next.
 
 ## License
 
-Not yet specified.
+Proprietary. No license grant is provided. Public npm publication is not authorized.

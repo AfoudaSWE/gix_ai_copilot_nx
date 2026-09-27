@@ -1,8 +1,16 @@
 {
   "name": "@gixcopilot/checkpoint-postgres",
   "version": "0.1.0",
-  "private": true,
   "description": "PostgreSQL CheckpointStore adapter for @gixcopilot/workflows - the only other package besides @gixcopilot/vectorstore-pgvector allowed to depend on drizzle-orm/pg.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AfoudaSWE/gix_ai_copilot_nx.git",
+    "directory": "packages/checkpoint-postgres"
+  },
+  "homepage": "https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/checkpoint-postgres#readme",
+  "bugs": {
+    "url": "https://github.com/AfoudaSWE/gix_ai_copilot_nx/issues"
+  },
   "type": "module",
   "sideEffects": false,
   "main": "./dist/index.js",
@@ -16,8 +24,19 @@
   },
   "files": [
     "dist",
-    "!dist/**/*.spec.*"
+    "migrations",
+    "!dist/**/*.spec.*",
+    "!dist/**/*.spec-helper.*",
+    "!dist/**/*.integration.spec.*",
+    "!dist/**/*.tsbuildinfo"
   ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
     "build": "tsc -b tsconfig.json",
     "typecheck": "tsc -b tsconfig.json",
@@ -27,7 +46,7 @@
   "dependencies": {
     "@gixcopilot/protocol": "workspace:*",
     "@gixcopilot/workflows": "workspace:*",
-    "drizzle-orm": "^0.44.7",
+    "drizzle-orm": "^0.45.3",
     "pg": "^8.16.4"
   },
   "devDependencies": {

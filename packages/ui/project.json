@@ -3,7 +3,7 @@
   "name": "ui",
   "projectType": "library",
   "sourceRoot": "packages/ui/src",
-  "tags": ["scope:ui", "type:lib"],
+  "tags": ["scope:ui", "type:lib", "platform:browser"],
   "implicitDependencies": ["react"],
   "targets": {
     "build": {

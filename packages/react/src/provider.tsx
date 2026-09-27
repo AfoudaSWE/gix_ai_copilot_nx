@@ -5,11 +5,13 @@ import type { ReactElement } from 'react';
 import { createCopilotClient } from '@gixcopilot/client';
 import { CopilotError } from '@gixcopilot/protocol';
 import type { Thread } from '@gixcopilot/protocol';
-import { createContextEngine, createContextRegistry, createCopilotStateStore } from '@gixcopilot/context';
-import { createDefaultToolResolver, createToolRegistry, createToolRuntime, isToolEnabled, toToolManifest } from '@gixcopilot/tools';
-import { createGenerativeComponentRegistry } from '@gixcopilot/generative-ui';
-import { createChatStore } from './chat-store.js';
-import type { ResolveContextMessage, ResolveToolManifest } from './chat-store.js';
+import {
+  createChatStore,
+  createContextMessageResolver,
+  createCopilotParts,
+  createToolManifestResolver,
+} from '@gixcopilot/headless';
+import type { ChatStore, ResolveContextMessage, ResolveToolManifest } from '@gixcopilot/headless';
 import { CopilotInternalsContext } from './internals.js';
 import type { CopilotInternals } from './internals.js';
 import type {
@@ -27,7 +29,7 @@ import type {
   WorkflowRunState,
 } from './types.js';
 
-const StoreContext = createContext<ReturnType<typeof createChatStore> | null>(null);
+const StoreContext = createContext<ChatStore | null>(null);
 
 /** Own one isolated chat. Changing connection/model/thread configuration resets it. */
 export function CopilotProvider({
@@ -60,44 +62,23 @@ export function CopilotProvider({
   // One isolated context/state universe per provider instance (Section 65) - never a
   // module-level singleton, so sibling/nested CopilotProviders never see each other's
   // context or state.
-  const internals: CopilotInternals = useMemo(() => {
-    const toolRegistry = createToolRegistry();
-    return {
+  // The framework-neutral parts come from @gixcopilot/headless (shared with the Angular
+  // adapter); only the React renderer maps are React-specific.
+  const internals: CopilotInternals = useMemo(
+    () => ({
+      ...createCopilotParts({ maxContextTokens, dataPolicy }),
       serverActions: !localToolExecution,
-      registry: createContextRegistry(),
-      engine: createContextEngine({ maxContextTokens, dataPolicy }),
-      stateStore: createCopilotStateStore(),
-      toolRegistry,
-      toolRuntime: createToolRuntime({ resolver: createDefaultToolResolver(toolRegistry) }),
-      generativeComponentRegistry: createGenerativeComponentRegistry(),
       componentRenderers: new Map(),
       toolRenderers: new Map(),
-    };
-  }, [maxContextTokens, localToolExecution, dataPolicy]);
+    }),
+    [maxContextTokens, localToolExecution, dataPolicy],
+  );
   useEffect(() => () => internals.registry.clear(), [internals]);
   useEffect(() => () => internals.toolRegistry.clear(), [internals]);
   useEffect(() => () => internals.generativeComponentRegistry.clear(), [internals]);
 
-  const resolveContextMessage: ResolveContextMessage = useMemo(
-    () => () => {
-      // Fast, fully synchronous path when nothing is registered (the common Phase 3 case):
-      // no promise, no microtask, `client.run()` dispatches on the same tick it always did.
-      if (internals.registry.list({ enabledOnly: true }).length === 0) return undefined;
-      return internals.engine.resolve(internals.registry);
-    },
-    [internals],
-  );
-
-  const resolveToolManifest: ResolveToolManifest = useMemo(
-    () => () => {
-      const enabledTools = internals.toolRegistry.list().filter(isToolEnabled);
-      // `undefined` (not an empty array) when nothing is registered, matching
-      // resolveContextMessage's "send exactly what Phase 4 always sent" convention -
-      // @gixcopilot/client omits the `tools` field entirely in that case (Section 64).
-      return enabledTools.length === 0 ? undefined : toToolManifest(enabledTools);
-    },
-    [internals],
-  );
+  const resolveContextMessage: ResolveContextMessage = useMemo(() => createContextMessageResolver(internals), [internals]);
+  const resolveToolManifest: ResolveToolManifest = useMemo(() => createToolManifestResolver(internals), [internals]);
 
   const store = useMemo(
     () =>
@@ -124,7 +105,7 @@ export function CopilotProvider({
   );
 }
 
-function useStore(): ReturnType<typeof createChatStore> {
+function useStore(): ChatStore {
   const store = useContext(StoreContext);
   if (!store) throw CopilotError.validation('Copilot hooks must be used within CopilotProvider.');
   return store;

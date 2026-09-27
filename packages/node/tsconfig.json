@@ -1,0 +1,43 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "references": [
+    {
+      "path": "../protocol"
+    },
+    {
+      "path": "../core"
+    },
+    {
+      "path": "../client"
+    },
+    {
+      "path": "../providers/provider-core"
+    },
+    {
+      "path": "../providers/mock"
+    },
+    {
+      "path": "../security"
+    },
+    {
+      "path": "../server"
+    },
+    {
+      "path": "../telemetry"
+    },
+    {
+      "path": "../tools"
+    }
+  ]
+}

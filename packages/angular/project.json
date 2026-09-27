@@ -1,0 +1,64 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "angular",
+  "projectType": "library",
+  "sourceRoot": "packages/angular/src",
+  "tags": [
+    "scope:angular",
+    "type:lib",
+    "platform:browser"
+  ],
+  "implicitDependencies": [
+    "client",
+    "context",
+    "generative-ui",
+    "headless",
+    "protocol",
+    "tools"
+  ],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run build",
+        "cwd": "packages/angular"
+      },
+      "outputs": [
+        "{projectRoot}/dist"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run typecheck",
+        "cwd": "packages/angular"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run test",
+        "cwd": "packages/angular"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run lint",
+        "cwd": "packages/angular"
+      }
+    },
+    "nx-release-publish": {
+      "options": {
+        "packageRoot": "{projectRoot}/dist"
+      }
+    }
+  },
+  "release": {
+    "version": {
+      "manifestRootsToUpdate": [
+        "{projectRoot}"
+      ]
+    }
+  }
+}

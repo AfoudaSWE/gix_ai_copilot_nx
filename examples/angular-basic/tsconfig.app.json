@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "outDir": "out-tsc/app", "module": "ES2022", "moduleResolution": "bundler", "verbatimModuleSyntax": false },
+  "files": ["src/main.ts"],
+  "include": ["src/app/**/*.ts"]
+}

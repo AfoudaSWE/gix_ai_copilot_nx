@@ -1,0 +1,28 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "references": [
+    {
+      "path": "../config"
+    },
+    {
+      "path": "../evals"
+    },
+    {
+      "path": "../openapi"
+    },
+    {
+      "path": "../persistence-postgres"
+    }
+  ]
+}

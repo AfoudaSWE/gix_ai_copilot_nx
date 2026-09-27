@@ -12,9 +12,12 @@ import {
 import type {
   AnyGenerativeComponentDefinition,
   GenerativeComponentMetadata,
-  GenerativeUiRenderResult,
 } from '@gixcopilot/generative-ui';
+import { isGenerativeUiRenderResult, toGenerativeUIRequests } from '@gixcopilot/headless';
+import type { GenerativeUIRequestState } from '@gixcopilot/headless';
 import { useCopilotInternals } from './internals.js';
+
+export type { GenerativeUIRequestState };
 import type { ToolRenderFn } from './internals.js';
 import { useCopilot, useToolCalls } from './provider.js';
 import type { ToolCallState } from './types.js';
@@ -124,9 +127,6 @@ export function useInvokeTool(): (name: string, args: unknown) => Promise<ToolRe
   );
 }
 
-function isGenerativeUiRenderResult(value: unknown): value is GenerativeUiRenderResult {
-  return typeof value === 'object' && value !== null && 'component' in value && 'props' in value;
-}
 
 /**
  * Resolves one tool call's activity into custom content, or `undefined` to fall back to the
@@ -169,37 +169,7 @@ export function useResolveToolRenderer(): (toolCall: ToolCallState) => ReactNode
   );
 }
 
-/** A generative-UI-specific projection of `useToolCalls()` (Section 58) - for a custom UI
- * that wants only structured-UI-request activity, not every tool call in the run. */
-export interface GenerativeUIRequestState {
-  readonly id: string;
-  readonly component: string;
-  readonly status: 'requested' | 'running' | 'succeeded' | 'failed';
-  readonly props?: unknown;
-  readonly error?: ToolCallState['error'];
-}
 
-function toGenerativeUIRequests(
-  toolCalls: readonly ToolCallState[],
-  generativeComponentRegistry: { readonly list: () => readonly AnyGenerativeComponentDefinition[] },
-): readonly GenerativeUIRequestState[] {
-  const requests: GenerativeUIRequestState[] = [];
-  for (const toolCall of toolCalls) {
-    const componentName = generativeUiComponentNameOfToolName(toolCall.name, generativeComponentRegistry);
-    if (!componentName) continue;
-    requests.push({
-      id: toolCall.id,
-      component: componentName,
-      status: toolCall.status,
-      props:
-        toolCall.status === 'succeeded' && isGenerativeUiRenderResult(toolCall.result)
-          ? toolCall.result.props
-          : undefined,
-      error: toolCall.error,
-    });
-  }
-  return requests;
-}
 
 /** Only this run's generative-UI activity (Section 58), ordered as requested - a custom UI
  * that does not want ordinary tool-call noise mixed in. */

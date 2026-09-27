@@ -1,0 +1,32 @@
+# syntax=docker/dockerfile:1.7
+# Production image for a Node app of this monorepo (apps/api or apps/worker).
+#   docker build -f deploy/docker/Dockerfile.node --build-arg APP=api    -t aicopilot-api .
+#   docker build -f deploy/docker/Dockerfile.node --build-arg APP=worker -t aicopilot-worker .
+# Multi-stage: build with the full toolchain, ship only the app's production dependencies.
+# No .env, keys or credentials are copied (see .dockerignore); configuration arrives at runtime.
+
+ARG NODE_IMAGE=node:22.15.0-bookworm-slim
+
+FROM ${NODE_IMAGE} AS build
+ARG APP
+ENV PNPM_HOME=/pnpm PATH=/pnpm:$PATH NX_DAEMON=false CI=true
+RUN corepack enable && corepack prepare pnpm@11.1.2 --activate
+WORKDIR /repo
+COPY . .
+RUN pnpm install --frozen-lockfile
+RUN pnpm exec nx run ${APP}:build --skip-nx-cache
+# An isolated, production-only copy of the app and its workspace packages.
+RUN pnpm --filter "@gixcopilot/${APP}" deploy --prod --legacy /out
+
+FROM ${NODE_IMAGE} AS runtime
+ARG APP
+ENV NODE_ENV=production
+WORKDIR /app
+COPY --from=build --chown=node:node /out /app
+# Non-root at runtime.
+USER node
+EXPOSE 4000
+# Liveness only; orchestrators should use /ready for traffic (the worker has no HTTP server).
+HEALTHCHECK --interval=15s --timeout=3s --start-period=20s --retries=3 \
+  CMD node -e "if(process.env.AICOPILOT_HEALTHCHECK==='none')process.exit(0);fetch('http://127.0.0.1:'+(process.env.PORT||4000)+'/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"
+CMD ["node", "dist/main.js"]

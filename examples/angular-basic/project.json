@@ -1,0 +1,53 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "angular-basic",
+  "projectType": "application",
+  "sourceRoot": "examples/angular-basic/src",
+  "tags": [
+    "scope:example",
+    "type:app"
+  ],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run build",
+        "cwd": "examples/angular-basic"
+      },
+      "outputs": [
+        "{projectRoot}/dist",
+        "{projectRoot}/web-dist"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run typecheck",
+        "cwd": "examples/angular-basic"
+      },
+      "dependsOn": [
+        "^build"
+      ]
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run test",
+        "cwd": "examples/angular-basic"
+      },
+      "dependsOn": [
+        "^build"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run lint",
+        "cwd": "examples/angular-basic"
+      }
+    }
+  },
+  "implicitDependencies": [
+    "angular"
+  ]
+}

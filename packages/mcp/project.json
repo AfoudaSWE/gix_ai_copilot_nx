@@ -3,24 +3,36 @@
   "name": "mcp",
   "projectType": "library",
   "sourceRoot": "packages/mcp/src",
-  "tags": ["scope:mcp", "type:lib"],
+  "tags": ["scope:mcp", "type:lib", "platform:server"],
   "implicitDependencies": ["protocol", "tools"],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run build", "cwd": "packages/mcp" }
+      "options": {
+        "command": "pnpm run build",
+        "cwd": "packages/mcp"
+      }
     },
     "typecheck": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run typecheck", "cwd": "packages/mcp" }
+      "options": {
+        "command": "pnpm run typecheck",
+        "cwd": "packages/mcp"
+      }
     },
     "test": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run test", "cwd": "packages/mcp" }
+      "options": {
+        "command": "pnpm run test",
+        "cwd": "packages/mcp"
+      }
     },
     "lint": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run lint", "cwd": "packages/mcp" }
+      "options": {
+        "command": "pnpm run lint",
+        "cwd": "packages/mcp"
+      }
     }
   }
 }

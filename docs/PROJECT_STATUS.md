@@ -20,7 +20,7 @@ Phase 08 - OpenAPI + MCP + Integrations        COMPLETE
 Phase 09 - Knowledge + RAG + Memory            COMPLETE
 Phase 10 - Agents + Multi-Agent + Workflows    COMPLETE
 Phase 11 - DevTools + Testing + Evals + Obs.   COMPLETE
-Phase 12 - Production Platform + Ecosystem     NOT STARTED / LOCKED
+Phase 12 - Production Platform + Ecosystem     COMPLETE
 ```
 
 Phase progression is explicitly controlled by the user — see the `phase-gate` skill. No
@@ -356,6 +356,12 @@ phase is started without an explicit instruction naming it.
   [completion report](phases/phase-11/Phase_11_Status.md), ADRs
   [0016](adr/0016-telemetry-and-diagnostics-architecture.md) to
   [0019](adr/0019-evaluation-model-and-security-hard-gates.md).
+
+## Phase 12 — Production Platform + Ecosystem (COMPLETE)
+
+- Implemented Angular and Node SDKs over shared headless state, a CLI with four starter templates, validated configuration and secret references, tenant-scoped PostgreSQL persistence, Redis workers and limits, model routing/fallback, usage admission, an authenticated management API and platform, Docker deployment, CI/release workflows, and a documentation portal.
+- The post-upgrade 64-project `pnpm validate` gate passed (235 of 254 tasks executed, 19 cached). Real PostgreSQL/Redis suites, 11 Chromium tests, all eight initial clean tarball consumers and the upgraded enterprise starter passed. See [Phase 12 testing](phases/phase-12/Phase_12_Testing.md) for exact results and limits.
+- The owner chose proprietary distribution with no public npm publication; the release workflow validates internal candidates only. The owner confirmed revocation and rotation of the previously committed real credential and completion of the exposure review. The production audit prompted an upgrade to patched Drizzle ORM 0.45.3; the audit reported no known vulnerabilities. Docker smoke passed 10/10 checks on rebuilt images. See [Phase 12 issues](phases/phase-12/Phase_12_Issues.md).
 
 ## Current Validation (Phase 11 completion)
 

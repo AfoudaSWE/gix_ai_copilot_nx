@@ -1,0 +1,102 @@
+# Local production-like environment (Phase 12 Section 116):
+#   cp deploy/.env.example deploy/.env   # fill in secrets locally; never commit deploy/.env
+#   docker compose --env-file deploy/.env up --build
+# API http://127.0.0.1:4000 · Platform http://127.0.0.1:8080
+# Not a hardened production deployment: use managed PostgreSQL/Redis, TLS and a secret manager.
+name: aicopilot
+
+x-app-env: &app-env
+  AICOPILOT_ENV: ${AICOPILOT_ENV:-production}
+  DATABASE_URL: postgres://copilot:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/copilot
+  REDIS_URL: redis://redis:6379
+  HOST: 0.0.0.0
+  PORT: "4000"
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+  AICOPILOT_REQUIRE_AUTH: "true"
+  AICOPILOT_JWT_SECRET: ${AICOPILOT_JWT_SECRET:?set AICOPILOT_JWT_SECRET}
+  AICOPILOT_JWT_ISSUER: ${AICOPILOT_JWT_ISSUER:-aicopilot}
+  AICOPILOT_JWT_AUDIENCE: ${AICOPILOT_JWT_AUDIENCE:-aicopilot-api}
+  AICOPILOT_MANAGEMENT_ENABLED: "true"
+  AICOPILOT_SECRET_KEY: ${AICOPILOT_SECRET_KEY:?set AICOPILOT_SECRET_KEY}
+  AICOPILOT_METRICS_ENABLED: "true"
+  AICOPILOT_METRICS_TOKEN: ${AICOPILOT_METRICS_TOKEN:?set AICOPILOT_METRICS_TOKEN}
+  AICOPILOT_MODEL_PROVIDER: ${AICOPILOT_MODEL_PROVIDER:-openai}
+  AICOPILOT_MODEL: ${AICOPILOT_MODEL:-gpt-4o-mini}
+  OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+  AICOPILOT_RETENTION_CONVERSATION_DAYS: ${AICOPILOT_RETENTION_CONVERSATION_DAYS:-}
+  AICOPILOT_RETENTION_AUDIT_DAYS: ${AICOPILOT_RETENTION_AUDIT_DAYS:-}
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: copilot
+      POSTGRES_USER: copilot
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U copilot -d copilot"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: [redis-data:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # Reviewed migrations, applied once per deployment before the servers start.
+  migrate:
+    build: { context: ., dockerfile: deploy/docker/Dockerfile.node, args: { APP: api } }
+    image: aicopilot-api:local
+    command: ["node", "dist/migrate.js"]
+    environment:
+      <<: *app-env
+      AICOPILOT_HEALTHCHECK: none
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: "no"
+
+  api:
+    image: aicopilot-api:local
+    environment: *app-env
+    ports: ["127.0.0.1:${AICOPILOT_HOST_API_PORT:-4000}:4000"]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/ready').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    stop_grace_period: 30s
+
+  worker:
+    build: { context: ., dockerfile: deploy/docker/Dockerfile.node, args: { APP: worker } }
+    image: aicopilot-worker:local
+    environment:
+      <<: *app-env
+      AICOPILOT_HEALTHCHECK: none
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+    stop_grace_period: 30s
+    deploy: { replicas: 2 }
+
+  platform:
+    build: { context: ., dockerfile: deploy/docker/Dockerfile.platform }
+    image: aicopilot-platform:local
+    environment:
+      API_UPSTREAM: http://api:4000
+    ports: ["127.0.0.1:${AICOPILOT_HOST_PLATFORM_PORT:-8080}:8080"]
+    depends_on:
+      api: { condition: service_healthy }
+
+volumes:
+  postgres-data:
+  redis-data:

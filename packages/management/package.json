@@ -1,0 +1,63 @@
+{
+  "name": "@gixcopilot/management",
+  "version": "0.1.0",
+  "description": "The AI Copilot control plane: authorized, audited, tenant-scoped management services and HTTP API for projects, environments, models, agents, tools, OpenAPI, MCP, knowledge, prompts, evaluations, traces, audit, usage and tenants.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AfoudaSWE/gix_ai_copilot_nx.git",
+    "directory": "packages/management"
+  },
+  "homepage": "https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/management#readme",
+  "bugs": {
+    "url": "https://github.com/AfoudaSWE/gix_ai_copilot_nx/issues"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.spec.*",
+    "!dist/**/*.spec-helper.*",
+    "!dist/**/*.integration.spec.*",
+    "!dist/**/*.tsbuildinfo"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "typecheck": "tsc -b tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@gixcopilot/devtools": "workspace:*",
+    "@gixcopilot/evals": "workspace:*",
+    "@gixcopilot/openapi": "workspace:*",
+    "@gixcopilot/protocol": "workspace:*",
+    "@gixcopilot/security": "workspace:*",
+    "@gixcopilot/tenancy": "workspace:*",
+    "@gixcopilot/usage": "workspace:*",
+    "zod": "4.6.5"
+  },
+  "peerDependencies": {
+    "fastify": "^5.0.0"
+  },
+  "devDependencies": {
+    "fastify": "5.12.5",
+    "vitest": "5.0.1",
+    "@gixcopilot/telemetry": "workspace:*"
+  }
+}

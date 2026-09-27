@@ -1,0 +1,82 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "references": [
+    {
+      "path": "../../packages/config"
+    },
+    {
+      "path": "../../packages/core"
+    },
+    {
+      "path": "../../packages/devtools"
+    },
+    {
+      "path": "../../packages/evals"
+    },
+    {
+      "path": "../../packages/jobs"
+    },
+    {
+      "path": "../../packages/management"
+    },
+    {
+      "path": "../../packages/model-router"
+    },
+    {
+      "path": "../../packages/persistence-postgres"
+    },
+    {
+      "path": "../../packages/providers/provider-core"
+    },
+    {
+      "path": "../../packages/providers/mock"
+    },
+    {
+      "path": "../../packages/providers/openai"
+    },
+    {
+      "path": "../../packages/redis"
+    },
+    {
+      "path": "../../packages/security"
+    },
+    {
+      "path": "../../packages/server"
+    },
+    {
+      "path": "../../packages/telemetry"
+    },
+    {
+      "path": "../../packages/tenancy"
+    },
+    {
+      "path": "../../packages/tools"
+    },
+    {
+      "path": "../../packages/usage"
+    },
+    {
+      "path": "../../packages/context"
+    },
+    {
+      "path": "../../packages/node"
+    },
+    {
+      "path": "../../packages/protocol"
+    },
+    {
+      "path": "../../packages/rag"
+    }
+  ]
+}

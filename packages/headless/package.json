@@ -1,0 +1,55 @@
+{
+  "name": "@gixcopilot/headless",
+  "version": "0.1.0",
+  "description": "Framework-neutral chat store and copilot composition shared by the React and Angular adapters.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AfoudaSWE/gix_ai_copilot_nx.git",
+    "directory": "packages/headless"
+  },
+  "homepage": "https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/headless#readme",
+  "bugs": {
+    "url": "https://github.com/AfoudaSWE/gix_ai_copilot_nx/issues"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.spec.*",
+    "!dist/**/*.spec-helper.*",
+    "!dist/**/*.tsbuildinfo"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "typecheck": "tsc -b tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@gixcopilot/client": "workspace:*",
+    "@gixcopilot/context": "workspace:*",
+    "@gixcopilot/generative-ui": "workspace:*",
+    "@gixcopilot/protocol": "workspace:*",
+    "@gixcopilot/tools": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "5.0.1",
+    "zod": "4.6.5"
+  }
+}

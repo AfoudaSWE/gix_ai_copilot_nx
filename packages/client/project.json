@@ -3,24 +3,36 @@
   "name": "client",
   "projectType": "library",
   "sourceRoot": "packages/client/src",
-  "tags": ["scope:client", "type:lib"],
+  "tags": ["scope:client", "type:lib", "platform:browser"],
   "implicitDependencies": ["protocol"],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run build", "cwd": "packages/client" }
+      "options": {
+        "command": "pnpm run build",
+        "cwd": "packages/client"
+      }
     },
     "typecheck": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run typecheck", "cwd": "packages/client" }
+      "options": {
+        "command": "pnpm run typecheck",
+        "cwd": "packages/client"
+      }
     },
     "test": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run test", "cwd": "packages/client" }
+      "options": {
+        "command": "pnpm run test",
+        "cwd": "packages/client"
+      }
     },
     "lint": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run lint", "cwd": "packages/client" }
+      "options": {
+        "command": "pnpm run lint",
+        "cwd": "packages/client"
+      }
     }
   }
 }

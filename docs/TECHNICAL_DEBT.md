@@ -22,9 +22,10 @@
 
 3. **The server's run registry is process-local and in-memory.** Documented as a known
    limitation (not deferred debt exactly, but worth tracking here too): a multi-instance
-   deployment cannot route a cancel request to whichever instance holds the run. No action
-   needed until a phase actually requires horizontal scaling of the server.
-   _(Since: Phase 1)_
+   deployment cannot route a cancel request to whichever instance holds the run. Phase 12 supports
+   independent runs on multiple instances but still needs routing affinity for cancel and
+   frontend tool-result requests; see [Scaling](production/SCALING.md).
+   _(Since: Phase 1; still open in Phase 12)_
 
 Phase 4 review: no new debt was introduced. `@gixcopilot/context` ships with the same
 per-package `*.spec.ts`-in-`dist/` characteristic as item 1 above (not additional debt, the

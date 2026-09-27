@@ -3,10 +3,7 @@
   "name": "agents",
   "projectType": "library",
   "sourceRoot": "packages/agents/src",
-  "tags": [
-    "scope:agents",
-    "type:lib"
-  ],
+  "tags": ["scope:agents", "type:lib", "platform:server"],
   "implicitDependencies": [
     "protocol",
     "core",

@@ -1,0 +1,51 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "node",
+  "projectType": "library",
+  "sourceRoot": "packages/node/src",
+  "tags": [
+    "scope:node",
+    "type:lib",
+    "platform:server"
+  ],
+  "implicitDependencies": [
+    "client",
+    "core",
+    "protocol",
+    "provider",
+    "security",
+    "server",
+    "telemetry",
+    "tools"
+  ],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run build",
+        "cwd": "packages/node"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run typecheck",
+        "cwd": "packages/node"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run test",
+        "cwd": "packages/node"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run lint",
+        "cwd": "packages/node"
+      }
+    }
+  }
+}

@@ -35,7 +35,12 @@ interface ActiveRun {
  */
 export type ResolveToolManifest = () => readonly ToolManifestEntry[] | undefined;
 
-interface ChatStore {
+/**
+ * A framework-independent chat store: an immutable snapshot plus subscribe/getSnapshot, the
+ * shape both React's `useSyncExternalStore` and an Angular signal bridge consume. Transport and
+ * runtime behavior stay in `@gixcopilot/client`; this only projects client runs into state.
+ */
+export interface ChatStore {
   readonly access: CopilotAccess;
   readonly getSnapshot: () => ChatSnapshot;
   readonly getServerSnapshot: () => ChatSnapshot;
@@ -69,7 +74,8 @@ function summarizeContext(resolved: ResolvedContext): ResolvedContextSummary {
   };
 }
 
-/** Internal presentation store. Transport and runtime behavior stay in the client. */
+/** Creates the chat store for one copilot instance. Call `mount()` when it becomes active and
+ * `dispose()` when its owner is destroyed (cancels any active run). */
 export function createChatStore(
   client: CopilotClient,
   model?: ClientModelReference,

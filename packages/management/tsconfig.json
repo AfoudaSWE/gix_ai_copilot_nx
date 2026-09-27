@@ -1,0 +1,40 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "references": [
+    {
+      "path": "../protocol"
+    },
+    {
+      "path": "../security"
+    },
+    {
+      "path": "../tenancy"
+    },
+    {
+      "path": "../usage"
+    },
+    {
+      "path": "../devtools"
+    },
+    {
+      "path": "../evals"
+    },
+    {
+      "path": "../openapi"
+    },
+    {
+      "path": "../telemetry"
+    }
+  ]
+}

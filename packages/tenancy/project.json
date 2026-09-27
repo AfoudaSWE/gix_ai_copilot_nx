@@ -1,0 +1,45 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "tenancy",
+  "projectType": "library",
+  "sourceRoot": "packages/tenancy/src",
+  "tags": [
+    "scope:tenancy",
+    "type:lib",
+    "platform:neutral"
+  ],
+  "implicitDependencies": [
+    "protocol",
+    "security"
+  ],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run build",
+        "cwd": "packages/tenancy"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run typecheck",
+        "cwd": "packages/tenancy"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run test",
+        "cwd": "packages/tenancy"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run lint",
+        "cwd": "packages/tenancy"
+      }
+    }
+  }
+}

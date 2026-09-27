@@ -1,0 +1,59 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "docs",
+  "projectType": "application",
+  "sourceRoot": "apps/docs/src",
+  "tags": [
+    "scope:docs-app",
+    "type:app"
+  ],
+  "implicitDependencies": [
+    "angular",
+    "node",
+    "provider-openai",
+    "react",
+    "security",
+    "tools",
+    "ui"
+  ],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run build",
+        "cwd": "apps/docs"
+      },
+      "outputs": [
+        "{projectRoot}/dist",
+        "{projectRoot}/web-dist"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run typecheck",
+        "cwd": "apps/docs"
+      },
+      "dependsOn": [
+        "^build"
+      ]
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run test",
+        "cwd": "apps/docs"
+      },
+      "dependsOn": [
+        "^build"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run lint",
+        "cwd": "apps/docs"
+      }
+    }
+  }
+}

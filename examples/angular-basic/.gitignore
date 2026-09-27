@@ -1,0 +1,5 @@
+dist/
+web-dist/
+out-tsc/
+.angular/
+.env

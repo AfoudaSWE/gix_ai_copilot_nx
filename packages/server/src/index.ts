@@ -1,5 +1,5 @@
 export { createServer } from './app.js';
-export type { CreateServerOptions } from './app.js';
+export type { AdmissionDecision, CreateServerOptions, RunAdmission, RunInfo, RunObserver } from './app.js';
 
 // Lower-level building blocks `createServer` composes internally (Section 8's "avoid public
 // API explosion" still applies, but these are real, independently tested primitives - the same
@@ -17,3 +17,7 @@ export { formatSseComment, formatSseFrame, SSE_RESPONSE_HEADERS } from './sse.js
 
 export { cancelRunParamsSchema, createRunRequestSchema } from './schemas.js';
 export type { CreateRunRequestBody } from './schemas.js';
+
+// Phase 12 - operational endpoints (readiness, metrics); liveness is `/health` above.
+export { createMetricsRegistry, createRunMetricsObserver, registerOperationalRoutes } from './operations.js';
+export type { MetricsRegistry, OperationalRoutesOptions, ReadinessCheck } from './operations.js';

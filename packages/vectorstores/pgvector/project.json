@@ -3,12 +3,36 @@
   "name": "vectorstore-pgvector",
   "projectType": "library",
   "sourceRoot": "packages/vectorstores/pgvector/src",
-  "tags": ["scope:vectorstore-pgvector", "type:lib"],
+  "tags": ["scope:vectorstore-pgvector", "type:lib", "platform:server"],
   "implicitDependencies": ["protocol", "rag"],
   "targets": {
-    "build": { "executor": "nx:run-commands", "options": { "command": "pnpm run build", "cwd": "packages/vectorstores/pgvector" } },
-    "typecheck": { "executor": "nx:run-commands", "options": { "command": "pnpm run typecheck", "cwd": "packages/vectorstores/pgvector" } },
-    "test": { "executor": "nx:run-commands", "options": { "command": "pnpm run test", "cwd": "packages/vectorstores/pgvector" } },
-    "lint": { "executor": "nx:run-commands", "options": { "command": "pnpm run lint", "cwd": "packages/vectorstores/pgvector" } }
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run build",
+        "cwd": "packages/vectorstores/pgvector"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run typecheck",
+        "cwd": "packages/vectorstores/pgvector"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run test",
+        "cwd": "packages/vectorstores/pgvector"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run lint",
+        "cwd": "packages/vectorstores/pgvector"
+      }
+    }
   }
 }

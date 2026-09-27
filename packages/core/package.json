@@ -1,8 +1,16 @@
 {
   "name": "@gixcopilot/core",
   "version": "0.1.0",
-  "private": true,
   "description": "Framework-independent runtime foundation for the AI Copilot SDK: run lifecycle, event sequencing, and cancellation over a generic executor boundary.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AfoudaSWE/gix_ai_copilot_nx.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/core#readme",
+  "bugs": {
+    "url": "https://github.com/AfoudaSWE/gix_ai_copilot_nx/issues"
+  },
   "type": "module",
   "sideEffects": false,
   "main": "./dist/index.js",
@@ -15,8 +23,19 @@
     "./package.json": "./package.json"
   },
   "files": [
-    "dist"
+    "dist",
+    "!dist/**/*.spec.*",
+    "!dist/**/*.spec-helper.*",
+    "!dist/**/*.integration.spec.*",
+    "!dist/**/*.tsbuildinfo"
   ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
     "build": "tsc -b tsconfig.json",
     "typecheck": "tsc -b tsconfig.json",

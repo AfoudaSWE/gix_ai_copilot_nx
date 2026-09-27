@@ -1,0 +1,17 @@
+# @gixcopilot/jobs
+
+BullMQ (Redis) implementation of the workflow `JobExecutor` port, plus dead-letter inspection.
+Workflow steps become queue jobs with stable ids, so duplicate delivery does not double-apply a
+step; exhausted or permanently failing jobs move to an inspectable dead-letter queue.
+
+```sh
+pnpm add @gixcopilot/jobs bullmq
+```
+
+| Export | Purpose |
+| --- | --- |
+| `createBullMQJobExecutor` | Queue + worker executor for workflow steps |
+| `createDeadLetterInspector` | List and deliberately replay dead-lettered jobs |
+
+Redis is used for delivery, not as the source of truth: checkpoints live in PostgreSQL
+(`@gixcopilot/checkpoint-postgres`). See [docs/production/WORKERS.md](../../docs/production/WORKERS.md). Server-only.

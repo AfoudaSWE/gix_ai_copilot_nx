@@ -2,8 +2,13 @@
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "defaultBase": "main",
   "namedInputs": {
-    "default": ["{projectRoot}/**/*", "sharedGlobals"],
-    "sharedGlobals": ["{workspaceRoot}/tsconfig.base.json"],
+    "default": [
+      "{projectRoot}/**/*",
+      "sharedGlobals"
+    ],
+    "sharedGlobals": [
+      "{workspaceRoot}/tsconfig.base.json"
+    ],
     "production": [
       "default",
       "!{projectRoot}/**/*.spec.ts",
@@ -15,23 +20,71 @@
   },
   "targetDefaults": {
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
       "cache": true,
-      "inputs": ["production", "^production"],
-      "outputs": ["{projectRoot}/dist"]
+      "inputs": [
+        "production",
+        "^production"
+      ],
+      "outputs": [
+        "{projectRoot}/dist"
+      ]
     },
     "typecheck": {
       "cache": true,
-      "inputs": ["default", "^production"]
+      "inputs": [
+        "default",
+        "^production"
+      ]
     },
     "test": {
       "cache": true,
-      "inputs": ["default", "^production"],
-      "outputs": ["{projectRoot}/coverage"]
+      "inputs": [
+        "default",
+        "^production"
+      ],
+      "outputs": [
+        "{projectRoot}/coverage"
+      ]
     },
     "lint": {
       "cache": true,
-      "inputs": ["default", "{workspaceRoot}/eslint.config.js"]
+      "inputs": [
+        "default",
+        "{workspaceRoot}/eslint.config.js"
+      ]
+    }
+  },
+  "release": {
+    "projects": [
+      "packages/*",
+      "packages/providers/*",
+      "packages/vectorstores/*"
+    ],
+    "projectsRelationship": "fixed",
+    "releaseTagPattern": "v{version}",
+    "version": {
+      "conventionalCommits": true,
+      "preVersionCommand": "pnpm exec nx run-many -t build",
+      "git": {
+        "commit": true,
+        "commitMessage": "chore(release): {version}",
+        "tag": true
+      },
+      "fallbackCurrentVersionResolver": "disk"
+    },
+    "changelog": {
+      "workspaceChangelog": {
+        "file": "CHANGELOG.md",
+        "createRelease": "github"
+      },
+      "projectChangelogs": false,
+      "git": {
+        "commit": false,
+        "tag": false
+      }
     }
   }
 }

@@ -42,5 +42,18 @@ export default defineConfig({
       url: 'http://127.0.0.1:5180',
       reuseExistingServer: false,
     },
+    {
+      // Phase 12: the real management service (in-memory stores, development tokens).
+      command: 'node apps/api/dist/dev-backend.js',
+      url: 'http://127.0.0.1:4102/health',
+      reuseExistingServer: false,
+      env: { PORT: '4102' },
+    },
+    {
+      command: 'node apps/platform/node_modules/vite/bin/vite.js apps/platform --config apps/platform/vite.config.ts',
+      url: 'http://127.0.0.1:5190',
+      reuseExistingServer: false,
+      env: { PLATFORM_API_TARGET: 'http://127.0.0.1:4102' },
+    },
   ],
 });

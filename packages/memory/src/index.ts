@@ -1,5 +1,7 @@
 export type { MemoryType, MemoryOwnerType, MemoryOwner, MemoryProvenance, MemoryRecord } from './record.js';
 export { isMemoryExpired, memoryOwnersEqual, memoryOwnerKey } from './record.js';
+// Phase 12: exported so persistent MemoryStore adapters apply the same retention rules.
+export { memoryExpiry } from './retention.js';
 
 export type {
   MemoryPutInput,

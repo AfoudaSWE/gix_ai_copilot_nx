@@ -3,24 +3,36 @@
   "name": "core",
   "projectType": "library",
   "sourceRoot": "packages/core/src",
-  "tags": ["scope:core", "type:lib"],
+  "tags": ["scope:core", "type:lib", "platform:neutral"],
   "implicitDependencies": ["protocol"],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run build", "cwd": "packages/core" }
+      "options": {
+        "command": "pnpm run build",
+        "cwd": "packages/core"
+      }
     },
     "typecheck": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run typecheck", "cwd": "packages/core" }
+      "options": {
+        "command": "pnpm run typecheck",
+        "cwd": "packages/core"
+      }
     },
     "test": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run test", "cwd": "packages/core" }
+      "options": {
+        "command": "pnpm run test",
+        "cwd": "packages/core"
+      }
     },
     "lint": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run lint", "cwd": "packages/core" }
+      "options": {
+        "command": "pnpm run lint",
+        "cwd": "packages/core"
+      }
     }
   }
 }

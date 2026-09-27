@@ -129,6 +129,48 @@
     },
     {
       "path": "examples/react-rag"
+    },
+    {
+      "path": "packages/headless"
+    },
+    {
+      "path": "packages/node"
+    },
+    {
+      "path": "examples/node-basic"
+    },
+    {
+      "path": "packages/config"
+    },
+    {
+      "path": "packages/tenancy"
+    },
+    {
+      "path": "packages/persistence-postgres"
+    },
+    {
+      "path": "packages/redis"
+    },
+    {
+      "path": "packages/model-router"
+    },
+    {
+      "path": "packages/usage"
+    },
+    {
+      "path": "packages/management"
+    },
+    {
+      "path": "apps/platform"
+    },
+    {
+      "path": "apps/api"
+    },
+    {
+      "path": "apps/worker"
+    },
+    {
+      "path": "packages/cli"
     }
   ]
 }

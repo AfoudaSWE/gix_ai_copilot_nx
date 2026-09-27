@@ -3,12 +3,36 @@
   "name": "devtools",
   "projectType": "library",
   "sourceRoot": "packages/devtools/src",
-  "tags": ["scope:devtools", "type:lib"],
+  "tags": ["scope:devtools", "type:lib", "platform:neutral"],
   "implicitDependencies": ["protocol", "telemetry"],
   "targets": {
-    "build": { "executor": "nx:run-commands", "options": { "command": "pnpm run build", "cwd": "packages/devtools" } },
-    "typecheck": { "executor": "nx:run-commands", "options": { "command": "pnpm run typecheck", "cwd": "packages/devtools" } },
-    "test": { "executor": "nx:run-commands", "options": { "command": "pnpm run test", "cwd": "packages/devtools" } },
-    "lint": { "executor": "nx:run-commands", "options": { "command": "pnpm run lint", "cwd": "packages/devtools" } }
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run build",
+        "cwd": "packages/devtools"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run typecheck",
+        "cwd": "packages/devtools"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run test",
+        "cwd": "packages/devtools"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run lint",
+        "cwd": "packages/devtools"
+      }
+    }
   }
 }

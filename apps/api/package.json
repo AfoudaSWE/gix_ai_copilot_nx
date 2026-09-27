@@ -1,0 +1,50 @@
+{
+  "name": "@gixcopilot/api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reference production API server: config-validated data plane (runs, tools, firewall, usage policies, persistence) plus the management API, health/readiness/metrics and graceful shutdown.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "typecheck": "tsc -b tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint src",
+    "start": "node dist/main.js",
+    "migrate": "node dist/migrate.js",
+    "dev:backend": "node dist/dev-backend.js",
+    "bench": "node dist/benchmarks.js"
+  },
+  "dependencies": {
+    "@gixcopilot/config": "workspace:*",
+    "@gixcopilot/core": "workspace:*",
+    "@gixcopilot/devtools": "workspace:*",
+    "@gixcopilot/evals": "workspace:*",
+    "@gixcopilot/jobs": "workspace:*",
+    "@gixcopilot/management": "workspace:*",
+    "@gixcopilot/model-router": "workspace:*",
+    "@gixcopilot/persistence-postgres": "workspace:*",
+    "@gixcopilot/provider": "workspace:*",
+    "@gixcopilot/provider-mock": "workspace:*",
+    "@gixcopilot/provider-openai": "workspace:*",
+    "@gixcopilot/redis": "workspace:*",
+    "@gixcopilot/security": "workspace:*",
+    "@gixcopilot/server": "workspace:*",
+    "@gixcopilot/telemetry": "workspace:*",
+    "@gixcopilot/tenancy": "workspace:*",
+    "@gixcopilot/tools": "workspace:*",
+    "@gixcopilot/usage": "workspace:*",
+    "ioredis": "5.11.1",
+    "fastify": "5.12.5",
+    "zod": "4.6.5",
+    "@gixcopilot/context": "workspace:*",
+    "@gixcopilot/node": "workspace:*",
+    "@gixcopilot/protocol": "workspace:*",
+    "@gixcopilot/rag": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "5.0.1",
+    "@testcontainers/postgresql": "^12.1.0",
+    "@testcontainers/redis": "^12.1.0",
+    "testcontainers": "^12.1.0"
+  }
+}

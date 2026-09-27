@@ -3,24 +3,36 @@
   "name": "provider",
   "projectType": "library",
   "sourceRoot": "packages/providers/provider-core/src",
-  "tags": ["scope:provider", "type:lib"],
+  "tags": ["scope:provider", "type:lib", "platform:neutral"],
   "implicitDependencies": ["protocol", "core"],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run build", "cwd": "packages/providers/provider-core" }
+      "options": {
+        "command": "pnpm run build",
+        "cwd": "packages/providers/provider-core"
+      }
     },
     "typecheck": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run typecheck", "cwd": "packages/providers/provider-core" }
+      "options": {
+        "command": "pnpm run typecheck",
+        "cwd": "packages/providers/provider-core"
+      }
     },
     "test": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run test", "cwd": "packages/providers/provider-core" }
+      "options": {
+        "command": "pnpm run test",
+        "cwd": "packages/providers/provider-core"
+      }
     },
     "lint": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run lint", "cwd": "packages/providers/provider-core" }
+      "options": {
+        "command": "pnpm run lint",
+        "cwd": "packages/providers/provider-core"
+      }
     }
   }
 }

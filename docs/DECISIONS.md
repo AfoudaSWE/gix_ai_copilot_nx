@@ -63,3 +63,8 @@ Phase 10 completion review: closed real gaps found in the prior session's draft 
 
 Phase 11 completion: built `@gixcopilot/devtools`, `@gixcopilot/testing`, `@gixcopilot/evals` and the React DevTools app on top of the pre-existing `@gixcopilot/telemetry`; fixed two redaction bugs that blanked token counts and retrieval ACL counts; made agents and workflows record their events to diagnostics; found and fixed DevTools projection bugs (resumed approval steps, firewall-blocked calls, cross-run tool-call id joins) through tests and a real browser run. See the [Phase 11 decisions](phases/phase-11/Phase_11_Decisions.md).
 
+| Phase 12 ADR | Decision |
+| --- | --- |
+| [0020](adr/0020-production-runtime-and-control-plane.md) | Separate authenticated management from runtime execution; trusted tenant scope; versioned, durable configuration snapshots; migrations before startup; framework adapters over shared neutral behavior. |
+| [0021](adr/0021-model-fallback-and-usage-enforcement.md) | Classify fallback before any model output; never replay completed tool actions; enforce scoped admission; keep token usage separate from estimated cost. |
+

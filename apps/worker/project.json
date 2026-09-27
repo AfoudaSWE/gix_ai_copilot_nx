@@ -1,0 +1,54 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "worker",
+  "projectType": "application",
+  "sourceRoot": "apps/worker/src",
+  "tags": [
+    "scope:api-app",
+    "type:app"
+  ],
+  "implicitDependencies": [
+    "config",
+    "jobs",
+    "knowledge",
+    "management",
+    "persistence-postgres",
+    "rag",
+    "vectorstore-pgvector",
+    "usage",
+    "security"
+  ],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run build",
+        "cwd": "apps/worker"
+      },
+      "outputs": [
+        "{projectRoot}/dist"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run typecheck",
+        "cwd": "apps/worker"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run test",
+        "cwd": "apps/worker"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run lint",
+        "cwd": "apps/worker"
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "@gixcopilot/platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The AI Copilot management platform: a React app over the management API (projects, models, agents, tools, OpenAPI, MCP, knowledge, conversations, prompts, evaluations, traces, security, audit, users, tenants, usage).",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b tsconfig.json && vite build",
+    "typecheck": "tsc -b tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint src",
+    "dev": "vite --host 127.0.0.1",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@gixcopilot/management": "workspace:*",
+    "@gixcopilot/security": "workspace:*",
+    "@gixcopilot/tenancy": "workspace:*",
+    "@gixcopilot/usage": "workspace:*",
+    "@testing-library/react": "16.3.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "fastify": "5.12.5",
+    "jsdom": "30.1.0",
+    "vite": "8.3.0",
+    "vitest": "5.0.1"
+  }
+}

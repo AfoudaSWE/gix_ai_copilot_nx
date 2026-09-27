@@ -1,8 +1,16 @@
 {
   "name": "@gixcopilot/telemetry",
   "version": "0.1.0",
-  "private": true,
   "description": "Observability foundation for the AI Copilot SDK - a TelemetryAdapter port (no-op, OpenTelemetry, and in-memory recording implementations), semantic conventions, safe redaction, metrics, cost estimation, and instrumentation wrappers that observe the runtime without becoming it.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AfoudaSWE/gix_ai_copilot_nx.git",
+    "directory": "packages/telemetry"
+  },
+  "homepage": "https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/telemetry#readme",
+  "bugs": {
+    "url": "https://github.com/AfoudaSWE/gix_ai_copilot_nx/issues"
+  },
   "type": "module",
   "sideEffects": false,
   "main": "./dist/index.js",
@@ -16,8 +24,18 @@
   },
   "files": [
     "dist",
-    "!dist/**/*.spec.*"
+    "!dist/**/*.spec.*",
+    "!dist/**/*.spec-helper.*",
+    "!dist/**/*.integration.spec.*",
+    "!dist/**/*.tsbuildinfo"
   ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
     "build": "tsc -b tsconfig.json",
     "typecheck": "tsc -b tsconfig.json",

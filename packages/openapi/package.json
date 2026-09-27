@@ -1,8 +1,16 @@
 {
   "name": "@gixcopilot/openapi",
   "version": "0.1.0",
-  "private": true,
   "description": "Turns an OpenAPI 3.1 specification into canonical, security-governed AI tools for the AI Copilot SDK.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AfoudaSWE/gix_ai_copilot_nx.git",
+    "directory": "packages/openapi"
+  },
+  "homepage": "https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/openapi#readme",
+  "bugs": {
+    "url": "https://github.com/AfoudaSWE/gix_ai_copilot_nx/issues"
+  },
   "type": "module",
   "sideEffects": false,
   "main": "./dist/index.js",
@@ -16,8 +24,18 @@
   },
   "files": [
     "dist",
-    "!dist/**/*.spec.*"
+    "!dist/**/*.spec.*",
+    "!dist/**/*.spec-helper.*",
+    "!dist/**/*.integration.spec.*",
+    "!dist/**/*.tsbuildinfo"
   ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
     "build": "tsc -b tsconfig.json",
     "typecheck": "tsc -b tsconfig.json",

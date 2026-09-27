@@ -1,0 +1,67 @@
+{
+  "name": "@gixcopilot/angular",
+  "version": "0.1.0",
+  "description": "Angular adapter for the AI Copilot SDK: provideCopilot, signal-based services, context/tool/state registration, trusted generative UI and an accessible chat component.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AfoudaSWE/gix_ai_copilot_nx.git",
+    "directory": "packages/angular"
+  },
+  "homepage": "https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/angular#readme",
+  "bugs": {
+    "url": "https://github.com/AfoudaSWE/gix_ai_copilot_nx/issues"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/types/gixcopilot-angular.d.ts",
+      "default": "./dist/fesm2022/gixcopilot-angular.mjs"
+    },
+    "./package.json": {
+      "default": "./package.json"
+    }
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "directory": "dist",
+    "linkDirectory": false
+  },
+  "scripts": {
+    "build": "ng-packagr -p ng-package.json -c tsconfig.lib.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@gixcopilot/client": "workspace:*",
+    "@gixcopilot/context": "workspace:*",
+    "@gixcopilot/generative-ui": "workspace:*",
+    "@gixcopilot/headless": "workspace:*",
+    "@gixcopilot/protocol": "workspace:*",
+    "@gixcopilot/tools": "workspace:*",
+    "tslib": "^2.8.1"
+  },
+  "peerDependencies": {
+    "@angular/common": "^21.0.0",
+    "@angular/core": "^21.0.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@angular/common": "21.2.24",
+    "@angular/compiler": "21.2.24",
+    "@angular/compiler-cli": "21.2.24",
+    "@angular/core": "21.2.24",
+    "@angular/platform-browser": "21.2.24",
+    "jsdom": "30.1.0",
+    "ng-packagr": "21.2.7",
+    "rxjs": "7.8.2",
+    "typescript": "5.9.3",
+    "vitest": "5.0.1",
+    "zod": "4.6.5"
+  }
+}

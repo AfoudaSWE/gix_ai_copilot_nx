@@ -3,24 +3,36 @@
   "name": "provider-mock",
   "projectType": "library",
   "sourceRoot": "packages/providers/mock/src",
-  "tags": ["scope:provider-adapter", "type:lib"],
+  "tags": ["scope:provider-adapter", "type:lib", "platform:neutral"],
   "implicitDependencies": ["protocol", "provider"],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run build", "cwd": "packages/providers/mock" }
+      "options": {
+        "command": "pnpm run build",
+        "cwd": "packages/providers/mock"
+      }
     },
     "typecheck": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run typecheck", "cwd": "packages/providers/mock" }
+      "options": {
+        "command": "pnpm run typecheck",
+        "cwd": "packages/providers/mock"
+      }
     },
     "test": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run test", "cwd": "packages/providers/mock" }
+      "options": {
+        "command": "pnpm run test",
+        "cwd": "packages/providers/mock"
+      }
     },
     "lint": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run lint", "cwd": "packages/providers/mock" }
+      "options": {
+        "command": "pnpm run lint",
+        "cwd": "packages/providers/mock"
+      }
     }
   }
 }

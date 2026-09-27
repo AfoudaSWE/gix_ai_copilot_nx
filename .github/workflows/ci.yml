@@ -1,0 +1,133 @@
+# Pull request and main-branch validation (Phase 12 Section 120-124).
+# No paid model APIs are used: every suite runs on the deterministic mock provider.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NX_DAEMON: 'false'
+  NODE_VERSION: '22.15.0'
+  PNPM_VERSION: '11.1.2'
+
+jobs:
+  validate:
+    name: Lint, typecheck, test, build (affected)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: pnpm/action-setup@v4
+        with: { version: '${{ env.PNPM_VERSION }}' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '${{ env.NODE_VERSION }}', cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - uses: nrwl/nx-set-shas@v4
+      # Testcontainers suites (PostgreSQL, pgvector, Redis, BullMQ, tenant isolation) run here:
+      # GitHub-hosted runners provide Docker.
+      - name: Affected lint, typecheck, test, build
+        run: pnpm exec nx affected -t lint typecheck test build --parallel=3
+        if: github.event_name == 'pull_request'
+      - name: Full lint, typecheck, test, build
+        run: pnpm exec nx run-many -t lint typecheck test build --parallel=3
+        if: github.event_name == 'push'
+
+  security:
+    name: Security checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: '${{ env.PNPM_VERSION }}' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '${{ env.NODE_VERSION }}', cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - name: Secret scan (heuristic; complements GitHub secret scanning)
+        run: node tools/secret-scan.mjs
+      - name: Dependency audit (production dependencies, high and above)
+        run: pnpm audit --prod --audit-level high
+      - name: Security, tenant-isolation and firewall suites
+        run: pnpm exec nx run-many -t test -p security server persistence-postgres tenancy management usage model-router devtools evals-demo
+
+  evals:
+    name: Deterministic evaluations (security hard gates)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: '${{ env.PNPM_VERSION }}' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '${{ env.NODE_VERSION }}', cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec nx run evals-demo:build
+      - name: Eval gate (fails on any security violation)
+        run: pnpm --filter @gixcopilot/evals-demo eval
+
+  packages:
+    name: Package contents and clean consumers
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: '${{ env.PNPM_VERSION }}' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '${{ env.NODE_VERSION }}', cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec nx run-many -t build
+      - name: Verify tarballs (exports, types, no tests/secrets/env files)
+        run: node tools/verify-packages.mjs --out .packs --keep
+      - name: Consumer projects from tarballs (Node, React, Angular, CLI-generated)
+        run: node tools/consumer-test.mjs --packs .packs
+      - name: Client bundle budgets
+        run: node tools/bundle-report.mjs --check
+
+  browser:
+    name: Browser and accessibility (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: '${{ env.PNPM_VERSION }}' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '${{ env.NODE_VERSION }}', cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm exec nx run-many -t build
+      - run: pnpm exec playwright test
+
+  docker:
+    name: Container images and compose smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build images and run the stack
+        run: node tools/docker-smoke.mjs
+
+  docs:
+    name: Documentation portal
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: '${{ env.PNPM_VERSION }}' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '${{ env.NODE_VERSION }}', cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - name: Build docs (fails on broken internal links) and type-check quickstart snippets
+        run: pnpm exec nx run-many -t build test -p docs

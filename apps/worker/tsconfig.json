@@ -1,0 +1,43 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "references": [
+    {
+      "path": "../../packages/config"
+    },
+    {
+      "path": "../../packages/jobs"
+    },
+    {
+      "path": "../../packages/knowledge"
+    },
+    {
+      "path": "../../packages/management"
+    },
+    {
+      "path": "../../packages/persistence-postgres"
+    },
+    {
+      "path": "../../packages/rag"
+    },
+    {
+      "path": "../../packages/vectorstores/pgvector"
+    },
+    {
+      "path": "../../packages/usage"
+    },
+    {
+      "path": "../../packages/security"
+    }
+  ]
+}

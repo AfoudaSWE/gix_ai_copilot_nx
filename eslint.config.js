@@ -90,10 +90,17 @@ export default tseslint.config(
           enforceBuildableLibDependency: true,
           allow: [],
           depConstraints: [
+            // Phase 12 browser/server boundary: browser packages (client, react, ui, angular)
+            // may only depend on browser or platform-neutral packages, and neutral packages
+            // only on neutral ones, so a server dependency (provider SDK, pg, ioredis, BullMQ,
+            // Fastify) can never reach a browser bundle through the package graph.
+            { sourceTag: 'platform:browser', onlyDependOnLibsWithTags: ['platform:browser', 'platform:neutral'] },
+            { sourceTag: 'platform:neutral', onlyDependOnLibsWithTags: ['platform:neutral'] },
             {
               sourceTag: 'scope:react',
               onlyDependOnLibsWithTags: [
                 'scope:react',
+                'scope:headless',
                 'scope:client',
                 'scope:protocol',
                 'scope:context',
@@ -264,6 +271,66 @@ export default tseslint.config(
               onlyDependOnLibsWithTags: ['scope:protocol', 'scope:core', 'scope:provider'],
             },
             {
+              sourceTag: 'scope:headless',
+              onlyDependOnLibsWithTags: ['scope:headless', 'scope:protocol', 'scope:client', 'scope:context', 'scope:tools', 'scope:generative-ui'],
+            },
+            {
+              sourceTag: 'scope:angular',
+              onlyDependOnLibsWithTags: ['scope:angular', 'scope:headless', 'scope:protocol', 'scope:client', 'scope:context', 'scope:tools', 'scope:generative-ui'],
+            },
+            {
+              sourceTag: 'scope:node',
+              onlyDependOnLibsWithTags: ['scope:node', 'scope:protocol', 'scope:core', 'scope:client', 'scope:provider', 'scope:provider-adapter', 'scope:security', 'scope:server', 'scope:telemetry', 'scope:tools'],
+            },
+            {
+              sourceTag: 'scope:config',
+              onlyDependOnLibsWithTags: ['scope:config'],
+            },
+            {
+              sourceTag: 'scope:tenancy',
+              onlyDependOnLibsWithTags: ['scope:tenancy', 'scope:protocol', 'scope:security', 'scope:tools'],
+            },
+            {
+              sourceTag: 'scope:persistence-postgres',
+              onlyDependOnLibsWithTags: ['scope:management', 'scope:devtools', 'scope:evals', 'scope:openapi', 'scope:usage', 'scope:redis', 'scope:node', 'scope:provider-adapter', 'scope:server', 'scope:provider', 'scope:core', 'scope:client', 'scope:telemetry', 'scope:persistence-postgres', 'scope:protocol', 'scope:security', 'scope:memory', 'scope:tenancy', 'scope:checkpoint-postgres', 'scope:vectorstore-pgvector', 'scope:rag', 'scope:workflows', 'scope:tools'],
+            },
+            {
+              sourceTag: 'scope:redis',
+              onlyDependOnLibsWithTags: ['scope:redis'],
+            },
+            {
+              sourceTag: 'scope:model-router',
+              onlyDependOnLibsWithTags: ['scope:model-router', 'scope:protocol', 'scope:provider', 'scope:core', 'scope:node', 'scope:provider-adapter', 'scope:security', 'scope:tools', 'scope:server', 'scope:client', 'scope:telemetry'],
+            },
+            {
+              sourceTag: 'scope:usage',
+              onlyDependOnLibsWithTags: ['scope:usage', 'scope:protocol', 'scope:security', 'scope:tenancy', 'scope:node', 'scope:provider-adapter', 'scope:redis'],
+            },
+            {
+              sourceTag: 'scope:management',
+              onlyDependOnLibsWithTags: ['scope:management', 'scope:protocol', 'scope:security', 'scope:tenancy', 'scope:usage', 'scope:devtools', 'scope:evals', 'scope:openapi', 'scope:telemetry', 'scope:tools'],
+            },
+            {
+              // The platform UI talks to the management API over HTTP only; the server packages
+              // are used by its tests (in-process API), never imported by src (checked below).
+              sourceTag: 'scope:platform-app',
+              onlyDependOnLibsWithTags: ['scope:management', 'scope:security', 'scope:tenancy', 'scope:usage'],
+            },
+            {
+              // Deployable server/worker apps compose any server-side SDK package.
+              sourceTag: 'scope:api-app',
+              onlyDependOnLibsWithTags: ['platform:server', 'platform:neutral'],
+            },
+            {
+              sourceTag: 'scope:cli',
+              onlyDependOnLibsWithTags: ['scope:cli', 'scope:config', 'scope:evals', 'scope:openapi', 'scope:persistence-postgres', 'scope:tools', 'scope:devtools', 'scope:telemetry', 'scope:protocol', 'scope:tenancy', 'scope:management', 'scope:usage', 'scope:security', 'scope:memory', 'scope:checkpoint-postgres', 'scope:vectorstore-pgvector', 'scope:rag', 'scope:workflows', 'scope:knowledge', 'scope:mcp', 'scope:core', 'scope:agents', 'scope:provider', 'scope:redis', 'scope:node', 'scope:server', 'scope:client', 'scope:provider-adapter'],
+            },
+            {
+              // The docs portal renders Markdown; SDK packages are used only by type-checked snippets.
+              sourceTag: 'scope:docs-app',
+              onlyDependOnLibsWithTags: ['platform:browser', 'platform:neutral', 'platform:server'],
+            },
+            {
               sourceTag: 'scope:example',
               onlyDependOnLibsWithTags: [
                 'scope:react',
@@ -293,6 +360,17 @@ export default tseslint.config(
                 'scope:devtools',
                 'scope:testing',
                 'scope:evals',
+                'scope:headless',
+                'scope:angular',
+                'scope:node',
+                'scope:config',
+                'scope:tenancy',
+                'scope:persistence-postgres',
+                'scope:redis',
+                'scope:model-router',
+                'scope:usage',
+                'scope:management',
+                'scope:cli',
                 'scope:example',
               ],
             },
@@ -312,6 +390,42 @@ export default tseslint.config(
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
       '@typescript-eslint/no-non-null-assertion': 'error',
+    },
+  },
+  {
+    // Browser and platform-neutral packages must not import Node built-ins (Phase 12 Section
+    // 147). Tests, test harnesses and the devtools server subpath run in Node and are exempt.
+    files: [
+      'packages/{client,react,ui,angular,headless,protocol,core,context,tools,generative-ui,telemetry,devtools,security,integrations,tenancy}/src/**/*.{ts,tsx}',
+      'packages/providers/{provider-core,mock}/src/**/*.ts',
+    ],
+    ignores: ['**/*.spec.ts', '**/*.spec.tsx', '**/*.spec-helper.ts', '**/test-*.ts', 'packages/devtools/src/server/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            { group: ['node:*'], message: 'Browser/neutral packages must not import Node built-ins.' },
+            { group: ['fastify', 'pg', 'ioredis', 'bullmq', 'openai', 'drizzle-orm', 'drizzle-orm/*'], message: 'Server-only dependency in a browser/neutral package.' },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // The management platform UI reaches the system only through the management HTTP API.
+    files: ['apps/platform/src/**/*.{ts,tsx}'],
+    ignores: ['**/*.spec.ts', '**/*.spec.tsx'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            { group: ['@gixcopilot/*'], message: 'The platform UI must use the management HTTP API, not SDK/server packages.' },
+            { group: ['node:*', 'fastify', 'pg', 'ioredis', 'bullmq', 'openai', 'drizzle-orm'], message: 'Server-only dependency in the platform UI.' },
+          ],
+        },
+      ],
     },
   },
   eslintConfigPrettier,

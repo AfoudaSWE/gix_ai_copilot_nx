@@ -3,10 +3,7 @@
   "name": "workflows",
   "projectType": "library",
   "sourceRoot": "packages/workflows/src",
-  "tags": [
-    "scope:workflows",
-    "type:lib"
-  ],
+  "tags": ["scope:workflows", "type:lib", "platform:server"],
   "implicitDependencies": [
     "protocol",
     "core",

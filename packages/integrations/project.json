@@ -3,24 +3,36 @@
   "name": "integrations",
   "projectType": "library",
   "sourceRoot": "packages/integrations/src",
-  "tags": ["scope:integrations", "type:lib"],
+  "tags": ["scope:integrations", "type:lib", "platform:neutral"],
   "implicitDependencies": ["protocol"],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run build", "cwd": "packages/integrations" }
+      "options": {
+        "command": "pnpm run build",
+        "cwd": "packages/integrations"
+      }
     },
     "typecheck": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run typecheck", "cwd": "packages/integrations" }
+      "options": {
+        "command": "pnpm run typecheck",
+        "cwd": "packages/integrations"
+      }
     },
     "test": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run test", "cwd": "packages/integrations" }
+      "options": {
+        "command": "pnpm run test",
+        "cwd": "packages/integrations"
+      }
     },
     "lint": {
       "executor": "nx:run-commands",
-      "options": { "command": "pnpm run lint", "cwd": "packages/integrations" }
+      "options": {
+        "command": "pnpm run lint",
+        "cwd": "packages/integrations"
+      }
     }
   }
 }

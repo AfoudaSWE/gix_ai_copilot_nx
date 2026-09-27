@@ -1,0 +1,24 @@
+{
+  "name": "@gixcopilot/node-basic",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "typecheck": "tsc -b tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint src",
+    "start": "node --env-file-if-exists=.env dist/main.js"
+  },
+  "dependencies": {
+    "@gixcopilot/node": "workspace:*",
+    "@gixcopilot/provider-mock": "workspace:*",
+    "@gixcopilot/provider-openai": "workspace:*",
+    "@gixcopilot/security": "workspace:*",
+    "@gixcopilot/tools": "workspace:*",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "vitest": "5.0.1"
+  }
+}

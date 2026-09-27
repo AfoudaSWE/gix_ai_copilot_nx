@@ -1,0 +1,36 @@
+# Internal release candidate checks. The owner chose proprietary distribution and no
+# public npm publication. This workflow only validates and packs local artifacts.
+name: Internal release candidate
+
+on:
+  workflow_dispatch:
+    inputs:
+      specifier:
+        description: 'Version bump (patch, minor, major, prerelease) or an exact version'
+        required: true
+        default: 'prerelease'
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      NX_DAEMON: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: pnpm/action-setup@v4
+        with: { version: '11.1.2' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '22.15.0', cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - name: Validate everything
+        run: pnpm exec nx run-many -t lint typecheck test build
+      - name: Release candidate checks on packed artifacts
+        run: |
+          node tools/verify-packages.mjs --out .packs --keep
+          node tools/consumer-test.mjs --packs .packs
+      - name: Preview version
+        run: pnpm exec nx release version ${{ inputs.specifier }} --dry-run

@@ -3,22 +3,40 @@
   "name": "react-e2e",
   "projectType": "application",
   "sourceRoot": "tests/browser",
-  "tags": ["scope:example", "type:app"],
-  "implicitDependencies": ["react-basic", "react-custom-ui", "devtools-demo", "devtools-app"],
+  "tags": [
+    "scope:example",
+    "type:app"
+  ],
+  "implicitDependencies": [
+    "react-basic",
+    "react-custom-ui",
+    "devtools-demo",
+    "devtools-app",
+    "api",
+    "platform"
+  ],
   "targets": {
     "typecheck": {
       "executor": "nx:run-commands",
-      "options": { "command": "tsc -p tests/browser/tsconfig.json" }
+      "options": {
+        "command": "tsc -p tests/browser/tsconfig.json"
+      }
     },
     "lint": {
       "executor": "nx:run-commands",
-      "options": { "command": "eslint tests/browser/*.ts" }
+      "options": {
+        "command": "eslint tests/browser/*.ts"
+      }
     },
     "e2e": {
       "executor": "nx:run-commands",
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
       "cache": false,
-      "options": { "command": "playwright test" }
+      "options": {
+        "command": "playwright test"
+      }
     }
   }
 }

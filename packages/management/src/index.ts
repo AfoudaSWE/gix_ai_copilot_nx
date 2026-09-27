@@ -1,0 +1,12 @@
+export { RESOURCE_KINDS, isAtLeastAsStrict, parseSpec, resourceSpecs } from './resources.js';
+export type { Resource, ResourceKind, ResourceSpec, ResourceVersion, VersionStage } from './resources.js';
+export { createInMemoryControlPlaneStore } from './store.js';
+export type { ControlPlaneStore, CreateResourceInput, ResourceFilter, ScopedControlPlane } from './store.js';
+export { createEncryptedSecretStore, createInMemorySecretRepository } from './secrets.js';
+export type { EncryptedSecretRepository, EncryptedSecretRow, SecretStore } from './secrets.js';
+export { ManagementError, createManagementService } from './service.js';
+export type { Actor, AuditReaderPort, ConfigSnapshot, CreateManagementServiceOptions, JobQueuePort, ManagementService, RuntimeCatalog } from './service.js';
+export { createSnapshotCache } from './snapshot.js';
+export type { SnapshotResult } from './snapshot.js';
+export { createManagementPlugin } from './plugin.js';
+export type { ManagementPluginOptions } from './plugin.js';

@@ -1,8 +1,16 @@
 {
   "name": "@gixcopilot/evals",
   "version": "0.1.0",
-  "private": true,
   "description": "Evaluation framework for AI Copilot applications - versioned datasets, execution records derived from recorded diagnostics, deterministic evaluators (tools, permission compliance, RAG, citations, memory, agents, workflows, UI, latency, tokens, cost), baseline comparison, experiments, reports and CI gates with non-negotiable security hard gates.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AfoudaSWE/gix_ai_copilot_nx.git",
+    "directory": "packages/evals"
+  },
+  "homepage": "https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/evals#readme",
+  "bugs": {
+    "url": "https://github.com/AfoudaSWE/gix_ai_copilot_nx/issues"
+  },
   "type": "module",
   "sideEffects": false,
   "main": "./dist/index.js",
@@ -16,8 +24,18 @@
   },
   "files": [
     "dist",
-    "!dist/**/*.spec*"
+    "!dist/**/*.spec.*",
+    "!dist/**/*.spec-helper.*",
+    "!dist/**/*.integration.spec.*",
+    "!dist/**/*.tsbuildinfo"
   ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
     "build": "tsc -b tsconfig.json",
     "typecheck": "tsc -b tsconfig.json",

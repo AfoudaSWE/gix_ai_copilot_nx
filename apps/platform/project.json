@@ -1,0 +1,47 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "platform",
+  "projectType": "application",
+  "sourceRoot": "apps/platform/src",
+  "tags": [
+    "scope:platform-app",
+    "type:app"
+  ],
+  "implicitDependencies": [
+    "management"
+  ],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run build",
+        "cwd": "apps/platform"
+      },
+      "outputs": [
+        "{projectRoot}/dist",
+        "{projectRoot}/web-dist"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run typecheck",
+        "cwd": "apps/platform"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run test",
+        "cwd": "apps/platform"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run lint",
+        "cwd": "apps/platform"
+      }
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "references": [
+    {
+      "path": "../protocol"
+    },
+    {
+      "path": "../security"
+    },
+    {
+      "path": "../memory"
+    },
+    {
+      "path": "../tenancy"
+    },
+    {
+      "path": "../checkpoint-postgres"
+    },
+    {
+      "path": "../vectorstores/pgvector"
+    },
+    {
+      "path": "../node"
+    },
+    {
+      "path": "../providers/mock"
+    },
+    {
+      "path": "../rag"
+    },
+    {
+      "path": "../workflows"
+    },
+    {
+      "path": "../usage"
+    },
+    {
+      "path": "../management"
+    }
+  ]
+}

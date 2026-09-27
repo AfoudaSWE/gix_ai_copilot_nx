@@ -1,0 +1,21 @@
+# Never send secrets, local state or build output into an image build context.
+**/.env
+**/.env.*
+!**/.env.example
+**/*.pem
+**/*.key
+**/node_modules
+**/dist
+**/web-dist
+**/out-tsc
+**/.angular
+**/coverage
+**/test-results
+**/playwright-report
+**/output
+**/.eval-results
+**/tsconfig.tsbuildinfo
+.git
+.nx
+.claude
+docs

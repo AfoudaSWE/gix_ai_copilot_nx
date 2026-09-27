@@ -1,0 +1,42 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "redis",
+  "projectType": "library",
+  "sourceRoot": "packages/redis/src",
+  "tags": [
+    "scope:redis",
+    "type:lib",
+    "platform:server"
+  ],
+  "implicitDependencies": [],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run build",
+        "cwd": "packages/redis"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run typecheck",
+        "cwd": "packages/redis"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run test",
+        "cwd": "packages/redis"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run lint",
+        "cwd": "packages/redis"
+      }
+    }
+  }
+}

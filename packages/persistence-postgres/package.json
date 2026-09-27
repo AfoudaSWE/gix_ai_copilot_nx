@@ -1,0 +1,71 @@
+{
+  "name": "@gixcopilot/persistence-postgres",
+  "version": "0.1.0",
+  "description": "PostgreSQL persistence for production: tenant-scoped conversations, memory, immutable audit and usage storage, plus a reviewed migration runner with rollback files.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AfoudaSWE/gix_ai_copilot_nx.git",
+    "directory": "packages/persistence-postgres"
+  },
+  "homepage": "https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/persistence-postgres#readme",
+  "bugs": {
+    "url": "https://github.com/AfoudaSWE/gix_ai_copilot_nx/issues"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "migrations",
+    "!dist/**/*.spec.*",
+    "!dist/**/*.spec-helper.*",
+    "!dist/**/*.integration.spec.*",
+    "!dist/**/*.tsbuildinfo"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "typecheck": "tsc -b tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint src",
+    "db:generate": "drizzle-kit generate"
+  },
+  "dependencies": {
+    "@gixcopilot/checkpoint-postgres": "workspace:*",
+    "@gixcopilot/management": "workspace:*",
+    "@gixcopilot/memory": "workspace:*",
+    "@gixcopilot/protocol": "workspace:*",
+    "@gixcopilot/security": "workspace:*",
+    "@gixcopilot/tenancy": "workspace:*",
+    "@gixcopilot/usage": "workspace:*",
+    "@gixcopilot/vectorstore-pgvector": "workspace:*",
+    "drizzle-orm": "^0.45.3",
+    "pg": "^8.16.4"
+  },
+  "devDependencies": {
+    "@gixcopilot/node": "workspace:*",
+    "@gixcopilot/provider-mock": "workspace:*",
+    "@gixcopilot/rag": "workspace:*",
+    "@gixcopilot/workflows": "workspace:*",
+    "@testcontainers/postgresql": "^12.1.0",
+    "@types/pg": "^8.15.6",
+    "drizzle-kit": "^0.31.6",
+    "testcontainers": "^12.1.0",
+    "vitest": "5.0.1",
+    "zod": "4.6.5"
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": { "rootDir": "src", "outDir": "dist/server", "types": ["node"] },
+  "include": ["src/backend.ts", "src/server.ts"]
+}

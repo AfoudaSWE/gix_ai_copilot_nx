@@ -4,11 +4,20 @@
     "composite": true,
     "rootDir": "src",
     "outDir": "dist",
-    "types": ["node"],
-    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": [
+      "node"
+    ],
+    "lib": [
+      "ES2023",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "jsx": "react-jsx"
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ],
   "references": [
     {
       "path": "../protocol"
@@ -24,6 +33,9 @@
     },
     {
       "path": "../generative-ui"
+    },
+    {
+      "path": "../headless"
     }
   ]
 }
