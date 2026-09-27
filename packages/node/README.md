@@ -36,3 +36,13 @@ for await (const event of copilot.stream('Hi')) { /* protocol events */ }
 The server picks the model (`defaultModel`). The browser never needs a provider key or a
 model name. Agents, knowledge (RAG) and memory are composed as tools and context with their own
 packages (`@gixcopilot/agents`, `@gixcopilot/rag`, `@gixcopilot/memory`); see the Node guide.
+
+## Documentation
+
+- [node guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/node.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/node)
+
+## License
+
+MIT

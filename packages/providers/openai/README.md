@@ -2,6 +2,14 @@
 
 ## Purpose
 
+## Install
+
+```bash
+npm install @gixcopilot/provider-openai
+```
+
+Requires Node.js >=22.12.0. ESM only.
+
 The first real (non-mock) `ModelProvider` — an OpenAI streaming chat completions adapter.
 This is the only package in the workspace allowed to depend on the `openai` SDK.
 
@@ -52,3 +60,13 @@ import { createOpenAIProvider } from '@gixcopilot/provider-openai';
 
 const provider = createOpenAIProvider({ apiKey: process.env.OPENAI_API_KEY });
 ```
+
+## Documentation
+
+- [models guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/models.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/providers/openai)
+
+## License
+
+MIT

@@ -25,3 +25,13 @@ See [docs/guides/agents.md](../../docs/guides/agents.md), ADR 0015 and `examples
 
 Not responsible for: durable multi-step execution (use `@gixcopilot/workflows`), authorization
 decisions (`@gixcopilot/security`), model provider SDKs (provider adapters).
+
+## Documentation
+
+- [agents guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/agents.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/agents)
+
+## License
+
+MIT

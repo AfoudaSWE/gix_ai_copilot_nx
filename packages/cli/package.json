@@ -2,6 +2,7 @@
   "name": "@gixcopilot/cli",
   "version": "0.1.0",
   "description": "The aicopilot command line: init, add tool/agent/mcp, import-openapi, dev, test, eval, doctor and db migrations.",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AfoudaSWE/gix_ai_copilot_nx.git",
@@ -37,8 +38,7 @@
     "node": ">=22.12.0"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "scripts": {
     "build": "tsc -b tsconfig.json",

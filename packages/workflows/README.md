@@ -20,3 +20,13 @@ pnpm add @gixcopilot/workflows
 
 A run keeps the definition version it started with. An approval step resumes only on a recorded
 human/system decision, never on model text. See ADR 0015 and `examples/workflow-approval`.
+
+## Documentation
+
+- [workflows guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/workflows.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/workflows)
+
+## License
+
+MIT

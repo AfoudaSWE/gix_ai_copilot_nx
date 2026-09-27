@@ -2,6 +2,14 @@
 
 ## Purpose
 
+## Install
+
+```bash
+npm install @gixcopilot/tools
+```
+
+Requires Node.js >=22.12.0. ESM only.
+
 Framework-independent canonical tool architecture for the AI Copilot SDK (Phase 5). Defines
 one tool shape — `ToolDefinition` — shared by backend (server-executed) and frontend
 (browser-executed) tools, with a registry, a discovery resolver, and an execution runtime,
@@ -82,3 +90,13 @@ const result = await runtime.execute({
   context: { runId: 'run-1', signal: new AbortController().signal },
 });
 ```
+
+## Documentation
+
+- [tools guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/tools.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/tools)
+
+## License
+
+MIT

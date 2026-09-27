@@ -2,6 +2,14 @@
 
 ## Purpose
 
+## Install
+
+```bash
+npm install @gixcopilot/server
+```
+
+Requires Node.js >=22.12.0. ESM only.
+
 Fastify HTTP/SSE transport adapter. Adapts `@gixcopilot/core`'s runtime to an HTTP
 boundary — request validation, run creation, streaming, cancellation, and error mapping —
 with no AI/business logic of its own.
@@ -67,3 +75,13 @@ const app = createServer({
 });
 await app.listen({ port: 0 });
 ```
+
+## Documentation
+
+- [node guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/node.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/server)
+
+## License
+
+MIT

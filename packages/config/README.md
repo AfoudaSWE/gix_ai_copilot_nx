@@ -2,6 +2,14 @@
 
 One typed production configuration model for AI Copilot servers and workers (**Beta**).
 
+## Install
+
+```bash
+npm install @gixcopilot/config
+```
+
+Requires Node.js >=22.12.0. ESM only.
+
 ```ts
 import { loadConfig, describeConfig } from '@gixcopilot/config';
 
@@ -29,3 +37,13 @@ and `<PROVIDER>_API_KEY` become references automatically. References resolve thr
 
 The full environment-variable table is `ENV_MAPPING` and
 [docs/production/CONFIGURATION.md](../../docs/production/CONFIGURATION.md). Server-only.
+
+## Documentation
+
+- [production guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/production.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/config)
+
+## License
+
+MIT

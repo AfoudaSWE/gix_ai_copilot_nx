@@ -2,6 +2,14 @@
 
 ## Purpose
 
+## Install
+
+```bash
+npm install @gixcopilot/provider
+```
+
+Requires Node.js >=22.12.0. ESM only.
+
 Provider-independent model contracts, a provider registry, and a model execution runtime.
 This is the layer the rest of the SDK talks to for "run a model" — it has no idea whether
 that means OpenAI, Anthropic, or a deterministic mock.
@@ -69,3 +77,13 @@ for await (const event of run.events) {
   console.log(event.type);
 }
 ```
+
+## Documentation
+
+- [getting-started guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/providers/provider-core)
+
+## License
+
+MIT

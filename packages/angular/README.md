@@ -57,3 +57,13 @@ Build: `ng-packagr` (partial Ivy, AOT-compatible); `pnpm publish` publishes `dis
 in JIT mode under Vitest. Signal `input()`s are not used in shipped components (decorator
 inputs feed signals instead) so that JIT consumers and tests behave the same as AOT.
 See [the Angular guide](../../docs/guides/angular.md) and `examples/angular-basic`.
+
+## Documentation
+
+- [angular guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/angular.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/angular)
+
+## License
+
+MIT

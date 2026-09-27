@@ -2,6 +2,14 @@
 
 ## Purpose
 
+## Install
+
+```bash
+npm install @gixcopilot/client
+```
+
+Requires Node.js >=22.12.0. ESM only.
+
 Framework-independent, browser/Node-portable streaming client for the AI Copilot SDK.
 No React or Angular dependency — see `react-sdk` / `angular-sdk` skills for how those wrap
 this package rather than reimplementing it.
@@ -68,3 +76,13 @@ for await (const event of run.events) {
   console.log(event.type);
 }
 ```
+
+## Documentation
+
+- [getting-started guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/client)
+
+## License
+
+MIT

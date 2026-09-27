@@ -2,6 +2,7 @@
   "name": "@gixcopilot/persistence-postgres",
   "version": "0.1.0",
   "description": "PostgreSQL persistence for production: tenant-scoped conversations, memory, immutable audit and usage storage, plus a reviewed migration runner with rollback files.",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AfoudaSWE/gix_ai_copilot_nx.git",
@@ -34,8 +35,7 @@
     "node": ">=22.12.0"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "scripts": {
     "build": "tsc -b tsconfig.json",

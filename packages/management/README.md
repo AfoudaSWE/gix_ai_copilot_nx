@@ -3,6 +3,14 @@
 The AI Copilot control plane (**Beta**): authorized, audited, tenant-scoped management
 services and the `/management/v1` HTTP API used by `apps/platform`.
 
+## Install
+
+```bash
+npm install @gixcopilot/management fastify
+```
+
+Requires Node.js >=22.12.0. ESM only.
+
 ```ts
 const service = createManagementService({
   store: persistence.controlPlane,                    // or createInMemoryControlPlaneStore()
@@ -42,3 +50,13 @@ membership. The last owner cannot be removed.
 limits. Every edit adds an immutable version. `snapshot(scope)` resolves the enabled current
 versions into a content-addressed snapshot for runs. `createSnapshotCache` serves the last good
 snapshot when the control plane is unavailable.
+
+## Documentation
+
+- [platform guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/platform.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/management)
+
+## License
+
+MIT

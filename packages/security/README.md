@@ -23,3 +23,13 @@ pnpm add @gixcopilot/security
 
 Model output is data, not authority: approvals come from recorded decisions, tenant identity
 from authentication. See ADR 0012 and [the security guide](../../docs/guides/security.md).
+
+## Documentation
+
+- [security guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/security.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/security)
+
+## License
+
+MIT

@@ -5,9 +5,15 @@ Headless React 19 adapter over `@gixcopilot/client`, `@gixcopilot/context`,
 and the React bindings for application context/shared state, tool calling, and generative
 UI/AI-writable state — not the protocol, transport, model runtime, or providers.
 
-Packages are workspace-private and have not been published. From this repository run
-`pnpm install && pnpm build`; an application package can depend on
-`"@gixcopilot/react": "workspace:*"`. React is a peer dependency (`^19.0.0`), tested with
+## Install
+
+```bash
+npm install @gixcopilot/react react
+```
+
+Requires Node.js >=22.12.0. ESM only.
+
+React is a peer dependency (`^19.0.0`), tested with
 19.3.0. React DOM belongs to the host application.
 
 ```tsx
@@ -174,3 +180,13 @@ See the [Phase 6 API](../../docs/phases/phase-06/Phase_6_API.md),
 [architecture](../../docs/phases/phase-06/Phase_6_Architecture.md),
 [ADR 0011](../../docs/adr/0011-generative-ui-and-state-patch-architecture.md), and the
 [generative-UI example](../../examples/react-generative-ui/README.md).
+
+## Documentation
+
+- [react guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/react.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/react)
+
+## License
+
+MIT

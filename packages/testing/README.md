@@ -3,6 +3,14 @@
 Deterministic testing for AI copilot applications. Only the model is scripted. Tools, the
 Action Firewall, RAG, memory, approvals, agents and workflows are the real runtime packages.
 
+## Install
+
+```bash
+npm install @gixcopilot/testing
+```
+
+Requires Node.js >=22.12.0. ESM only.
+
 ```ts
 import { createCopilotTestHarness, createTestModel, toolThenAnswer, createToolMocks,
   createSecurityFixture, expectToolCalled, expectActionDenied } from '@gixcopilot/testing';
@@ -56,3 +64,13 @@ mode has no payloads to replay, so recorded replay refuses it.
 - Model output never counts as a human approval. The approval fixture always records an
   explicit approver.
 - Not for production use. It is a test-time dependency.
+
+## Documentation
+
+- [testing guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/testing.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/testing)
+
+## License
+
+MIT

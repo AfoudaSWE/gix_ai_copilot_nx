@@ -2,6 +2,14 @@
 
 ## Purpose
 
+## Install
+
+```bash
+npm install @gixcopilot/protocol
+```
+
+Requires Node.js >=22.12.0. ESM only.
+
 Transport-independent wire protocol for the AI Copilot SDK. Defines the shapes exchanged
 between a client and a server — `Message`, `Thread`, `Run`, and the `CopilotEvent` union —
 plus runtime validation (Zod) and (de)serialization for those shapes.
@@ -76,3 +84,13 @@ if (result.kind === 'known') {
   console.log(result.event.type); // 'run.started'
 }
 ```
+
+## Documentation
+
+- [concepts guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/concepts.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/protocol)
+
+## License
+
+MIT

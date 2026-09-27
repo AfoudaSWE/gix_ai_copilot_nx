@@ -1,16 +1,25 @@
-# Internal release candidate checks. The owner chose proprietary distribution and no
-# public npm publication. This workflow only validates and packs local artifacts.
-name: Internal release candidate
+# Release: validates, packs and consumer-tests every package, then (only when `publish` is
+# true) publishes @gixcopilot/* to npm with provenance. See docs/RELEASING.md.
+name: Release
 
 on:
   workflow_dispatch:
     inputs:
       specifier:
-        description: 'Version bump (patch, minor, major, prerelease) or an exact version'
+        description: 'Version bump previewed (patch, minor, major, prerelease) or an exact version'
         required: true
         default: 'prerelease'
+      publish:
+        description: 'Publish the current package versions to npm'
+        type: boolean
+        default: false
+      tag:
+        description: 'npm dist-tag (latest or next)'
+        required: true
+        default: 'latest'
 permissions:
   contents: read
+  id-token: write # npm provenance
 
 jobs:
   release:
@@ -24,7 +33,7 @@ jobs:
       - uses: pnpm/action-setup@v4
         with: { version: '11.1.2' }
       - uses: actions/setup-node@v4
-        with: { node-version: '22.15.0', cache: pnpm }
+        with: { node-version: '22.15.0', cache: pnpm, registry-url: 'https://registry.npmjs.org' }
       - run: pnpm install --frozen-lockfile
       - name: Validate everything
         run: pnpm exec nx run-many -t lint typecheck test build
@@ -34,3 +43,9 @@ jobs:
           node tools/consumer-test.mjs --packs .packs
       - name: Preview version
         run: pnpm exec nx release version ${{ inputs.specifier }} --dry-run
+      - name: Publish to npm
+        if: ${{ inputs.publish }}
+        run: pnpm -r --filter "./packages/**" publish --access public --no-git-checks --tag ${{ inputs.tag }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'true'

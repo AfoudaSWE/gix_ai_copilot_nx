@@ -5,9 +5,13 @@ semantic memory, kept explicitly distinct from conversation history and from RAG
 (`user`/`session`/`tenant`/`workspace`/`application`) is derived only from a trusted
 `SecurityContext`, never from model/query input, and asserted on every read/write.
 
-This is a private workspace package. Install workspace dependencies with `pnpm install`; a
-workspace host declares `"@gixcopilot/memory": "workspace:*"` in its dependencies. Build with
-`pnpm --filter @gixcopilot/memory build`.
+## Install
+
+```bash
+npm install @gixcopilot/memory
+```
+
+Requires Node.js >=22.12.0. ESM only.
 
 ```ts
 import { createVectorBackedMemoryStore, createMemoryService } from '@gixcopilot/memory';
@@ -33,3 +37,13 @@ instruction.
 See [Phase 9 API](../../docs/phases/phase-09/Phase_9_API.md),
 [architecture](../../docs/phases/phase-09/Phase_9_Architecture.md), and
 [limits](../../docs/phases/phase-09/Phase_9_Issues.md).
+
+## Documentation
+
+- [memory guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/memory.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/memory)
+
+## License
+
+MIT

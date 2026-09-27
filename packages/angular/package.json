@@ -2,6 +2,7 @@
   "name": "@gixcopilot/angular",
   "version": "0.1.0",
   "description": "Angular adapter for the AI Copilot SDK: provideCopilot, signal-based services, context/tool/state registration, trusted generative UI and an accessible chat component.",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AfoudaSWE/gix_ai_copilot_nx.git",
@@ -27,7 +28,6 @@
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true,
     "directory": "dist",
     "linkDirectory": false
   },

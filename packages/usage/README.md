@@ -3,6 +3,14 @@
 Usage accounting, configurable cost estimation and usage policies (**Beta**). Usage is
 accounting, not billing. A billing system may consume the events later.
 
+## Install
+
+```bash
+npm install @gixcopilot/usage
+```
+
+Requires Node.js >=22.12.0. ESM only.
+
 ```ts
 const store = createInMemoryUsageStore();            // or the PostgreSQL usage store
 const server = createServer({
@@ -34,3 +42,13 @@ const server = createServer({
   - Rate limits: per tenant, project or user (`RATE_LIMITED`).
   - Error metadata names the policy, never the infrastructure. Quotas and budgets are checked
     before a request, so one in-flight request can overshoot by its own size.
+
+## Documentation
+
+- [production guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/production.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/usage)
+
+## License
+
+MIT

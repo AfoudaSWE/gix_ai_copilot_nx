@@ -2,6 +2,7 @@
   "name": "@gixcopilot/devtools",
   "version": "0.1.0",
   "description": "Framework-independent DevTools core for the AI Copilot SDK - projects the telemetry diagnostics stream into inspectable runs, messages, context, state, tools, security, RAG, memory, agents, workflows, events and traces; safe debug-bundle export/import; and an opt-in, authenticated, read-only Fastify transport.",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AfoudaSWE/gix_ai_copilot_nx.git",
@@ -37,8 +38,7 @@
     "node": ">=22.12.0"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "scripts": {
     "build": "tsc -b tsconfig.json",

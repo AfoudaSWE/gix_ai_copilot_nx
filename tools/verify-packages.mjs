@@ -7,7 +7,7 @@
 //
 // Fails (exit 1) when a tarball contains test files, build caches, env files or anything that
 // looks like a secret, when an `exports` / `types` / `bin` target is missing from the tarball,
-// when a README is missing, or when the packed manifest still has `workspace:` specifiers.
+// when a README, LICENSE file or `license` field is missing, or when the packed manifest still has `workspace:` specifiers.
 
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
@@ -145,6 +145,8 @@ for (const dir of publishableDirs()) {
     if (!files.includes(target)) problems.push(`declared entry point missing from tarball: ${target}`);
   }
   if (!files.some((file) => /^readme\.md$/i.test(file))) problems.push('README.md missing');
+  if (!files.some((file) => /^licen[sc]e(\.md|\.txt)?$/i.test(file))) problems.push('LICENSE file missing');
+  if (!packed.license) problems.push('license field missing');
   if (!packed.types && !packed.exports?.['.']?.types) problems.push('no type declarations declared');
   const specifiers = { ...packed.dependencies, ...packed.peerDependencies, ...packed.optionalDependencies };
   for (const [name, range] of Object.entries(specifiers)) {
@@ -173,9 +175,7 @@ if (values.json) {
     console.log(`${status} ${result.name.padEnd(36)} ${String(result.files).padStart(4)} files ${String(result.packedKb).padStart(8)} kB`);
     for (const problem of result.problems) console.log(`       - ${problem}`);
   }
-  const unlicensed = results.filter((result) => !result.license).length;
   console.log(`\n${results.length} packages packed to ${outDir}; ${failed.length} failed.`);
-  if (unlicensed > 0) console.log(`note: ${unlicensed} packages have no "license" field; proprietary distribution only (see docs/RELEASING.md).`);
 }
 if (!values.keep && !values.out) rmSync(outDir, { recursive: true, force: true });
 process.exit(failed.length > 0 ? 1 : 0);

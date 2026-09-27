@@ -2,6 +2,7 @@
   "name": "@gixcopilot/node",
   "version": "0.1.0",
   "description": "Node.js SDK: createCopilot() composes the server, runtime, model providers, tools and security for Fastify, node:http/Express, or in-process use.",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AfoudaSWE/gix_ai_copilot_nx.git",
@@ -33,8 +34,7 @@
     "node": ">=22.12.0"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "scripts": {
     "build": "tsc -b tsconfig.json",

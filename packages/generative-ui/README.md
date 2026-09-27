@@ -2,6 +2,14 @@
 
 ## Purpose
 
+## Install
+
+```bash
+npm install @gixcopilot/generative-ui
+```
+
+Requires Node.js >=22.12.0. ESM only.
+
 Framework-independent safe generative UI and AI-writable shared-state bridge for the AI
 Copilot SDK (Phase 6). Lets an application register a small, trusted set of components the
 model may ask to render - and a small set of state slots the model may propose changes to -
@@ -97,3 +105,13 @@ const patchTool = toStatePatchToolDefinition(state, 'filters', {
   description: 'Update the applications list status filter.',
 });
 ```
+
+## Documentation
+
+- [generative-ui guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/generative-ui.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/generative-ui)
+
+## License
+
+MIT

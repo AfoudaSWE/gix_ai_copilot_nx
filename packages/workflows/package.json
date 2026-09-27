@@ -2,6 +2,7 @@
   "name": "@gixcopilot/workflows",
   "version": "0.1.0",
   "description": "Deterministic workflow engine for the AI Copilot SDK - defineWorkflow, function/tool/agent/approval/condition/parallel steps, checkpoints, pause/resume/cancel, retry, and compensation.",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AfoudaSWE/gix_ai_copilot_nx.git",
@@ -33,8 +34,7 @@
     "node": ">=22.12.0"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "scripts": {
     "build": "tsc -b tsconfig.json",

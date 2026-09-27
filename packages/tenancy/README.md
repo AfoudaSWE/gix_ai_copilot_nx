@@ -3,6 +3,14 @@
 Multi-tenancy primitives for the AI Copilot SDK (**Beta**). Platform-neutral, no storage
 dependencies.
 
+## Install
+
+```bash
+npm install @gixcopilot/tenancy
+```
+
+Requires Node.js >=22.12.0. ESM only.
+
 | Export | Purpose |
 | --- | --- |
 | `scopeFromSecurityContext`, `requireScope` | The runtime scope (`tenantId`, `projectId`, `environment`) derived **only** from the authenticated `SecurityContext`, never from request bodies or model output. Malformed ids are rejected. |
@@ -14,3 +22,13 @@ dependencies.
 ```ts
 const server = createServer({ ..., requireAuthentication: true, runObservers: [createConversationRecorder(store)] });
 ```
+
+## Documentation
+
+- [multi-tenancy guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/multi-tenancy.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/tenancy)
+
+## License
+
+MIT

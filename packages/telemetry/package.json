@@ -2,6 +2,7 @@
   "name": "@gixcopilot/telemetry",
   "version": "0.1.0",
   "description": "Observability foundation for the AI Copilot SDK - a TelemetryAdapter port (no-op, OpenTelemetry, and in-memory recording implementations), semantic conventions, safe redaction, metrics, cost estimation, and instrumentation wrappers that observe the runtime without becoming it.",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AfoudaSWE/gix_ai_copilot_nx.git",
@@ -33,8 +34,7 @@
     "node": ">=22.12.0"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "scripts": {
     "build": "tsc -b tsconfig.json",

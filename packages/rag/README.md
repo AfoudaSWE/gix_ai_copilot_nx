@@ -6,9 +6,13 @@ aware retrieval, reranking, and citations for the AI Copilot SDK. Retrieval reus
 produces plain, duck-typed contributions for the real Phase 4 `ContextEngine`, never a second
 prompt-construction engine.
 
-This is a private workspace package. Install workspace dependencies with `pnpm install`; a
-workspace host declares `"@gixcopilot/rag": "workspace:*"` in its dependencies. Build with
-`pnpm --filter @gixcopilot/rag build`.
+## Install
+
+```bash
+npm install @gixcopilot/rag
+```
+
+Requires Node.js >=22.12.0. ESM only.
 
 ```ts
 import { createRecursiveChunker, createOpenAIEmbeddingProvider, createIndexer, createRetriever, formatKnowledgeContext } from '@gixcopilot/rag';
@@ -30,3 +34,13 @@ See [Phase 9 API](../../docs/phases/phase-09/Phase_9_API.md),
 [architecture](../../docs/phases/phase-09/Phase_9_Architecture.md),
 [supported limits](../../docs/phases/phase-09/Phase_9_Issues.md), and
 [validation](../../docs/phases/phase-09/Phase_9_Testing.md).
+
+## Documentation
+
+- [rag guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/rag.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/rag)
+
+## License
+
+MIT

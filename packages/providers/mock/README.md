@@ -2,6 +2,14 @@
 
 ## Purpose
 
+## Install
+
+```bash
+npm install @gixcopilot/provider-mock
+```
+
+Requires Node.js >=22.12.0. ESM only.
+
 A deterministic, non-network `ModelProvider` — no real AI, no network call, no API key.
 This is what every other package's test suite (and the mock path of the model-streaming
 example) is built on, so CI never needs provider credentials.
@@ -44,3 +52,13 @@ const provider = createMockProvider({
   scenario: { chunks: ['Hello', ' world'], finishReason: 'stop' },
 });
 ```
+
+## Documentation
+
+- [models guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/models.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/providers/mock)
+
+## License
+
+MIT

@@ -8,8 +8,8 @@ without treating model output as authority.
 > **Current status: Phase 12 — Production Platform + Ecosystem COMPLETE.**
 > Phases 1–11 are complete. Phase 12 adds Angular and Node SDKs, a CLI, multi-tenant
 > persistence, Redis workers, model routing and usage enforcement, a management API and
-> platform, production deployment, release tooling and a documentation portal. The owner
-> chose proprietary distribution and no public npm publication; the previously committed
+> platform, production deployment, release tooling and a documentation portal. Packages are
+> published to npm under the MIT license as `@gixcopilot/*`; the previously committed
 > real credential was rotated and its exposure reviewed per the owner. Always check
 > [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) for authoritative phase state; see
 > [`docs/architecture/overview.md`](docs/architecture/overview.md) and the [ADRs](docs/adr/)
@@ -193,8 +193,8 @@ export function App() {
 
 The runtime URL is a base URL; requests go to `/api/copilot/runs`. See the
 [React API](docs/phases/phase-03/Phase_3_API.md) for custom clients and headless hooks.
-Packages are validated as local tarballs for internal use. Public npm publication is
-excluded by the owner's proprietary distribution decision; see [Releasing](docs/RELEASING.md).
+Install from npm, for example `npm install @gixcopilot/react react` or
+`npm install @gixcopilot/node @gixcopilot/provider-openai`; see [Releasing](docs/RELEASING.md).
 
 ## Phase 12 developer and production guides
 
@@ -207,7 +207,7 @@ excluded by the owner's proprietary distribution decision; see [Releasing](docs/
 ## Capability maturity
 
 These labels describe the current repository evidence, not a published support promise.
-No public npm release has occurred.
+Packages are published to npm at version 0.1.0 (pre-1.0; APIs may change in minor releases).
 
 | Capability | Status | Main package or app |
 | --- | --- | --- |
@@ -249,4 +249,4 @@ from one phase to the next.
 
 ## License
 
-Proprietary. No license grant is provided. Public npm publication is not authorized.
+[MIT](LICENSE)

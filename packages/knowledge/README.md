@@ -5,9 +5,13 @@ files, text, Markdown, PDF, DOCX, HTML/web, APIs, databases, object storage, and
 each normalized into the same `KnowledgeDocument` shape. No chunking, embedding, or vector-store
 concern lives here — see `@gixcopilot/rag`.
 
-This is a private workspace package. Install workspace dependencies with `pnpm install`; a
-workspace host declares `"@gixcopilot/knowledge": "workspace:*"` in its dependencies. Build with
-`pnpm --filter @gixcopilot/knowledge build`.
+## Install
+
+```bash
+npm install @gixcopilot/knowledge
+```
+
+Requires Node.js >=22.12.0. ESM only.
 
 ```ts
 import { pdfSource, defaultKnowledgeLoaders } from '@gixcopilot/knowledge';
@@ -28,3 +32,13 @@ cloud SDK dependency.
 See [Phase 9 API](../../docs/phases/phase-09/Phase_9_API.md),
 [architecture](../../docs/phases/phase-09/Phase_9_Architecture.md), and
 [limits](../../docs/phases/phase-09/Phase_9_Issues.md).
+
+## Documentation
+
+- [rag guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/rag.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/knowledge)
+
+## License
+
+MIT

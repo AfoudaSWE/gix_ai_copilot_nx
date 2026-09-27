@@ -2,6 +2,7 @@
   "name": "@gixcopilot/evals",
   "version": "0.1.0",
   "description": "Evaluation framework for AI Copilot applications - versioned datasets, execution records derived from recorded diagnostics, deterministic evaluators (tools, permission compliance, RAG, citations, memory, agents, workflows, UI, latency, tokens, cost), baseline comparison, experiments, reports and CI gates with non-negotiable security hard gates.",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AfoudaSWE/gix_ai_copilot_nx.git",
@@ -33,8 +34,7 @@
     "node": ">=22.12.0"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "scripts": {
     "build": "tsc -b tsconfig.json",

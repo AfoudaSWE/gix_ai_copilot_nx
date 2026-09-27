@@ -1,19 +1,49 @@
-# Internal release candidates
+# Releasing
 
-The repository owner chose proprietary distribution with no public npm publication. No
-license grant is implied by the source or package tarballs. Do not publish
-`@gixcopilot/*` packages to the public npm registry.
+The `@gixcopilot/*` SDK packages are published to the public npm registry under the
+[MIT license](../LICENSE), from the npm account `gixtech`. All 39 packages share one fixed
+version (Nx fixed release group). Apps and examples stay `private` and are never published.
 
-The manual [internal release candidate workflow](../.github/workflows/release.yml) runs
-validation, packs the packages, tests clean consumers against those tarballs, and previews
-the version. It has read-only repository permissions and no publish step or
-npm publishing credential. The tarballs are local validation artifacts; distribution to a
-private registry requires a separate, explicitly authorized process and rights review.
+## Before every publish
 
-Version previews use the existing Nx fixed release group and conventional commits. Local
-equivalents are `pnpm exec nx release version prerelease --dry-run`,
-`node tools/verify-packages.mjs`, and `node tools/consumer-test.mjs`. The package verifier
-checks contents and exports; its missing-license notices reflect this proprietary choice.
+```bash
+pnpm install --frozen-lockfile
+pnpm validate                                   # lint, typecheck, test, build
+node tools/verify-packages.mjs --out .packs --keep
+node tools/consumer-test.mjs --packs .packs     # clean npm consumers install the tarballs
+```
+
+`verify-packages.mjs` fails if a tarball lacks a README, LICENSE or `license` field, contains
+tests, `.env` files or secret-shaped strings, or still has `workspace:` specifiers.
+
+## First publish from a workstation
+
+The `@gixcopilot` scope must be an npm organization owned by the `gixtech` account (create a
+free organization named `gixcopilot` at <https://www.npmjs.com/org/create>). Then:
+
+```bash
+npm login                                       # as gixtech; 2FA prompts for an OTP
+pnpm -r --filter "./packages/**" publish --access public --no-git-checks
+```
+
+pnpm publishes in dependency order, rewrites `workspace:*` to real versions, and publishes
+`@gixcopilot/angular` from its ng-packagr `dist` directory (`publishConfig.directory`).
+Provenance attestations need a CI OIDC token, so only the release workflow adds them (`NPM_CONFIG_PROVENANCE=true`).
+
+## Later releases
+
+1. `pnpm exec nx release version <patch|minor|major|prerelease> --dry-run`, then without
+   `--dry-run` to bump every package and create the release commit and tag.
+2. Rebuild and run the checks above.
+3. Publish as above, or run the [release workflow](../.github/workflows/release.yml) with
+   `publish: true`. It uses the `NPM_TOKEN` repository secret (an npm automation token for
+   `gixtech`) and publishes with provenance.
+
+Prereleases go to the `next` dist-tag (`--tag next`). A published version can never be reused;
+npm allows unpublishing only within 72 hours, so fix mistakes with a new patch version and
+`npm deprecate` instead.
+
+## Credential history
 
 The owner confirmed revocation and rotation of the real credential that previously
 appeared in `examples/react-generative-ui/.env.example` and completion of its exposure

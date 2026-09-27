@@ -2,6 +2,7 @@
   "name": "@gixcopilot/testing",
   "version": "0.1.0",
   "description": "Deterministic testing SDK for AI Copilot applications - request-aware test models, tool mocks and assertions, security/RAG/memory/approval fixtures, agent and workflow simulation, a one-call copilot harness, and side-effect-free replay of recorded runs.",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AfoudaSWE/gix_ai_copilot_nx.git",
@@ -33,8 +34,7 @@
     "node": ">=22.12.0"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "scripts": {
     "build": "tsc -b tsconfig.json",

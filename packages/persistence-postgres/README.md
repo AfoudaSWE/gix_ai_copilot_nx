@@ -5,6 +5,14 @@ conversations (threads, messages, runs), durable memory, append-only audit, usag
 and the reviewed migration runner. Server-only; requires PostgreSQL 16+ with the `vector`
 extension for knowledge and semantic memory.
 
+## Install
+
+```bash
+npm install @gixcopilot/persistence-postgres
+```
+
+Requires Node.js >=22.12.0. ESM only.
+
 ```ts
 import { createPostgresPersistence } from '@gixcopilot/persistence-postgres';
 import { createConversationRecorder } from '@gixcopilot/tenancy';
@@ -37,3 +45,13 @@ reviewed and committed, with hand-written additions (foreign keys, triggers). Ap
 migration, recorded with checksums (an edited applied migration stops the run). Rollback runs
 only a reviewed `.down.sql` and refuses otherwise. See
 [docs/production/DATABASE.md](../../docs/production/DATABASE.md) for expand/migrate/contract.
+
+## Documentation
+
+- [production guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/production.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/persistence-postgres)
+
+## License
+
+MIT

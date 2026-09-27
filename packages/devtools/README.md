@@ -6,6 +6,14 @@ DevTools panels display: runs, messages, context budget, state history, tools an
 stages, approvals, RAG and citations, memory, agent tree, delegations and handoffs, workflow
 graph, events, traces and errors.
 
+## Install
+
+```bash
+npm install @gixcopilot/devtools
+```
+
+Requires Node.js >=22.12.0. ESM only.
+
 ## Use
 
 ```ts
@@ -56,3 +64,13 @@ app.register(createDevToolsPlugin(devtools, {
 - Does not store data durably and is not an audit trail. The Phase 7 audit log remains the
   compliance record.
 - Does not render UI. The React app is `apps/devtools`.
+
+## Documentation
+
+- [devtools guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/devtools.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/devtools)
+
+## License
+
+MIT

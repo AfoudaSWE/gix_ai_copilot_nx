@@ -2,6 +2,7 @@
   "name": "@gixcopilot/management",
   "version": "0.1.0",
   "description": "The AI Copilot control plane: authorized, audited, tenant-scoped management services and HTTP API for projects, environments, models, agents, tools, OpenAPI, MCP, knowledge, prompts, evaluations, traces, audit, usage and tenants.",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AfoudaSWE/gix_ai_copilot_nx.git",
@@ -33,8 +34,7 @@
     "node": ">=22.12.0"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "scripts": {
     "build": "tsc -b tsconfig.json",

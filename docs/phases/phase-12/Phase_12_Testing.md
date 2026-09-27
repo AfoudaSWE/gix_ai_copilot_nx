@@ -42,8 +42,8 @@ environment). No previous-phase failures to record.
 - Focused real infrastructure reruns: `persistence-postgres` 10/10, `apps/worker` 3/3, `apps/api` 5/5. PostgreSQL, pgvector and Redis ran in Testcontainers. The API run verified a budget block, conversation persistence and tenant separation; the worker run verified indexing and dead letters.
 - `pnpm test:e2e`: 11/11 Chromium tests passed, including the platform tenant/role journey, phone width and RTL, and a DevTools accessibility scan.
 - `node tools/verify-packages.mjs`: 39/39 tarballs passed content and export checks. All 39
-  lack a license field. The owner subsequently chose proprietary distribution with no public
-  npm publication; this is now documented in [Releasing](../../RELEASING.md).
+  lack a license field. The owner later chose the MIT license; all 39 packages now carry it and a
+  LICENSE file, and the verifier fails without them (see [Releasing](../../RELEASING.md)).
 - Clean external consumer projects installed the initial packed tarballs and passed 8/8 checks: Node and HTTP/SSE, React with SSR, Angular AOT, packed CLI, and generated Node, enterprise, React and Angular starters. After the Drizzle upgrade, tarball inspection was repeated (39/39 passed), then the upgraded packed CLI and enterprise starter passed 2/2 checks.
 - `node tools/bundle-report.mjs`: all five browser bundle budgets passed. `node tools/api-reference.mjs --check`: current. Final `node tools/secret-scan.mjs`: 1,358 files scanned, zero findings in the current tree.
 - `pnpm exec nx release version prerelease --dry-run`: passed and proposed 0.1.1-0 for the fixed package group; no files, commit or tag were written. Nx printed an optional `swc-node`/`ts-node` warning before successfully executing its pre-version build.

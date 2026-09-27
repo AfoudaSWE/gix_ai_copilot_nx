@@ -2,6 +2,16 @@
 
 The `aicopilot` command line (**Beta**).
 
+## Install
+
+```bash
+npx @gixcopilot/cli --help
+# or install globally
+npm install -g @gixcopilot/cli
+```
+
+Requires Node.js >=22.12.0. ESM only.
+
 ```sh
 npx @gixcopilot/cli init my-copilot --template react     # node | react | angular | enterprise
 cd my-copilot && npm install && npm run build && npm test
@@ -29,3 +39,13 @@ npx aicopilot db migrate                                # deployment step; rollb
 Safety: existing files are never overwritten without `--force`; destructive commands need
 `--yes`; commands never prompt, so CI and interactive use behave the same. Every command has
 `--help` with examples.
+
+## Documentation
+
+- [cli guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/cli.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/cli)
+
+## License
+
+MIT

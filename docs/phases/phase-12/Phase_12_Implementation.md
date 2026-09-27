@@ -17,7 +17,7 @@ IN PROGRESS.
   `migrations/` SQL. READMEs added for `agents`, `workflows`, `security`, `checkpoint-postgres`,
   `jobs`.
 - **No `license` field**: the repository has no LICENSE. The owner subsequently chose
-  proprietary distribution with no public npm publication; see [Releasing](../../RELEASING.md).
+  proprietary distribution, then reversed that to MIT and public npm publication; see [Releasing](../../RELEASING.md).
 - `tools/verify-packages.mjs`: `pnpm pack` every publishable package (the real publish
   transformation, `workspace:*` rewritten) and inspect the tarball in-process: no env files,
   tests, TypeScript sources, build caches, key material or secret-looking strings; every

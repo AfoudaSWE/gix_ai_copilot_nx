@@ -2,6 +2,14 @@
 
 ## Purpose
 
+## Install
+
+```bash
+npm install @gixcopilot/context
+```
+
+Requires Node.js >=22.12.0. ESM only.
+
 Framework-independent application context and shared state engine for the AI Copilot SDK
 (Phase 4). Lets an application tell the Copilot what it is currently looking at - and gives
 it a typed, subscribable place to keep shared state - without any dependency on React,
@@ -111,3 +119,13 @@ change also invalidates a stale AI-proposed `baseRevision` — see
 `docs/adr/0011-generative-ui-and-state-patch-architecture.md`. `@gixcopilot/generative-ui`
 bridges a `modelWritable` slot into a reserved tool a model calls to propose a patch;
 `@gixcopilot/react`'s `useCopilotState({ modelWritable: true })` wires this up automatically.
+
+## Documentation
+
+- [context-and-state guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/context-and-state.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/context)
+
+## License
+
+MIT

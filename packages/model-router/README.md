@@ -4,6 +4,14 @@ Production model routing for the AI Copilot SDK (**Beta**). Provider-neutral: it
 between whatever provider adapters you register (OpenAI, the mock provider, or your own
 `ModelProvider`).
 
+## Install
+
+```bash
+npm install @gixcopilot/model-router
+```
+
+Requires Node.js >=22.12.0. ESM only.
+
 ```ts
 const health = createProviderHealth();
 const router = createModelRouter({
@@ -38,3 +46,13 @@ cooldown. One failure never marks a provider down.
 - Eligible errors: rate limit, timeout, network, retryable provider/model errors.
 - Never: invalid request, authentication/configuration errors, schema/structured-output
   errors, context overflow, unknown model, cancellation, and security or approval denials.
+
+## Documentation
+
+- [models guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/models.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/model-router)
+
+## License
+
+MIT

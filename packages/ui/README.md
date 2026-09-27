@@ -1,8 +1,15 @@
 # @gixcopilot/ui
 
 Composable React chat, modal popup, and in-flow sidebar built only on
-`@gixcopilot/react`. React peer range: `^19.0.0`, tested with 19.3.0. Packages remain
-workspace-private; run `pnpm install && pnpm build` and use `workspace:*` dependencies.
+`@gixcopilot/react`. React peer range: `^19.0.0`, tested with 19.3.0.
+
+## Install
+
+```bash
+npm install @gixcopilot/ui react
+```
+
+Requires Node.js >=22.12.0. ESM only.
 
 ```tsx
 import { CopilotProvider } from '@gixcopilot/react';
@@ -90,3 +97,13 @@ fallback for that row only, never the whole chat.
 resolution; a fully custom slot can ignore `resolveRenderer` and render `toolCalls` itself.
 See [Phase 5 API](../../docs/phases/phase-05/Phase_5_API.md) and
 [Phase 6 API](../../docs/phases/phase-06/Phase_6_API.md).
+
+## Documentation
+
+- [react guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/react.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/ui)
+
+## License
+
+MIT

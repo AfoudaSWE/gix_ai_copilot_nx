@@ -2,6 +2,7 @@
   "name": "@gixcopilot/integrations",
   "version": "0.1.0",
   "description": "A common registry tracking external integrations (OpenAPI, MCP, future connectors) for the AI Copilot SDK.",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AfoudaSWE/gix_ai_copilot_nx.git",
@@ -33,8 +34,7 @@
     "node": ">=22.12.0"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "scripts": {
     "build": "tsc -b tsconfig.json",

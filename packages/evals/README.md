@@ -2,6 +2,14 @@
 
 Evaluates AI behavior across a dataset. It is not a unit-test library.
 
+## Install
+
+```bash
+npm install @gixcopilot/evals
+```
+
+Requires Node.js >=22.12.0. ESM only.
+
 | | Question it answers |
 | --- | --- |
 | **Test** (`@gixcopilot/testing`) | Is this code deterministically correct? |
@@ -79,3 +87,13 @@ thresholds are built in.
 - No CLI. Run evals from a script (see `examples/evals`); the CLI is Phase 12.
 - No annotation platform, dashboards or hosted storage.
 - Cost is always an estimate from pricing you configure. Nothing is billed or enforced.
+
+## Documentation
+
+- [evaluations guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/evaluations.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/evals)
+
+## License
+
+MIT

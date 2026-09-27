@@ -2,6 +2,7 @@
   "name": "@gixcopilot/vectorstore-pgvector",
   "version": "0.1.0",
   "description": "PostgreSQL + pgvector VectorStore adapter for @gixcopilot/rag - the only package in the workspace allowed to depend on drizzle-orm/pg for RAG storage.",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AfoudaSWE/gix_ai_copilot_nx.git",
@@ -34,8 +35,7 @@
     "node": ">=22.12.0"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "scripts": {
     "build": "tsc -b tsconfig.json",

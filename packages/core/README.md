@@ -2,6 +2,14 @@
 
 ## Purpose
 
+## Install
+
+```bash
+npm install @gixcopilot/core
+```
+
+Requires Node.js >=22.12.0. ESM only.
+
 Framework-independent runtime foundation for the AI Copilot SDK. Owns run lifecycle, event
 sequencing, and cancellation over a generic "executor" boundary — with no dependency on any
 LLM provider, HTTP framework, or UI framework.
@@ -69,3 +77,13 @@ for await (const event of run.events) {
   console.log(event.type);
 }
 ```
+
+## Documentation
+
+- [concepts guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/concepts.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/core)
+
+## License
+
+MIT

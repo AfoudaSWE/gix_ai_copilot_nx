@@ -1,7 +1,7 @@
 # Phase 12 issues
 
-- The owner chose proprietary distribution and no public npm publication. Internal tarball
-  validation remains available; see [Releasing](../../RELEASING.md).
+- Resolved: the packages now carry the MIT license and are published to npm from the
+  `gixtech` account (reversing the earlier proprietary decision); see [Releasing](../../RELEASING.md).
 - A real credential previously appeared in `examples/react-generative-ui/.env.example`.
   Its current-tree placeholder is blank. The owner confirmed revocation, rotation and
   exposure review. Provider-side revocation is owner-attested rather than independently

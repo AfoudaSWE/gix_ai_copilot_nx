@@ -15,3 +15,13 @@ pnpm add @gixcopilot/jobs bullmq
 
 Redis is used for delivery, not as the source of truth: checkpoints live in PostgreSQL
 (`@gixcopilot/checkpoint-postgres`). See [docs/production/WORKERS.md](../../docs/production/WORKERS.md). Server-only.
+
+## Documentation
+
+- [workflows guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/workflows.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/jobs)
+
+## License
+
+MIT

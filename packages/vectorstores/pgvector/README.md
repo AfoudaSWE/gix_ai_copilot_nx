@@ -4,9 +4,13 @@ Production PostgreSQL + [pgvector](https://github.com/pgvector/pgvector) impleme
 `@gixcopilot/rag`'s storage-agnostic `VectorStore` contract. The only package in the workspace
 depending on `drizzle-orm`/`pg` — that dependency stays out of the core RAG/memory abstractions.
 
-This is a private workspace package. Install workspace dependencies with `pnpm install`; a
-workspace host declares `"@gixcopilot/vectorstore-pgvector": "workspace:*"` in its dependencies.
-Build with `pnpm --filter @gixcopilot/vectorstore-pgvector build`.
+## Install
+
+```bash
+npm install @gixcopilot/vectorstore-pgvector
+```
+
+Requires Node.js >=22.12.0. ESM only.
 
 ```ts
 import { createPgVectorStore } from '@gixcopilot/vectorstore-pgvector';
@@ -31,3 +35,13 @@ auto-skip when Docker is unreachable — run them with
 See [Phase 9 API](../../../docs/phases/phase-09/Phase_9_API.md),
 [architecture](../../../docs/phases/phase-09/Phase_9_Architecture.md), and
 [validation](../../../docs/phases/phase-09/Phase_9_Testing.md).
+
+## Documentation
+
+- [rag guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/rag.md)
+- [Getting started](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/getting-started.md)
+- [Source](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/vectorstores/pgvector)
+
+## License
+
+MIT

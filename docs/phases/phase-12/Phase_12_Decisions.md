@@ -5,5 +5,6 @@
 - Internal release candidate validation uses the existing Nx release toolchain, a fixed
   version group and package tarball consumer tests. See [versioning](../../VERSIONING.md)
   and [releasing](../../RELEASING.md).
-- The owner chose proprietary distribution and no public npm publication. The manual
-  candidate workflow has no publish step or npm publishing credential.
+- Distribution: first proprietary with no public npm publication, then reversed by the
+  owner on 2026-09-27 to public npm publication under MIT from the `gixtech` account. The
+  release workflow publishes only when its `publish` input is set, using `NPM_TOKEN`.
