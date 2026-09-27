@@ -33,6 +33,7 @@ export const workspaceAliases = {
   '@gixcopilot/client': `${workspaceRoot}packages/client/src/index.ts`,
   '@gixcopilot/security': `${workspaceRoot}packages/security/src/index.ts`,
   '@gixcopilot/openapi': `${workspaceRoot}packages/openapi/src/index.ts`,
+  '@gixcopilot/connectors': `${workspaceRoot}packages/connectors/src/index.ts`,
   '@gixcopilot/mcp': `${workspaceRoot}packages/mcp/src/index.ts`,
   '@gixcopilot/integrations': `${workspaceRoot}packages/integrations/src/index.ts`,
   '@gixcopilot/knowledge': `${workspaceRoot}packages/knowledge/src/index.ts`,

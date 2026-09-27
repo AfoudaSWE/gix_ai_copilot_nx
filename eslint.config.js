@@ -279,6 +279,10 @@ export default tseslint.config(
               onlyDependOnLibsWithTags: ['scope:angular', 'scope:headless', 'scope:protocol', 'scope:client', 'scope:context', 'scope:tools', 'scope:generative-ui'],
             },
             {
+              sourceTag: 'scope:connectors',
+              onlyDependOnLibsWithTags: ['scope:connectors', 'scope:openapi', 'scope:tools', 'scope:protocol'],
+            },
+            {
               sourceTag: 'scope:create',
               onlyDependOnLibsWithTags: ['scope:create'],
             },
@@ -331,7 +335,7 @@ export default tseslint.config(
             },
             {
               sourceTag: 'scope:cli',
-              onlyDependOnLibsWithTags: ['scope:cli', 'scope:config', 'scope:evals', 'scope:openapi', 'scope:persistence-postgres', 'scope:tools', 'scope:devtools', 'scope:telemetry', 'scope:protocol', 'scope:tenancy', 'scope:management', 'scope:usage', 'scope:security', 'scope:memory', 'scope:checkpoint-postgres', 'scope:vectorstore-pgvector', 'scope:rag', 'scope:workflows', 'scope:knowledge', 'scope:mcp', 'scope:core', 'scope:agents', 'scope:provider', 'scope:redis', 'scope:node', 'scope:server', 'scope:client', 'scope:provider-adapter'],
+              onlyDependOnLibsWithTags: ['scope:cli', 'scope:connectors', 'scope:config', 'scope:evals', 'scope:openapi', 'scope:persistence-postgres', 'scope:tools', 'scope:devtools', 'scope:telemetry', 'scope:protocol', 'scope:tenancy', 'scope:management', 'scope:usage', 'scope:security', 'scope:memory', 'scope:checkpoint-postgres', 'scope:vectorstore-pgvector', 'scope:rag', 'scope:workflows', 'scope:knowledge', 'scope:mcp', 'scope:core', 'scope:agents', 'scope:provider', 'scope:redis', 'scope:node', 'scope:server', 'scope:client', 'scope:provider-adapter'],
             },
             {
               // The docs portal renders Markdown; SDK packages are used only by type-checked snippets.
@@ -372,6 +376,7 @@ export default tseslint.config(
                 'scope:angular',
                 'scope:vue',
                 'scope:create',
+                'scope:connectors',
                 'scope:node',
                 'scope:config',
                 'scope:tenancy',

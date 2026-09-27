@@ -13,7 +13,8 @@
     "devtools-demo",
     "devtools-app",
     "api",
-    "platform"
+    "platform",
+    "docs"
   ],
   "targets": {
     "typecheck": {

@@ -1,0 +1,124 @@
+/*
+ * GIX design tokens: the only place colors, type, spacing and motion are defined. Components
+ * use the semantic tokens (--surface, --text, --accent …), never raw palette values.
+ * Dark is the default GIX experience; [data-theme="light"] switches the semantic layer.
+ */
+:root {
+  /* Palette */
+  --gix-black: #000000;
+  --gix-white: #ffffff;
+  --gix-red: #d61920;
+  --gix-red-alt: #c1242a;
+  --gix-red-dark: #a90f15;
+  --gix-red-light: #ff4d52;
+  --gix-gray-50: #fafafa;
+  --gix-gray-100: #f5f5f5;
+  --gix-gray-200: #e5e5e5;
+  --gix-gray-300: #d4d4d4;
+  --gix-gray-400: #a3a3a3;
+  --gix-gray-500: #737373;
+  --gix-gray-600: #525252;
+  --gix-gray-700: #404040;
+  --gix-gray-800: #262626;
+  --gix-gray-850: #1c1c1c;
+  --gix-gray-900: #171717;
+  --gix-gray-950: #0a0a0a;
+  --gix-green: #22c55e;
+  --gix-amber: #f59e0b;
+  --gix-blue: #3b82f6;
+
+  /* Typography */
+  --font-sans: 'Inter Variable', Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans Arabic', sans-serif;
+  --font-display: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'Cascadia Code', Menlo, monospace;
+  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: clamp(1.75rem, 1.2rem + 1.8vw, 2.25rem);
+  --text-4xl: clamp(2rem, 1.2rem + 3vw, 3rem);
+  --text-hero: clamp(2.5rem, 1rem + 6vw, 5.25rem);
+
+  /* Space, radius, layout */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --content-max: 1200px;
+  --header-h: 64px;
+
+  /* Motion */
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --duration: 180ms;
+
+  /* Semantic: dark (default) */
+  color-scheme: dark;
+  --bg: var(--gix-black);
+  --bg-elevated: var(--gix-gray-950);
+  --surface: var(--gix-gray-950);
+  --surface-2: var(--gix-gray-900);
+  --surface-3: var(--gix-gray-850);
+  --border: rgb(255 255 255 / 0.09);
+  --border-strong: rgb(255 255 255 / 0.18);
+  --text: var(--gix-white);
+  --text-muted: var(--gix-gray-400);
+  --text-subtle: #8f8f8f;
+  --accent: var(--gix-red);
+  --accent-hover: var(--gix-red-light);
+  --accent-text: #ff5a5f;
+  --accent-soft: rgb(214 25 32 / 0.12);
+  --accent-glow: 0 0 0 1px rgb(214 25 32 / 0.5), 0 0 24px rgb(214 25 32 / 0.25);
+  --focus: #ff6b70;
+  --grid-line: rgb(255 255 255 / 0.035);
+  --code-bg: #0b0b0b;
+  --code-text: #e5e5e5;
+  --tok-keyword: #ff6b70;
+  --tok-string: #a5d6a7;
+  --tok-number: #f6c177;
+  --tok-comment: #909090;
+  --tok-function: #9ecbff;
+  --tok-type: #e0b3ff;
+  --tok-punct: #a3a3a3;
+  --success: var(--gix-green);
+  --warning: var(--gix-amber);
+  --info: var(--gix-blue);
+  --shadow: 0 10px 30px rgb(0 0 0 / 0.45);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: var(--gix-white);
+  --bg-elevated: var(--gix-white);
+  --surface: var(--gix-gray-50);
+  --surface-2: var(--gix-gray-100);
+  --surface-3: var(--gix-gray-200);
+  --border: rgb(0 0 0 / 0.09);
+  --border-strong: rgb(0 0 0 / 0.18);
+  --text: #0a0a0a;
+  --text-muted: var(--gix-gray-600);
+  --text-subtle: #666666;
+  --accent: var(--gix-red);
+  --accent-hover: var(--gix-red-dark);
+  --accent-text: #b3141a;
+  --accent-soft: rgb(214 25 32 / 0.08);
+  --accent-glow: 0 0 0 1px rgb(214 25 32 / 0.45), 0 0 18px rgb(214 25 32 / 0.18);
+  --focus: #b3141a;
+  --grid-line: rgb(0 0 0 / 0.04);
+  /* Darker status colors so badges and states keep WCAG AA contrast on white. */
+  --success: #15803d;
+  --warning: #b45309;
+  --info: #1d4ed8;
+  --code-bg: #0b0b0b;
+  --code-text: #e5e5e5;
+  --shadow: 0 10px 30px rgb(0 0 0 / 0.08);
+}

@@ -1,7 +1,7 @@
 {
   "name": "@gixcopilot/cli",
   "version": "0.1.0",
-  "description": "The aicopilot command line: init, add tool/agent/mcp, import-openapi, dev, test, eval, doctor and db migrations.",
+  "description": "The aicopilot command line: init, add tool/agent/mcp/api, import-openapi, api check, mcp serve, dev, test, eval, doctor and db migrations.",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -48,12 +48,17 @@
   },
   "dependencies": {
     "@gixcopilot/config": "workspace:*",
+    "@gixcopilot/connectors": "workspace:*",
     "@gixcopilot/evals": "workspace:*",
+    "@gixcopilot/mcp": "workspace:*",
     "@gixcopilot/openapi": "workspace:*",
     "@gixcopilot/persistence-postgres": "workspace:*",
+    "@gixcopilot/security": "workspace:*",
+    "@gixcopilot/tools": "workspace:*",
     "yaml": "2.9.1"
   },
   "devDependencies": {
-    "vitest": "5.0.1"
+    "vitest": "5.0.1",
+    "@modelcontextprotocol/sdk": "1.30.0"
   }
 }

@@ -67,4 +67,5 @@ Phase 11 completion: built `@gixcopilot/devtools`, `@gixcopilot/testing`, `@gixc
 | --- | --- |
 | [0020](adr/0020-production-runtime-and-control-plane.md) | Separate authenticated management from runtime execution; trusted tenant scope; versioned, durable configuration snapshots; migrations before startup; framework adapters over shared neutral behavior. |
 | [0021](adr/0021-model-fallback-and-usage-enforcement.md) | Classify fallback before any model output; never replay completed tool actions; enforce scoped admission; keep token usage separate from estimated cost. |
+| [0022](adr/0022-website-and-documentation-portal.md) | One Vite + React app for website and docs; repository Markdown as the source; readable URLs with static prerender; build-time search and API data; type-checked samples. |
 

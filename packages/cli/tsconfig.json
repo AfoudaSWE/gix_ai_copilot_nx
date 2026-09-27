@@ -23,6 +23,18 @@
     },
     {
       "path": "../persistence-postgres"
+    },
+    {
+      "path": "../connectors"
+    },
+    {
+      "path": "../mcp"
+    },
+    {
+      "path": "../security"
+    },
+    {
+      "path": "../tools"
     }
   ]
 }

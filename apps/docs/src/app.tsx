@@ -1,132 +1,95 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { PAGES, linkToSlug } from './content.js';
+import { Component, useEffect, useReducer, useRef } from 'react';
+import type { ErrorInfo, ReactNode } from 'react';
+import { SearchProvider } from './docs/search.js';
+import { loadPage, pageComponent } from './page-registry.js';
+import { RouterProvider, useRouter } from './router.js';
+import { metaFor, resolveRoute } from './routes.js';
 
-const REPO = 'https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/';
-
-function current(): string {
-  const slug = globalThis.location?.hash.replace(/^#\/?/, '') ?? '';
-  return PAGES.some((page) => page.slug === slug) ? slug : (PAGES[0]?.slug ?? '');
+/** A failing interactive demo or page must never take the whole site down. */
+export class ErrorBoundary extends Component<{ readonly children: ReactNode; readonly resetKey: string }, { readonly failed: boolean }> {
+  override state = { failed: false };
+  static getDerivedStateFromError(): { failed: boolean } {
+    return { failed: true };
+  }
+  override componentDidUpdate(previous: { readonly resetKey: string }): void {
+    if (previous.resetKey !== this.props.resetKey && this.state.failed) this.setState({ failed: false });
+  }
+  override componentDidCatch(error: Error, info: ErrorInfo): void {
+    console.error('GIX site render error', error, info.componentStack);
+  }
+  override render(): ReactNode {
+    if (this.state.failed) {
+      return (
+        <div className="render-error" role="alert">
+          <h1>Something went wrong on this page.</h1>
+          <p>
+            Try reloading, or go to the <a href="/docs">documentation home</a>.
+          </p>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 
-export function App() {
-  const [slug, setSlug] = useState(current);
-  const [query, setQuery] = useState('');
-  const mainRef = useRef<HTMLElement>(null);
-  useEffect(() => {
-    const onHash = (): void => setSlug(current());
-    globalThis.addEventListener?.('hashchange', onHash);
-    return () => globalThis.removeEventListener?.('hashchange', onHash);
-  }, []);
-  useEffect(() => {
-    mainRef.current?.querySelector<HTMLElement>('h1')?.focus();
-  }, [slug]);
-  const page = PAGES.find((candidate) => candidate.slug === slug) ?? PAGES[0];
-  const filtered = useMemo(
-    () => (query ? PAGES.filter((candidate) => `${candidate.title} ${candidate.markdown}`.toLowerCase().includes(query.toLowerCase())) : PAGES),
-    [query],
-  );
-  const sections = [...new Set(filtered.map((candidate) => candidate.section))];
-  const go = (target: string): void => {
-    globalThis.location.hash = `#/${target}`;
-    setSlug(target);
-  };
+function Page() {
+  const { location } = useRouter();
+  const route = resolveRoute(location.pathname);
+  const first = useRef(true);
+  const [, rerender] = useReducer((value: number) => value + 1, 0);
 
+  // On client navigation: update the title and move focus to the new page's heading.
+  useEffect(() => {
+    document.title = metaFor(location.pathname).title;
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    if (!location.hash) document.querySelector<HTMLElement>('main h1')?.focus({ preventScroll: true });
+  }, [location.pathname, location.hash]);
+
+  // Normally already loaded (before hydration / navigation); load now as a fallback.
+  const missing = pageComponent(route.kind) === undefined;
+  useEffect(() => {
+    if (missing) void loadPage(location.pathname).then(rerender, rerender);
+  }, [missing, location.pathname]);
+
+  if (route.kind === 'doc') {
+    const Doc = pageComponent('doc');
+    return Doc ? <Doc key={route.slug} slug={route.slug} source={route.source} /> : <PageLoading />;
+  }
+  if (route.kind === 'api-package') {
+    const Api = pageComponent('api-package');
+    return Api ? <Api key={route.slug} slug={route.slug} /> : <PageLoading />;
+  }
+  const Simple = pageComponent(route.kind);
+  return Simple ? <Simple /> : <PageLoading />;
+}
+
+function PageLoading() {
+  return <div className="page-loading" role="progressbar" aria-label="Loading page" />;
+}
+
+function Shell() {
+  const { location } = useRouter();
   return (
-    <div className="docs">
-      <a
-        className="skip-link"
-        href="#doc"
-        onClick={(event) => {
-          event.preventDefault();
-          mainRef.current?.focus();
-        }}
-      >
+    <>
+      <a className="skip-link" href="#main">
         Skip to content
       </a>
-      <nav aria-label="Documentation" className="sidebar">
-        <p className="brand">AI Copilot SDK</p>
-        <label className="visually-hidden" htmlFor="search">
-          Search documentation
-        </label>
-        <input id="search" type="search" placeholder="Search…" value={query} onChange={(event) => setQuery(event.target.value)} />
-        {sections.map((section) => (
-          <section key={section}>
-            <h2>{section}</h2>
-            <ul>
-              {filtered
-                .filter((candidate) => candidate.section === section)
-                .map((candidate) => (
-                  <li key={candidate.slug}>
-                    <a
-                      href={`#/${candidate.slug}`}
-                      aria-current={candidate.slug === page?.slug ? 'page' : undefined}
-                      onClick={(event) => {
-                        event.preventDefault();
-                        go(candidate.slug);
-                      }}
-                    >
-                      {candidate.title}
-                    </a>
-                  </li>
-                ))}
-            </ul>
-          </section>
-        ))}
-      </nav>
-      <main id="doc" ref={mainRef} tabIndex={-1}>
-        {page ? (
-          <article>
-            <Markdown
-              remarkPlugins={[remarkGfm]}
-              components={{
-                h1: ({ children }) => <h1 tabIndex={-1}>{children}</h1>,
-                a: ({ href = '', children }) => {
-                  const target = linkToSlug(href);
-                  if (target) {
-                    return (
-                      <a
-                        href={`#/${target}`}
-                        onClick={(event) => {
-                          event.preventDefault();
-                          go(target);
-                        }}
-                      >
-                        {children}
-                      </a>
-                    );
-                  }
-                  const external = /^[a-z]+:/i.test(href);
-                  const url = external || href.startsWith('#') ? href : `${REPO}${new URL(href, `https://x/${page.source}`).pathname.slice(1)}`;
-                  return (
-                    <a href={url} {...(external ? { rel: 'noreferrer', target: '_blank' } : {})}>
-                      {children}
-                    </a>
-                  );
-                },
-                table: ({ children }) => (
-                  <div className="table-wrap" tabIndex={0} role="region" aria-label="Table">
-                    <table>{children}</table>
-                  </div>
-                ),
-                pre: ({ children }) => (
-                  <pre tabIndex={0} aria-label="Code example">
-                    {children}
-                  </pre>
-                ),
-              }}
-            >
-              {page.markdown}
-            </Markdown>
-            <p className="source">
-              Source: <a href={`${REPO}${page.source}`}>{page.source}</a>
-            </p>
-          </article>
-        ) : (
-          <p>No documentation found.</p>
-        )}
-      </main>
-    </div>
+      <ErrorBoundary resetKey={location.pathname}>
+        <Page />
+      </ErrorBoundary>
+    </>
+  );
+}
+
+export function App({ initialPath }: { readonly initialPath?: string }) {
+  return (
+    <RouterProvider initialPath={initialPath} preload={loadPage}>
+      <SearchProvider>
+        <Shell />
+      </SearchProvider>
+    </RouterProvider>
   );
 }

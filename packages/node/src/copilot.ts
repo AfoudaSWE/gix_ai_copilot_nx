@@ -70,6 +70,12 @@ export interface Copilot {
   stream(input: string | CopilotRunInput): AsyncIterable<CopilotEvent>;
   /** A `node:http` request listener (also mountable in Express/Connect). */
   nodeHandler(): (request: IncomingMessage, response: ServerResponse) => void;
+  /**
+   * A web-standard handler (`Request` → `Response`, streaming SSE) for Next.js App Router
+   * route handlers, Remix, Hono, Bun or Deno. `basePath` is the URL prefix the copilot is
+   * mounted under (for example `/api/copilot`); it is stripped before routing.
+   */
+  fetchHandler(options?: { readonly basePath?: string }): (request: Request) => Promise<Response>;
   listen(options?: { readonly host?: string; readonly port?: number }): Promise<string>;
   close(): Promise<void>;
 }
@@ -191,6 +197,18 @@ export function createCopilot(options: CreateCopilotOptions): Copilot {
           response.end();
           app.log.error(failure);
         });
+      };
+    },
+    fetchHandler(handlerOptions = {}) {
+      const basePath = (handlerOptions.basePath ?? '').replace(/\/+$/, '');
+      return async (request) => {
+        const url = new URL(request.url);
+        if (basePath && url.pathname !== basePath && !url.pathname.startsWith(`${basePath}/`)) {
+          return new Response(JSON.stringify({ error: { code: 'NOT_FOUND', message: 'Not found.' } }), { status: 404, headers: { 'content-type': 'application/json' } });
+        }
+        const path = url.pathname.slice(basePath.length) || '/';
+        const body = request.method === 'GET' || request.method === 'HEAD' ? undefined : await request.text();
+        return fetchImpl(`${IN_PROCESS_BASE_URL}${path}${url.search}`, { method: request.method, headers: request.headers, body, signal: request.signal });
       };
     },
     listen: (listenOptions = {}) => app.listen({ host: listenOptions.host ?? '127.0.0.1', port: listenOptions.port ?? 0 }),

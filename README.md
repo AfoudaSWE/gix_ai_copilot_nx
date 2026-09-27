@@ -111,6 +111,7 @@ packages/
   tools/                @gixcopilot/tools (framework-independent canonical tool architecture)
   generative-ui/        @gixcopilot/generative-ui (framework-independent generative UI/state-patch bridge)
   security/ openapi/ mcp/ integrations/ knowledge/ rag/ memory/   (Phases 7-9)
+  connectors/           @gixcopilot/connectors (any HTTP/GraphQL API as tools, manifests)
   vectorstores/pgvector/  agents/ workflows/ jobs/ checkpoint-postgres/   (Phases 9-10)
   telemetry/            @gixcopilot/telemetry (Phase 11)
   devtools/             @gixcopilot/devtools (+ /server) (Phase 11)
@@ -215,9 +216,10 @@ Install from npm, for example `npm install @gixcopilot/react react` or
 
 - Start with [Getting started](docs/guides/getting-started.md) and the [examples](docs/guides/examples.md).
 - SDK guides: [React](docs/guides/react.md), [Vue](docs/guides/vue.md), [Angular](docs/guides/angular.md), and [Node](docs/guides/node.md).
-- Application features: [tools](docs/guides/tools.md), [generative UI](docs/guides/generative-ui.md), [security](docs/guides/security.md), [OpenAPI](docs/guides/openapi.md), [MCP](docs/guides/mcp.md), [RAG](docs/guides/rag.md), [memory](docs/guides/memory.md), [agents](docs/guides/agents.md), and [workflows](docs/guides/workflows.md).
+- Application features: [tools](docs/guides/tools.md), [generative UI](docs/guides/generative-ui.md), [security](docs/guides/security.md), [connect any API](docs/guides/connectors.md), [OpenAPI](docs/guides/openapi.md), [MCP](docs/guides/mcp.md), [Next.js](docs/guides/nextjs.md), [RAG](docs/guides/rag.md), [memory](docs/guides/memory.md), [agents](docs/guides/agents.md), and [workflows](docs/guides/workflows.md).
 - Operations: [CLI](docs/guides/cli.md), [platform](docs/guides/platform.md), [DevTools](docs/guides/devtools.md), [testing](docs/guides/testing.md), [evaluations](docs/guides/evaluations.md), [production](docs/guides/production.md), and [deployment](docs/production/DEPLOYMENT.md).
 - [API reference](docs/reference/api.md), [versioning](docs/VERSIONING.md), and [release process](docs/RELEASING.md). Contributors should read [AGENTS.md](AGENTS.md).
+- The website and documentation portal (`apps/docs`): [how to run, write and deploy it](docs/website/README.md).
 
 ## Capability maturity
 
@@ -228,7 +230,7 @@ Packages are published to npm at version 0.1.0 (pre-1.0; APIs may change in mino
 | --- | --- | --- |
 | Protocol, streaming, React | Beta | `protocol`, `core`, `server`, `client`, `react`, `ui` |
 | Tools, generative UI, Action Firewall | Beta | `tools`, `generative-ui`, `security` |
-| OpenAPI, MCP, RAG, memory | Beta | `openapi`, `mcp`, `rag`, `memory` |
+| Any HTTP/GraphQL API, OpenAPI, MCP (client and server), RAG, memory | Beta | `connectors`, `openapi`, `mcp`, `rag`, `memory` |
 | Agents, workflows, DevTools, evaluations | Beta | `agents`, `workflows`, `devtools`, `evals` |
 | Angular, Vue and Node SDKs, CLI, installer | Beta | `angular`, `vue`, `node`, `cli`, `create` |
 | Management platform and production deployment | Experimental | `management`, `apps/platform`, `apps/api`, `apps/worker` |

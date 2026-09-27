@@ -1,6 +1,7 @@
 import { parseArgs } from 'node:util';
 import { addAgent, addMcp, addTool, db, dev, doctor, evalCommand, importOpenApi, init, listMcp, test } from './commands.js';
 import type { CliIo, Flags } from './commands.js';
+import { addApi, apiCheck, mcpServe } from './connect.js';
 
 export const VERSION = '0.1.0';
 
@@ -14,7 +15,10 @@ Commands:
   add tool <ns-action>       Add a typed tool with tests (e.g. applications-get)
   add agent <name>           Add an agent definition with tests
   add mcp <id>               Configure an MCP server (no tools exposed by default)
+  add api <id>               Connect any HTTP/GraphQL API: writes an API manifest to fill in
+  api check <manifest>       Validate an API manifest and list the tools it creates
   mcp list                   List configured MCP servers
+  mcp serve <manifest>       Serve an API's tools as an MCP server (stdio, or --http)
   import-openapi <file>      Import an OpenAPI document (all operations disabled)
   dev                        Validate configuration, then run your dev script
   test                       Run your tests with the test environment
@@ -42,12 +46,22 @@ Examples:
   aicopilot add tool payments-refund --dir src/tools
   aicopilot add agent support
   aicopilot add mcp files --url https://mcp.example.com/mcp
-  aicopilot add mcp local-fs --command "node ./mcp-server.js"`,
+  aicopilot add mcp local-fs --command "node ./mcp-server.js"
+  aicopilot add api crm --url https://crm.internal.example.com`,
   mcp: `Usage: aicopilot mcp list
        aicopilot add mcp <id> (--url <https://...> | --command "<cmd args>") [--force]
+       aicopilot mcp serve <manifest> [--http] [--port 3333] [--token-env NAME] [--allow-writes]
+
+"mcp serve" turns a connected API (see "aicopilot add api") into an MCP server any MCP client can
+use. It serves read-only tools only unless --allow-writes; every call passes the Action Firewall
+and is audited to stderr. --http listens on 127.0.0.1 (require a bearer token with --token-env).
 
 MCP tools are denied by default; expose them by listing names in aicopilot.mcp.json "include".
 They still pass the Action Firewall.`,
+  api: `Usage: aicopilot api check <manifest.yaml|json> [--json]
+
+Validates an API manifest (created with "aicopilot add api <id>") without calling the API and lists
+each tool it creates: name, risk, HTTP method and path, required permissions.`,
   'import-openapi': `Usage: aicopilot import-openapi <openapi.yaml|json> [--id <integration-id>] [--force]
 
 Writes aicopilot.openapi.<id>.json (every operation "expose": false) and a registration module.
@@ -113,6 +127,10 @@ export async function run(argv: readonly string[], io: CliIo = defaultIo()): Pro
         template: { type: 'string', short: 't' },
         name: { type: 'string' },
         dir: { type: 'string' },
+        port: { type: 'string' },
+        http: { type: 'boolean' },
+        'allow-writes': { type: 'boolean' },
+        'token-env': { type: 'string' },
         id: { type: 'string' },
         url: { type: 'string' },
         command: { type: 'string' },
@@ -137,7 +155,7 @@ export async function run(argv: readonly string[], io: CliIo = defaultIo()): Pro
     return 0;
   };
   if (!command) return help('main');
-  if (values['help'] === true) return help(command === 'add' || command === 'mcp' ? command : command);
+  if (values['help'] === true) return help(command);
   try {
     switch (command) {
       case 'init':
@@ -147,13 +165,19 @@ export async function run(argv: readonly string[], io: CliIo = defaultIo()): Pro
         if (kind === 'tool') return await addTool(io, name, values);
         if (kind === 'agent') return await addAgent(io, name, values);
         if (kind === 'mcp') return await addMcp(io, name, values);
+        if (kind === 'api') return await addApi(io, name, values);
         io.err(HELP['add'] ?? '');
         return 2;
       }
       case 'mcp':
         if (rest[0] === 'list') return await listMcp(io);
+        if (rest[0] === 'serve') return await mcpServe(io, rest[1], values);
         if (rest[0] === 'configure' || rest[0] === 'add') return await addMcp(io, rest[1], values);
         io.err(HELP['mcp'] ?? '');
+        return 2;
+      case 'api':
+        if (rest[0] === 'check') return await apiCheck(io, rest[1], values);
+        io.err(HELP['api'] ?? '');
         return 2;
       case 'import-openapi':
         return await importOpenApi(io, rest[0], values);

@@ -164,7 +164,7 @@ const contentPartSchema = z.discriminatedUnion('type', [
 
 const messageRoleSchema = z.enum(['system', 'user', 'assistant', 'tool']);
 
-const toolSourceSchema = z.enum(['native', 'frontend', 'openapi', 'mcp', 'agent']);
+const toolSourceSchema = z.enum(['native', 'frontend', 'openapi', 'mcp', 'agent', 'connector']);
 
 const finishReasonSchema = z.enum([
   'stop',

@@ -9,12 +9,15 @@
   ],
   "implicitDependencies": [
     "angular",
+    "connectors",
+    "mcp",
     "node",
     "provider-openai",
     "react",
     "security",
     "tools",
-    "ui"
+    "ui",
+    "vue"
   ],
   "targets": {
     "build": {
@@ -25,7 +28,12 @@
       },
       "outputs": [
         "{projectRoot}/dist",
-        "{projectRoot}/web-dist"
+        "{projectRoot}/web-dist",
+        "{projectRoot}/dist-ssr"
+      ],
+      "inputs": [
+        "default",
+        "{workspaceRoot}/docs/**/*"
       ]
     },
     "typecheck": {

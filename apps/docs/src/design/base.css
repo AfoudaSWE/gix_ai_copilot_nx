@@ -1,0 +1,564 @@
+/* GIX base: reset, typography, shared primitives used by both the website and the docs. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--header-h) + var(--space-4));
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img,
+svg {
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--gix-white);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+code,
+kbd,
+pre {
+  font-family: var(--font-mono);
+}
+
+kbd {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 6px;
+  border: 1px solid var(--border-strong);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  background: var(--surface-2);
+}
+
+.visually-hidden {
+  position: absolute !important;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute;
+  inset-inline-start: var(--space-4);
+  inset-block-start: -100px;
+  z-index: 100;
+  padding: var(--space-2) var(--space-4);
+  background: var(--accent);
+  color: var(--gix-white);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+}
+.skip-link:focus {
+  inset-block-start: var(--space-3);
+}
+
+.container {
+  inline-size: 100%;
+  max-inline-size: var(--content-max);
+  margin-inline: auto;
+  padding-inline: var(--space-5);
+}
+
+/* The subtle technical grid that sits behind hero and section backgrounds. */
+.gix-grid-bg {
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: -1px -1px;
+}
+
+/* ------------------------------------------------------------------------------ Buttons */
+.gix-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-block-size: 44px;
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-weight: 600;
+  font-size: var(--text-sm);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background var(--duration) var(--ease),
+    border-color var(--duration) var(--ease),
+    box-shadow var(--duration) var(--ease),
+    transform var(--duration) var(--ease);
+  white-space: nowrap;
+}
+.gix-button--primary {
+  background: var(--accent);
+  color: var(--gix-white);
+}
+.gix-button--primary:hover {
+  background: var(--accent-hover);
+  box-shadow: var(--accent-glow);
+}
+.gix-button--secondary {
+  background: transparent;
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+.gix-button--secondary:hover {
+  border-color: var(--text-muted);
+  background: var(--surface-2);
+}
+.gix-button--ghost {
+  background: transparent;
+  color: var(--text-muted);
+  min-block-size: 36px;
+  padding: 0 var(--space-3);
+}
+.gix-button--ghost:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+.gix-button--sm {
+  min-block-size: 36px;
+  padding: 0 var(--space-4);
+}
+
+.gix-icon-button {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 36px;
+  block-size: 36px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.gix-icon-button:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+/* ------------------------------------------------------------------------------ Badges */
+.gix-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+  font-family: var(--font-mono);
+}
+.gix-badge--stable {
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 45%, transparent);
+}
+.gix-badge--beta {
+  color: var(--info);
+  border-color: color-mix(in srgb, var(--info) 45%, transparent);
+}
+.gix-badge--experimental {
+  color: var(--warning);
+  border-color: color-mix(in srgb, var(--warning) 45%, transparent);
+}
+.gix-badge--deprecated,
+.gix-badge--accent {
+  color: var(--accent-text);
+  border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
+/* ------------------------------------------------------------------------------ Cards */
+.gix-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color var(--duration) var(--ease),
+    transform var(--duration) var(--ease),
+    background var(--duration) var(--ease);
+}
+a.gix-card:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+  transform: translateY(-2px);
+}
+.gix-card h3 {
+  font-size: var(--text-lg);
+}
+.gix-card p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+.gix-card__icon {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 36px;
+  block-size: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--accent-text);
+}
+.gix-card-grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+}
+
+/* ------------------------------------------------------------------------------ Headings */
+.gix-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+.gix-eyebrow::before {
+  content: '';
+  inline-size: 6px;
+  block-size: 6px;
+  background: var(--accent);
+  border-radius: 1px;
+}
+.gix-section-heading {
+  display: grid;
+  gap: var(--space-3);
+  max-inline-size: 760px;
+  margin-block-end: var(--space-7);
+}
+.gix-section-heading--center {
+  margin-inline: auto;
+  text-align: center;
+  justify-items: center;
+}
+.gix-section-heading h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+.gix-section-heading p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-lg);
+}
+.gix-highlight {
+  color: var(--accent-text);
+}
+
+/* ------------------------------------------------------------------------------ Code */
+.gix-code {
+  position: relative;
+  margin: var(--space-5) 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--code-bg);
+  color: var(--code-text);
+  overflow: hidden;
+  font-size: 0.85rem;
+}
+:root[data-theme='light'] .gix-code {
+  border-color: #1f1f1f;
+}
+.gix-code__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-block-size: 40px;
+  padding-inline: var(--space-4) var(--space-2);
+  border-block-end: 1px solid rgb(255 255 255 / 0.08);
+  background: #111;
+  font-size: var(--text-xs);
+  color: #a3a3a3;
+}
+.gix-code__dots {
+  display: inline-flex;
+  gap: 6px;
+}
+.gix-code__dots span {
+  inline-size: 10px;
+  block-size: 10px;
+  border-radius: 50%;
+  background: #333;
+}
+.gix-code__title {
+  font-family: var(--font-mono);
+  color: #d4d4d4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gix-code__lang {
+  margin-inline-start: auto;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.65rem;
+  color: #a3a3a3;
+}
+.gix-code__actions {
+  display: inline-flex;
+  gap: 2px;
+}
+.gix-code__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-block-size: 30px;
+  padding: 0 var(--space-2);
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #a3a3a3;
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+.gix-code__action:hover {
+  background: rgb(255 255 255 / 0.08);
+  color: #fff;
+}
+.gix-code__action[data-copied='true'] {
+  color: var(--gix-green);
+}
+.gix-code pre {
+  margin: 0;
+  padding: var(--space-4) 0;
+  overflow-x: auto;
+  line-height: 1.7;
+  tab-size: 2;
+}
+.gix-code pre:focus-visible {
+  outline-offset: -2px;
+}
+.gix-code--wrap pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.gix-code__line {
+  display: block;
+  padding-inline: var(--space-4);
+  min-block-size: 1.7em;
+}
+.gix-code__line--hl {
+  background: rgb(214 25 32 / 0.14);
+  box-shadow: inset 3px 0 0 var(--gix-red);
+}
+[dir='rtl'] .gix-code__line--hl {
+  box-shadow: inset -3px 0 0 var(--gix-red);
+}
+/* Code is always left-to-right, also on RTL pages. */
+.gix-code pre,
+.gix-code code {
+  direction: ltr;
+  text-align: left;
+}
+.tok-keyword {
+  color: var(--tok-keyword);
+}
+.tok-string {
+  color: var(--tok-string);
+}
+.tok-number {
+  color: var(--tok-number);
+}
+.tok-comment {
+  color: var(--tok-comment);
+  font-style: italic;
+}
+.tok-function {
+  color: var(--tok-function);
+}
+.tok-type {
+  color: var(--tok-type);
+}
+.tok-punct {
+  color: var(--tok-punct);
+}
+.tok-prompt {
+  color: var(--gix-red-light);
+  user-select: none;
+}
+
+/* ------------------------------------------------------------------------------ Tabs */
+.gix-tabs__list {
+  display: flex;
+  gap: var(--space-1);
+  border-block-end: 1px solid var(--border);
+  overflow-x: auto;
+}
+.gix-tabs__tab {
+  position: relative;
+  padding: var(--space-2) var(--space-4);
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.gix-tabs__tab[aria-selected='true'] {
+  color: var(--text);
+}
+.gix-tabs__tab[aria-selected='true']::after {
+  content: '';
+  position: absolute;
+  inset-inline: var(--space-3);
+  inset-block-end: -1px;
+  block-size: 2px;
+  background: var(--accent);
+}
+.gix-tabs__panel > .gix-code {
+  margin-block-start: var(--space-3);
+}
+
+/* ------------------------------------------------------------------------------ Callouts */
+.gix-callout {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-3);
+  margin: var(--space-5) 0;
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-inline-start: 3px solid var(--info);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+.gix-callout__icon {
+  color: var(--info);
+  padding-block-start: 2px;
+}
+.gix-callout__body > :first-child {
+  margin-block-start: 0;
+}
+.gix-callout__body > :last-child {
+  margin-block-end: 0;
+}
+.gix-callout__title {
+  display: block;
+  font-weight: 700;
+  font-size: var(--text-sm);
+  margin-block-end: var(--space-1);
+}
+.gix-callout--tip {
+  border-inline-start-color: var(--success);
+}
+.gix-callout--tip .gix-callout__icon {
+  color: var(--success);
+}
+.gix-callout--warning {
+  border-inline-start-color: var(--warning);
+}
+.gix-callout--warning .gix-callout__icon {
+  color: var(--warning);
+}
+.gix-callout--security {
+  border-inline-start-color: var(--accent);
+  background: linear-gradient(90deg, var(--accent-soft), transparent 60%);
+}
+.gix-callout--security .gix-callout__icon {
+  color: var(--accent-text);
+}
+.gix-callout--experimental {
+  border-inline-start-color: var(--warning);
+  border-style: dashed;
+  border-inline-start-style: solid;
+}
+
+/* ------------------------------------------------------------------------------ Motion */
+@keyframes gix-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes gix-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(214 25 32 / 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgb(214 25 32 / 0);
+  }
+}
+@keyframes gix-blink {
+  50% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

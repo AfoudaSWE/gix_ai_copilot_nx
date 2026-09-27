@@ -21,7 +21,7 @@ defineTool({
   default risk policy (fail closed).
 - **Execution**: schema validation, timeouts, cancellation (`context.signal`), then the
   [Action Firewall](security.md) for every consequential call.
-- **Generated sources**: [OpenAPI](openapi.md) and [MCP](mcp.md) produce the same
+- **Generated sources**: [any HTTP/GraphQL API](connectors.md), [OpenAPI](openapi.md) and [MCP](mcp.md) produce the same
   `ToolDefinition`s, with the same enforcement.
 - **CLI**: `npx aicopilot add tool payments-refund` creates the definition and a test.
 

@@ -140,6 +140,9 @@
       "path": "packages/create"
     },
     {
+      "path": "packages/connectors"
+    },
+    {
       "path": "packages/node"
     },
     {

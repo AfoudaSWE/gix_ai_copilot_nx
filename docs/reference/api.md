@@ -32,7 +32,7 @@ PostgreSQL CheckpointStore adapter for @gixcopilot/workflows - the only other pa
 
 ## @gixcopilot/cli
 
-The aicopilot command line: init, add tool/agent/mcp, import-openapi, dev, test, eval, doctor and db migrations.
+The aicopilot command line: init, add tool/agent/mcp/api, import-openapi, api check, mcp serve, dev, test, eval, doctor and db migrations.
 
 **Values (3):** `VERSION`, `defaultIo`, `run`
 
@@ -53,6 +53,14 @@ Typed production configuration: schema, precedence (defaults < file < env < code
 **Values (14):** `ConfigError`, `ENVIRONMENTS`, `ENV_MAPPING`, `Secret`, `composeSecretProviders`, `copilotConfigSchema`, `createEnvSecretProvider`, `createFileSecretProvider`, `describeConfig`, `isEnvironment`, `isFeatureEnabled`, `isSecret`, `loadConfig`, `secretRefSchema`
 
 **Types (9):** `ConfigIssue`, `CopilotConfig`, `CopilotConfigData`, `CopilotConfigInput`, `DeploymentEnvironment`, `LoadConfigOptions`, `ResolvedSecrets`, `SecretProvider`, `SecretRef`
+
+## @gixcopilot/connectors
+
+Connect any HTTP or GraphQL API (any language or framework, no OpenAPI document needed) and turn its endpoints into schema-validated, firewall-enforced copilot tools; in TypeScript or from a JSON/YAML manifest.
+
+**Values (5):** `defineHttpApi`, `httpApiFromManifest`, `httpApiManifestSchema`, `loadHttpApiManifest`, `placeholdersOf`
+
+**Types (9):** `GraphQLOperation`, `HttpApi`, `HttpApiConfig`, `HttpApiManifest`, `HttpApiToolResult`, `HttpEndpoint`, `HttpMethod`, `LoadManifestOptions`, `ParamLocation`
 
 ## @gixcopilot/context
 
@@ -148,9 +156,9 @@ The AI Copilot control plane: authorized, audited, tenant-scoped management serv
 
 Connects to MCP servers and turns their tools into canonical, security-governed AI tools for the AI Copilot SDK.
 
-**Values (11):** `buildMcpInputSchema`, `buildMcpSecurityMetadata`, `createMcpClient`, `deriveMcpToolName`, `detectNamingConflicts`, `generateMcpTools`, `inspectMCP`, `normalizeMcpError`, `normalizeMcpToolFailure`, `registerMCP`, `resolveMcpToolExposure`
+**Values (12):** `buildMcpInputSchema`, `buildMcpSecurityMetadata`, `createMcpClient`, `createMcpToolServer`, `deriveMcpToolName`, `detectNamingConflicts`, `generateMcpTools`, `inspectMCP`, `normalizeMcpError`, `normalizeMcpToolFailure`, `registerMCP`, `resolveMcpToolExposure`
 
-**Types (32):** `ConnectionIssue`, `CreateMcpClientOptions`, `GenerateMcpToolsOptions`, `GenerateMcpToolsResult`, `InspectMCPOptions`, `InspectMCPResult`, `MCPIntegration`, `McpCallOptions`, `McpCallResult`, `McpClient`, `McpConnectionState`, `McpContentBlock`, `McpErrorContext`, `McpExposureDecision`, `McpExposurePolicyOptions`, `McpGenerationReport`, `McpInputSchemaResult`, `McpPrompt`, `McpResource`, `McpResourceContent`, `McpSecurityMetadataOptions`, `McpServerTrustLevel`, `McpToolCandidate`, `McpToolExposure`, `McpToolOverride`, `McpToolResult`, `McpToolSourceMetadata`, `McpTransportConfig`, `ReconnectPolicy`, `RegisterMCPOptions`, `RegistrationConflict`, `RegistrationWarning`
+**Types (35):** `ConnectionIssue`, `CreateMcpClientOptions`, `GenerateMcpToolsOptions`, `GenerateMcpToolsResult`, `InspectMCPOptions`, `InspectMCPResult`, `MCPIntegration`, `McpCallContext`, `McpCallOptions`, `McpCallResult`, `McpClient`, `McpConnectionState`, `McpContentBlock`, `McpErrorContext`, `McpExposureDecision`, `McpExposurePolicyOptions`, `McpGenerationReport`, `McpInputSchemaResult`, `McpPrompt`, `McpResource`, `McpResourceContent`, `McpSecurityMetadataOptions`, `McpServerTrustLevel`, `McpToolCandidate`, `McpToolExposure`, `McpToolOverride`, `McpToolResult`, `McpToolServer`, `McpToolServerOptions`, `McpToolSourceMetadata`, `McpTransportConfig`, `ReconnectPolicy`, `RegisterMCPOptions`, `RegistrationConflict`, `RegistrationWarning`
 
 ## @gixcopilot/memory
 

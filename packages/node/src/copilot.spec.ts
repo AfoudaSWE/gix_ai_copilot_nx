@@ -109,6 +109,31 @@ describe('@gixcopilot/node', () => {
     }
   });
 
+  it('serves web-standard Request/Response for Next.js route handlers (fetchHandler), streaming SSE', async () => {
+    const copilot = track(
+      createCopilot({
+        model: { provider: 'mock', model: 'demo' },
+        providers: [createMockProvider({ id: 'mock', scenario: { chunks: ['from', ' next'] } })],
+      }),
+    );
+    // What app/api/copilot/[...path]/route.ts exports as GET and POST.
+    const handler = copilot.fetchHandler({ basePath: '/api/copilot' });
+    const client = createCopilotClient({
+      baseUrl: 'https://app.example.com/api/copilot',
+      fetchImpl: (input, init) => handler(new Request(input, init)),
+    });
+    let text = '';
+    for await (const event of client.run({ messages: [{ role: 'user', content: [{ type: 'text', text: 'Hi' }] }] }).events) {
+      if (event.type === 'message.delta') text += event.delta;
+    }
+    expect(text).toBe('from next');
+    const response = await handler(new Request('https://app.example.com/api/copilot/runs', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: [{ role: 'user', content: [{ type: 'text', text: 'Hi' }] }] }) }));
+    expect(response.headers.get('content-type')).toContain('text/event-stream');
+    expect(await response.text()).toContain('run.completed');
+    expect((await handler(new Request('https://app.example.com/api/copilot/health'))).status).toBe(200);
+    expect((await handler(new Request('https://app.example.com/elsewhere'))).status).toBe(404);
+  });
+
   it('cancels an in-process run through the same cancel route', async () => {
     const copilot = track(
       createCopilot({

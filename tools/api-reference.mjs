@@ -1,7 +1,9 @@
 #!/usr/bin/env node
-// Generates docs/reference/api.md from each publishable package's shipped type declarations
-// (dist/index.d.ts, or ng-packagr's types/*.d.ts), so the reference lists exactly what a
-// consumer can import. Run after `pnpm build`:   node tools/api-reference.mjs [--check]
+// Generates docs/reference/api.md and docs/reference/api.json from each publishable package's
+// shipped type declarations (dist/index.d.ts, or ng-packagr's types/*.d.ts), so the reference
+// lists exactly what a consumer can import. api.json adds each export's kind and declared
+// signature for the documentation portal. Run after `pnpm build`:
+//   node tools/api-reference.mjs [--check]
 
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -46,7 +48,59 @@ function exportsOf(dts, bundled) {
   return { values: [...values].sort(), types: [...types].sort() };
 }
 
+/** Every .d.ts the package ships (excluding tests), so re-exported declarations are found. */
+function declarationFiles(dir) {
+  const out = [];
+  const visit = (current) => {
+    if (!existsSync(current)) return;
+    for (const name of readdirSync(current)) {
+      const full = join(current, name);
+      if (statSync(full).isDirectory()) visit(full);
+      else if (name.endsWith('.d.ts') && !/\.spec(-helper)?\.d\.ts$/.test(name)) out.push(full);
+    }
+  };
+  visit(join(dir, 'dist'));
+  return out.sort();
+}
+
+/** The declared signature of one export: its kind plus declaration text (bodies elided). */
+function declarationOf(name, text) {
+  const id = name.replace(/\$/g, '\\$');
+  const patterns = [
+    ['function', new RegExp(`(?:export\\s+)?declare\\s+function\\s+${id}\\b[\\s\\S]*?\\)(?:\\s*:\\s*[^;\\n]+)?;`)],
+    ['class', new RegExp(`(?:export\\s+)?declare\\s+(?:abstract\\s+)?class\\s+${id}\\b[^{]*`)],
+    ['const', new RegExp(`(?:export\\s+)?declare\\s+(?:const|let)\\s+${id}\\b[\\s\\S]*?;(?=\\s*\\n|$)`)],
+    ['enum', new RegExp(`(?:export\\s+)?declare\\s+enum\\s+${id}\\b[^{]*`)],
+    ['interface', new RegExp(`(?:export\\s+)?interface\\s+${id}\\b[^{]*`)],
+    ['type', new RegExp(`(?:export\\s+)?(?:declare\\s+)?type\\s+${id}\\b[\\s\\S]*?;(?=\\s*\\n|$)`)],
+  ];
+  for (const [kind, pattern] of patterns) {
+    const match = pattern.exec(text);
+    if (!match) continue;
+    let signature = match[0].replace(/^export\s+/, '').replace(/^declare\s+/, '').trim();
+    if (kind === 'class' || kind === 'interface' || kind === 'enum') {
+      // Keep the members: walk to the brace that closes the declaration body.
+      const open = text.indexOf('{', match.index + match[0].length - 1);
+      let depth = 0;
+      let end = open;
+      for (; end < text.length && open !== -1; end += 1) {
+        if (text[end] === '{') depth += 1;
+        else if (text[end] === '}' && --depth === 0) break;
+      }
+      const body = open === -1 ? '{ … }' : text.slice(open, end + 1).replace(/\n\s*\n/g, '\n');
+      signature = `${signature} ${body.length > 1400 ? `${body.slice(0, 1400)}\n  …\n}` : body}`;
+    }
+    if (signature.length > 1600) signature = `${signature.slice(0, 1600)} …`;
+    return { kind, signature };
+  }
+  return { kind: undefined, signature: undefined };
+}
+
+/** Maturity labels from the README capability table (Beta unless listed). */
+const STATUS = { management: 'experimental' };
+
 const sections = [];
+const json = [];
 for (const dir of packageDirs()) {
   const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'));
   if (pkg.private) continue;
@@ -56,6 +110,22 @@ for (const dir of packageDirs()) {
   if (!dts) throw new Error(`${pkg.name}: no built declarations; run pnpm build first`);
   const { values, types } = exportsOf(dts, bundled);
   const subpaths = Object.keys(pkg.exports ?? {}).filter((key) => key !== '.' && key !== './package.json');
+  const declarations = declarationFiles(dir)
+    .map((file) => readFileSync(file, 'utf8').replace(/\/\*[\s\S]*?\*\//g, ''))
+    .join('\n');
+  const describe = (name) => ({ name, ...declarationOf(name.replace(/ \(namespace\)$/, ''), declarations) });
+  const slug = pkg.name.split('/')[1];
+  json.push({
+    name: pkg.name,
+    slug,
+    description: pkg.description ?? '',
+    status: STATUS[slug] ?? 'beta',
+    directory: pkg.repository?.directory ?? '',
+    subpaths: subpaths.map((path) => `${pkg.name}${path.slice(1)}`),
+    peerDependencies: Object.keys(pkg.peerDependencies ?? {}),
+    values: values.map(describe),
+    types: types.map(describe),
+  });
   sections.push(
     `## ${pkg.name}\n\n${pkg.description ?? ''}\n\n` +
       `**Values (${values.length}):** ${values.map((name) => `\`${name}\``).join(', ') || '—'}\n\n` +
@@ -75,14 +145,21 @@ each package's README.
 ${sections.join('\n')}`;
 
 const target = join(root, 'docs', 'reference', 'api.md');
+const jsonTarget = join(root, 'docs', 'reference', 'api.json');
+const jsonContent = `${JSON.stringify({ generatedBy: 'tools/api-reference.mjs', packages: json }, null, 2)}\n`;
+const normalize = (text) => text.replace(/\r\n/g, '\n');
 if (check) {
-  const current = existsSync(target) ? readFileSync(target, 'utf8') : '';
-  if (current !== content) {
-    console.error('docs/reference/api.md is out of date; run node tools/api-reference.mjs');
+  const stale = [
+    [target, content],
+    [jsonTarget, jsonContent],
+  ].filter(([file, expected]) => normalize(existsSync(file) ? readFileSync(file, 'utf8') : '') !== expected);
+  if (stale.length > 0) {
+    console.error(`${stale.map(([file]) => file.slice(root.length + 1)).join(', ')} out of date; run node tools/api-reference.mjs`);
     process.exit(1);
   }
   console.log('API reference is up to date.');
 } else {
   writeFileSync(target, content);
-  console.log(`Wrote docs/reference/api.md (${sections.length} packages).`);
+  writeFileSync(jsonTarget, jsonContent);
+  console.log(`Wrote docs/reference/api.md and docs/reference/api.json (${sections.length} packages).`);
 }

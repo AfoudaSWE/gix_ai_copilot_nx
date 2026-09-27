@@ -34,3 +34,4 @@ Thumbs.db
 
 # packed release tarballs (tools/verify-packages.mjs)
 .packs/
+apps/docs/dist-ssr/

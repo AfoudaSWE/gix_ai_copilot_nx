@@ -43,3 +43,6 @@ export type { InspectMCPOptions, InspectMCPResult } from './inspect-mcp.js';
 
 export { registerMCP } from './register-mcp.js';
 export type { RegisterMCPOptions, MCPIntegration, ReconnectPolicy } from './register-mcp.js';
+
+export { createMcpToolServer } from './server.js';
+export type { McpCallContext, McpToolServer, McpToolServerOptions } from './server.js';

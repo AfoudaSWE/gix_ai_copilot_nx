@@ -40,6 +40,14 @@ Safety: existing files are never overwritten without `--force`; destructive comm
 `--yes`; commands never prompt, so CI and interactive use behave the same. Every command has
 `--help` with examples.
 
+## Connect any API
+
+```bash
+npx aicopilot add api crm --url https://crm.internal.example.com   # writes apis/crm.api.yaml
+npx aicopilot api check apis/crm.api.yaml                          # validate, list tools
+npx aicopilot mcp serve apis/crm.api.yaml [--http --port 3333 --token-env MCP_TOKEN] [--allow-writes]
+```
+
 ## Documentation
 
 - [cli guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/cli.md)

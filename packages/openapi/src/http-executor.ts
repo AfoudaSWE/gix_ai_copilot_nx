@@ -16,6 +16,9 @@ export interface HttpExecutionRequest {
   readonly queryParams?: Readonly<Record<string, string | readonly string[] | undefined>>;
   readonly headers?: Readonly<Record<string, string>>;
   readonly body?: unknown;
+  /** How `body` is encoded. Defaults to `'json'`; `'form'` sends
+   * `application/x-www-form-urlencoded` for APIs that expect classic form posts. */
+  readonly bodyEncoding?: 'json' | 'form';
   readonly timeoutMs?: number;
   readonly signal?: AbortSignal;
 }
@@ -93,12 +96,28 @@ function buildUrl(request: HttpExecutionRequest): URL {
   return url;
 }
 
-function withJsonContentType(headers: Readonly<Record<string, string>> | undefined, hasBody: boolean): Record<string, string> {
+function withContentType(headers: Readonly<Record<string, string>> | undefined, hasBody: boolean, encoding: 'json' | 'form'): Record<string, string> {
   const merged: Record<string, string> = { ...headers };
   if (hasBody && !Object.keys(merged).some((name) => name.toLowerCase() === 'content-type')) {
-    merged['Content-Type'] = 'application/json';
+    merged['Content-Type'] = encoding === 'form' ? 'application/x-www-form-urlencoded' : 'application/json';
   }
   return merged;
+}
+
+/** Encodes a request body. Form bodies accept a flat object of primitives (arrays repeat the key). */
+function encodeBody(body: unknown, encoding: 'json' | 'form'): string | undefined {
+  if (body === undefined) return undefined;
+  if (encoding === 'json') return JSON.stringify(body);
+  if (body === null || typeof body !== 'object' || Array.isArray(body)) throw new Error('A form-encoded body must be an object.');
+  const form = new URLSearchParams();
+  for (const [name, value] of Object.entries(body as Record<string, unknown>)) {
+    if (value === undefined || value === null) continue;
+    for (const item of Array.isArray(value) ? (value as unknown[]) : [value]) {
+      if (typeof item !== 'string' && typeof item !== 'number' && typeof item !== 'boolean') throw new Error(`Form field "${name}" must be a primitive value.`);
+      form.append(name, String(item));
+    }
+  }
+  return form.toString();
 }
 
 function combineSignals(signals: readonly (AbortSignal | undefined)[]): { readonly signal: AbortSignal; readonly cleanup: () => void } {
@@ -173,8 +192,8 @@ export function createFetchHttpExecutor(options: { readonly fetchImpl?: typeof f
       try {
         const response = await fetchImpl(url, {
           method: request.method.toUpperCase(),
-          headers: withJsonContentType(request.headers, request.body !== undefined),
-          body: request.body !== undefined ? JSON.stringify(request.body) : undefined,
+          headers: withContentType(request.headers, request.body !== undefined, request.bodyEncoding ?? 'json'),
+          body: encodeBody(request.body, request.bodyEncoding ?? 'json'),
           signal,
           redirect: 'error',
         });

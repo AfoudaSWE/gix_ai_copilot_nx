@@ -12,7 +12,11 @@
     "config",
     "evals",
     "openapi",
-    "persistence-postgres"
+    "persistence-postgres",
+    "connectors",
+    "mcp",
+    "security",
+    "tools"
   ],
   "targets": {
     "build": {

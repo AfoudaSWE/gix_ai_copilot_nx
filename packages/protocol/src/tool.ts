@@ -7,7 +7,8 @@ import type { PublicCopilotError } from './errors.js';
  * later phases can add those sources without a protocol-breaking rename (see
  * docs/adr/0010-canonical-tool-architecture.md).
  */
-export type ToolSource = 'native' | 'frontend' | 'openapi' | 'mcp' | 'agent';
+/** `connector` = a tool generated from a declared HTTP/GraphQL API (`@gixcopilot/connectors`). */
+export type ToolSource = 'native' | 'frontend' | 'openapi' | 'mcp' | 'agent' | 'connector';
 
 /** Where a tool call actually executes. Determines the routing a runtime must perform. */
 export type ToolExecutionLocation = 'server' | 'client';

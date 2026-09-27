@@ -28,6 +28,7 @@ await copilot.listen({ port: 4000 });
 | --- | --- |
 | `listen()` / `app` | Serve HTTP + SSE with Fastify |
 | `nodeHandler()` | Mount in `node:http`, Express or Connect |
+| `fetchHandler({ basePath })` | Web-standard `Request` → `Response` (streaming): [Next.js](nextjs.md) route handlers, Remix, Hono, Bun, Deno |
 | `run(input)` / `stream(input)` | In-process turns (jobs, scripts, tests); they dispatch into the same routes, so authentication and the firewall still apply |
 | `client(headers?)` | An in-process `CopilotClient` |
 

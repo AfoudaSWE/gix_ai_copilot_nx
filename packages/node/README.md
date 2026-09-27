@@ -37,6 +37,12 @@ The server picks the model (`defaultModel`). The browser never needs a provider 
 model name. Agents, knowledge (RAG) and memory are composed as tools and context with their own
 packages (`@gixcopilot/agents`, `@gixcopilot/rag`, `@gixcopilot/memory`); see the Node guide.
 
+## Next.js and other fetch runtimes
+
+`copilot.fetchHandler({ basePath: '/api/copilot' })` returns a web-standard `Request` →
+`Response` handler (streaming SSE) for Next.js App Router route handlers
+(`export const GET = handler; export const POST = handler;`), Remix, Hono, Bun and Deno.
+
 ## Documentation
 
 - [node guide](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/guides/node.md)

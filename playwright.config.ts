@@ -55,5 +55,11 @@ export default defineConfig({
       reuseExistingServer: false,
       env: { PLATFORM_API_TARGET: 'http://127.0.0.1:4102' },
     },
+    {
+      // The GIX AI website + documentation portal: the prerendered production build.
+      command: 'node apps/docs/node_modules/vite/bin/vite.js preview apps/docs --config apps/docs/vite.config.ts',
+      url: 'http://127.0.0.1:5200/',
+      reuseExistingServer: false,
+    },
   ],
 });
