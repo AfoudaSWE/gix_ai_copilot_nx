@@ -20,6 +20,7 @@ export const workspaceAliases = {
   '@gixcopilot/generative-ui': `${workspaceRoot}packages/generative-ui/src/index.ts`,
   '@gixcopilot/headless': `${workspaceRoot}packages/headless/src/index.ts`,
   '@gixcopilot/angular': `${workspaceRoot}packages/angular/src/index.ts`,
+  '@gixcopilot/vue': `${workspaceRoot}packages/vue/src/index.ts`,
   '@gixcopilot/node': `${workspaceRoot}packages/node/src/index.ts`,
   '@gixcopilot/config': `${workspaceRoot}packages/config/src/index.ts`,
   '@gixcopilot/tenancy': `${workspaceRoot}packages/tenancy/src/index.ts`,

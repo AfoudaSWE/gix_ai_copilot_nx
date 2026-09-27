@@ -134,6 +134,12 @@
       "path": "packages/headless"
     },
     {
+      "path": "packages/vue"
+    },
+    {
+      "path": "packages/create"
+    },
+    {
       "path": "packages/node"
     },
     {

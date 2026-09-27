@@ -16,7 +16,7 @@ export interface Page {
 
 const SECTIONS: readonly { readonly section: string; readonly slugs: readonly string[] }[] = [
   { section: 'Getting Started', slugs: ['getting-started', 'concepts'] },
-  { section: 'Frameworks', slugs: ['react', 'angular', 'node'] },
+  { section: 'Frameworks', slugs: ['react', 'angular', 'vue', 'node'] },
   { section: 'Building Copilots', slugs: ['models', 'context-and-state', 'tools', 'generative-ui', 'openapi', 'mcp', 'rag', 'memory', 'agents', 'workflows'] },
   { section: 'Security', slugs: ['security', 'multi-tenancy'] },
   { section: 'Quality', slugs: ['devtools', 'testing', 'evaluations'] },

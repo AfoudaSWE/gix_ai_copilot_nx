@@ -1,7 +1,7 @@
 # AI Copilot SDK
 
 A TypeScript-first AI Copilot & Agent SDK with a framework-independent core and
-React, Angular, Node.js server, and LLM provider adapters layered on top.
+React, Vue, Angular, Node.js server, and LLM provider adapters layered on top.
 It exists to connect application context and authorized actions to model-driven conversations
 without treating model output as authority.
 
@@ -16,6 +16,19 @@ without treating model output as authority.
 > for the reasoning, and
 > [`.claude/skills/ai-copilot-project/SKILL.md`](.claude/skills/ai-copilot-project/SKILL.md)
 > for the 12-phase roadmap.
+
+## Quick start
+
+Add a copilot to an existing React, Vue or Angular app (or an empty folder) with one command:
+
+```sh
+npm create @gixcopilot@latest
+```
+
+It detects your framework, asks a few questions, installs the SDK, adds a chat component and
+the dev proxy, and creates a Node copilot server (by default) that keeps the model key off the
+browser. Then `npm run copilot:server` and your app's dev server. See
+[Getting started](docs/guides/getting-started.md).
 
 ## Capabilities So Far
 
@@ -89,6 +102,8 @@ packages/
   headless/             @gixcopilot/headless (shared chat behavior)
   react/                @gixcopilot/react (React hooks and provider)
   angular/              @gixcopilot/angular (Angular signals and components)
+  vue/                  @gixcopilot/vue (Vue 3 plugin, composables and chat component)
+  create/               @gixcopilot/create (npm create @gixcopilot installer)
   node/                 @gixcopilot/node (Node integration)
   cli/                  @gixcopilot/cli (aicopilot command)
   ui/                   @gixcopilot/ui (optional components + CSS)
@@ -199,7 +214,7 @@ Install from npm, for example `npm install @gixcopilot/react react` or
 ## Phase 12 developer and production guides
 
 - Start with [Getting started](docs/guides/getting-started.md) and the [examples](docs/guides/examples.md).
-- SDK guides: [React](docs/guides/react.md), [Angular](docs/guides/angular.md), and [Node](docs/guides/node.md).
+- SDK guides: [React](docs/guides/react.md), [Vue](docs/guides/vue.md), [Angular](docs/guides/angular.md), and [Node](docs/guides/node.md).
 - Application features: [tools](docs/guides/tools.md), [generative UI](docs/guides/generative-ui.md), [security](docs/guides/security.md), [OpenAPI](docs/guides/openapi.md), [MCP](docs/guides/mcp.md), [RAG](docs/guides/rag.md), [memory](docs/guides/memory.md), [agents](docs/guides/agents.md), and [workflows](docs/guides/workflows.md).
 - Operations: [CLI](docs/guides/cli.md), [platform](docs/guides/platform.md), [DevTools](docs/guides/devtools.md), [testing](docs/guides/testing.md), [evaluations](docs/guides/evaluations.md), [production](docs/guides/production.md), and [deployment](docs/production/DEPLOYMENT.md).
 - [API reference](docs/reference/api.md), [versioning](docs/VERSIONING.md), and [release process](docs/RELEASING.md). Contributors should read [AGENTS.md](AGENTS.md).
@@ -215,7 +230,7 @@ Packages are published to npm at version 0.1.0 (pre-1.0; APIs may change in mino
 | Tools, generative UI, Action Firewall | Beta | `tools`, `generative-ui`, `security` |
 | OpenAPI, MCP, RAG, memory | Beta | `openapi`, `mcp`, `rag`, `memory` |
 | Agents, workflows, DevTools, evaluations | Beta | `agents`, `workflows`, `devtools`, `evals` |
-| Angular and Node SDKs, CLI | Beta | `angular`, `node`, `cli` |
+| Angular, Vue and Node SDKs, CLI, installer | Beta | `angular`, `vue`, `node`, `cli`, `create` |
 | Management platform and production deployment | Experimental | `management`, `apps/platform`, `apps/api`, `apps/worker` |
 
 ## Testing

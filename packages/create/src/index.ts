@@ -1,0 +1,10 @@
+export { HELP, defaultIo, main, spawnStep } from './run.js';
+export type { CommandStep, Io } from './run.js';
+export { FRAMEWORKS, PACKAGE_MANAGERS, detectPackageManager, detectProject } from './detect.js';
+export type { Framework, PackageManager, ProjectInfo } from './detect.js';
+export { VERSION, newProjectStep, planProject } from './plan.js';
+export type { Choices, Plan, Step } from './plan.js';
+export { patchAngularJson, patchScripts, patchViteConfig } from './patch.js';
+export type { PatchResult } from './patch.js';
+export { defaultsPrompter, terminalPrompter } from './prompt.js';
+export type { Choice, Prompter } from './prompt.js';

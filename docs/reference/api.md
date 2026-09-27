@@ -70,6 +70,14 @@ Framework-independent runtime foundation for the AI Copilot SDK: run lifecycle, 
 
 **Types (11):** `CreateRuntimeOptions`, `EchoExecutorOptions`, `Executor`, `ExecutorCompletion`, `ExecutorContext`, `ExecutorInput`, `ExecutorMessageInput`, `RunMessageInput`, `RunOptions`, `Runtime`, `RuntimeRun`
 
+## @gixcopilot/create
+
+One-command installer: `npm create @gixcopilot` adds an AI copilot to a React, Vue or Angular app together with a Node copilot server.
+
+**Values (16):** `FRAMEWORKS`, `HELP`, `PACKAGE_MANAGERS`, `VERSION`, `defaultIo`, `defaultsPrompter`, `detectPackageManager`, `detectProject`, `main`, `newProjectStep`, `patchAngularJson`, `patchScripts`, `patchViteConfig`, `planProject`, `spawnStep`, `terminalPrompter`
+
+**Types (11):** `Choice`, `Choices`, `CommandStep`, `Framework`, `Io`, `PackageManager`, `PatchResult`, `Plan`, `ProjectInfo`, `Prompter`, `Step`
+
 ## @gixcopilot/devtools
 
 Framework-independent DevTools core for the AI Copilot SDK - projects the telemetry diagnostics stream into inspectable runs, messages, context, state, tools, security, RAG, memory, agents, workflows, events and traces; safe debug-bundle export/import; and an opt-in, authenticated, read-only Fastify transport.
@@ -281,6 +289,16 @@ Usage accounting (tokens, requests, tools, agents, workflows, RAG), configurable
 **Values (8):** `createInMemoryUsageStore`, `createUsageAdmission`, `createUsageMeter`, `createUsageRecorder`, `dimensionValue`, `estimateCostMicros`, `formatMicros`, `periodStart`
 
 **Types (18):** `AdmissionRateLimiter`, `BudgetAction`, `BudgetPolicy`, `CreateUsageAdmissionOptions`, `LimitScope`, `ModelPrice`, `PricingTable`, `QuotaPolicy`, `RateLimitPolicy`, `ScopedUsageStore`, `UsageDimension`, `UsageEvent`, `UsageKind`, `UsageQuery`, `UsageRecorderOptions`, `UsageRow`, `UsageStore`, `UsageWarning`
+
+## @gixcopilot/vue
+
+Vue 3 adapter for the AI Copilot SDK: plugin, composables and an accessible chat component over the shared headless chat store.
+
+**Values (8):** `COPILOT_KEY`, `CopilotChat`, `createCopilot`, `createCopilotPlugin`, `provideCopilot`, `useCopilot`, `useCopilotContext`, `useFrontendTool`
+
+**Types (10):** `ApprovalState`, `ChatSnapshot`, `ChatStatus`, `Copilot`, `CopilotConfig`, `CopilotContextItem`, `CopilotMessage`, `FrontendToolOptions`, `GenerativeUIRequestState`, `ToolCallState`
+
+**Subpath exports:** `@gixcopilot/vue/styles.css`
 
 ## @gixcopilot/workflows
 

@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "types": [],
+    "lib": ["ES2023", "DOM", "DOM.Iterable"]
+  },
+  "include": ["src/**/*.ts"],
+  "references": [
+    { "path": "../protocol" },
+    { "path": "../client" },
+    { "path": "../context" },
+    { "path": "../tools" },
+    { "path": "../generative-ui" },
+    { "path": "../headless" }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "name": "@gixcopilot/vue",
+  "version": "0.1.0",
+  "description": "Vue 3 adapter for the AI Copilot SDK: plugin, composables and an accessible chat component over the shared headless chat store.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AfoudaSWE/gix_ai_copilot_nx.git",
+    "directory": "packages/vue"
+  },
+  "homepage": "https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/vue#readme",
+  "bugs": {
+    "url": "https://github.com/AfoudaSWE/gix_ai_copilot_nx/issues"
+  },
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./styles.css": "./styles.css",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "styles.css",
+    "!dist/**/*.spec.*",
+    "!dist/**/*.spec-helper.*",
+    "!dist/**/*.tsbuildinfo"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "typecheck": "tsc -b tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@gixcopilot/client": "workspace:*",
+    "@gixcopilot/context": "workspace:*",
+    "@gixcopilot/generative-ui": "workspace:*",
+    "@gixcopilot/headless": "workspace:*",
+    "@gixcopilot/protocol": "workspace:*",
+    "@gixcopilot/tools": "workspace:*"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.0",
+    "zod": "^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "jsdom": "30.1.0",
+    "vitest": "5.0.1",
+    "vue": "3.5.43",
+    "zod": "4.6.5"
+  }
+}

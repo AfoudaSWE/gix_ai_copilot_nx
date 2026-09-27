@@ -1,0 +1,60 @@
+{
+  "name": "@gixcopilot/create",
+  "version": "0.1.0",
+  "description": "One-command installer: `npm create @gixcopilot` adds an AI copilot to a React, Vue or Angular app together with a Node copilot server.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AfoudaSWE/gix_ai_copilot_nx.git",
+    "directory": "packages/create"
+  },
+  "homepage": "https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/create#readme",
+  "bugs": {
+    "url": "https://github.com/AfoudaSWE/gix_ai_copilot_nx/issues"
+  },
+  "keywords": [
+    "ai",
+    "copilot",
+    "chatbot",
+    "react",
+    "vue",
+    "angular",
+    "create"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "create-gixcopilot": "./bin/create.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "!dist/**/*.spec.*",
+    "!dist/**/*.spec-helper.*",
+    "!dist/**/*.tsbuildinfo"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "typecheck": "tsc -b tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint src"
+  },
+  "devDependencies": {
+    "vitest": "5.0.1"
+  }
+}

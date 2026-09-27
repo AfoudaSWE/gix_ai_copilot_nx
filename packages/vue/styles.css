@@ -1,0 +1,13 @@
+/* Optional default styles for <CopilotChat>. Override the custom properties to theme it. */
+.aicopilot-chat { display: flex; flex-direction: column; gap: 0.5rem; font: inherit; color: var(--aicopilot-fg, CanvasText); }
+.aicopilot-chat__log { display: flex; flex-direction: column; gap: 0.5rem; overflow-y: auto; min-height: 8rem; max-height: var(--aicopilot-log-max-height, 28rem); }
+.aicopilot-chat__message { padding: 0.5rem 0.75rem; border-radius: 0.5rem; max-inline-size: 85%; white-space: pre-wrap; overflow-wrap: anywhere; }
+.aicopilot-chat__message--user { align-self: flex-end; background: var(--aicopilot-user-bg, #e6effd); }
+.aicopilot-chat__message--assistant { align-self: flex-start; background: var(--aicopilot-assistant-bg, #f3f4f6); }
+.aicopilot-chat__composer { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.aicopilot-chat__composer textarea { flex: 1 1 12rem; min-block-size: 2.5rem; font: inherit; }
+.aicopilot-chat button { font: inherit; min-block-size: 2.5rem; min-inline-size: 2.75rem; }
+.aicopilot-chat :focus-visible { outline: 2px solid var(--aicopilot-focus, #1a56db); outline-offset: 2px; }
+.aicopilot-chat__error { color: var(--aicopilot-error, #b42318); }
+.aicopilot-visually-hidden { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { .aicopilot-chat * { scroll-behavior: auto; transition: none; } }

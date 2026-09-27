@@ -1,7 +1,7 @@
 # Releasing
 
 The `@gixcopilot/*` SDK packages are published to the public npm registry under the
-[MIT license](../LICENSE), from the npm account `gixtech`. All 39 packages share one fixed
+[MIT license](../LICENSE), from the npm account `gixtech`. All packages share one fixed
 version (Nx fixed release group). Apps and examples stay `private` and are never published.
 
 ## Before every publish

@@ -30,7 +30,7 @@ describe('documentation portal', () => {
 
   it('covers the documentation information architecture', () => {
     const slugs = new Set(PAGES.map((page) => page.slug));
-    for (const slug of ['getting-started', 'concepts', 'react', 'angular', 'node', 'models', 'context-and-state', 'tools', 'generative-ui', 'security', 'openapi', 'mcp', 'rag', 'memory', 'agents', 'workflows', 'devtools', 'testing', 'evaluations', 'production', 'deployment', 'multi-tenancy', 'cli', 'platform', 'api', 'examples', 'DEPLOYMENT', 'CONFIGURATION', 'DATABASE', 'SECURITY', 'VERSIONING', 'migration-phase-12']) {
+    for (const slug of ['getting-started', 'concepts', 'react', 'angular', 'vue', 'node', 'models', 'context-and-state', 'tools', 'generative-ui', 'security', 'openapi', 'mcp', 'rag', 'memory', 'agents', 'workflows', 'devtools', 'testing', 'evaluations', 'production', 'deployment', 'multi-tenancy', 'cli', 'platform', 'api', 'examples', 'DEPLOYMENT', 'CONFIGURATION', 'DATABASE', 'SECURITY', 'VERSIONING', 'migration-phase-12']) {
       expect(slugs.has(slug), slug).toBe(true);
     }
   });

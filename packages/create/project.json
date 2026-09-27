@@ -1,0 +1,41 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "create",
+  "projectType": "library",
+  "sourceRoot": "packages/create/src",
+  "tags": [
+    "scope:create",
+    "type:lib",
+    "platform:server"
+  ],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run build",
+        "cwd": "packages/create"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run typecheck",
+        "cwd": "packages/create"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run test",
+        "cwd": "packages/create"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run lint",
+        "cwd": "packages/create"
+      }
+    }
+  }
+}

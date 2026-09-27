@@ -279,6 +279,14 @@ export default tseslint.config(
               onlyDependOnLibsWithTags: ['scope:angular', 'scope:headless', 'scope:protocol', 'scope:client', 'scope:context', 'scope:tools', 'scope:generative-ui'],
             },
             {
+              sourceTag: 'scope:create',
+              onlyDependOnLibsWithTags: ['scope:create'],
+            },
+            {
+              sourceTag: 'scope:vue',
+              onlyDependOnLibsWithTags: ['scope:vue', 'scope:headless', 'scope:protocol', 'scope:client', 'scope:context', 'scope:tools', 'scope:generative-ui'],
+            },
+            {
               sourceTag: 'scope:node',
               onlyDependOnLibsWithTags: ['scope:node', 'scope:protocol', 'scope:core', 'scope:client', 'scope:provider', 'scope:provider-adapter', 'scope:security', 'scope:server', 'scope:telemetry', 'scope:tools'],
             },
@@ -362,6 +370,8 @@ export default tseslint.config(
                 'scope:evals',
                 'scope:headless',
                 'scope:angular',
+                'scope:vue',
+                'scope:create',
                 'scope:node',
                 'scope:config',
                 'scope:tenancy',
@@ -396,7 +406,7 @@ export default tseslint.config(
     // Browser and platform-neutral packages must not import Node built-ins (Phase 12 Section
     // 147). Tests, test harnesses and the devtools server subpath run in Node and are exempt.
     files: [
-      'packages/{client,react,ui,angular,headless,protocol,core,context,tools,generative-ui,telemetry,devtools,security,integrations,tenancy}/src/**/*.{ts,tsx}',
+      'packages/{client,react,ui,angular,vue,headless,protocol,core,context,tools,generative-ui,telemetry,devtools,security,integrations,tenancy}/src/**/*.{ts,tsx}',
       'packages/providers/{provider-core,mock}/src/**/*.ts',
     ],
     ignores: ['**/*.spec.ts', '**/*.spec.tsx', '**/*.spec-helper.ts', '**/test-*.ts', 'packages/devtools/src/server/**'],

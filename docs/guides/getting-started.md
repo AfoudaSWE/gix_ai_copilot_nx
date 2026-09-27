@@ -2,6 +2,20 @@
 
 From nothing to a streaming copilot: install, configure a provider, add a server, add a UI, run.
 
+## One command
+
+Inside an existing React, Vue or Angular app (or an empty folder):
+
+```sh
+npm create @gixcopilot@latest
+```
+
+The installer detects your framework and package manager, asks a few questions, installs the
+right SDK package, adds a ready chat component and the `/api/copilot` dev proxy, and creates a
+Node copilot server in `copilot-server/` (on by default). Then run `npm run copilot:server` and
+your app's dev server. `--yes` accepts every default; `--dry-run` shows the plan first. The
+steps below explain what it sets up.
+
 ## 1. Create a project
 
 ```sh
@@ -73,6 +87,6 @@ Action Firewall. `npx aicopilot add tool applications-get` generates this file w
 ## Next
 
 - [Concepts](concepts.md): runs, events, tools, the firewall, context, agents.
-- [React](react.md), [Angular](angular.md), [Node](node.md).
+- [React](react.md), [Angular](angular.md), [Vue](vue.md), [Node](node.md).
 - [Security](security.md) before exposing anything consequential.
 - [Production](production.md) when you deploy.
