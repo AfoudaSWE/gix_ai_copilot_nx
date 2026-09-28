@@ -24,6 +24,9 @@ jobs:
     name: Lint, typecheck, test, build (affected)
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    env:
+      # Docker-backed suites must run here, never silently skip.
+      REQUIRE_DOCKER: '1'
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
@@ -46,6 +49,8 @@ jobs:
     name: Security checks
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      REQUIRE_DOCKER: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

@@ -16,6 +16,10 @@ function isDockerAvailable(): boolean {
     execSync('docker info', { stdio: 'ignore' });
     return true;
   } catch {
+    // CI sets REQUIRE_DOCKER=1 so these suites fail loudly instead of silently skipping.
+    if (process.env['REQUIRE_DOCKER'] === '1') {
+      throw new Error('REQUIRE_DOCKER=1 but Docker is unreachable (docker info failed).');
+    }
     return false;
   }
 }

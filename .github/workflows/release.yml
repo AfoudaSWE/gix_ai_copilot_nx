@@ -27,6 +27,7 @@ jobs:
     timeout-minutes: 60
     env:
       NX_DAEMON: 'false'
+      REQUIRE_DOCKER: '1'
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
@@ -45,7 +46,20 @@ jobs:
         run: pnpm exec nx release version ${{ inputs.specifier }} --dry-run
       - name: Publish to npm
         if: ${{ inputs.publish }}
-        run: pnpm -r --filter "./packages/**" publish --access public --no-git-checks --tag ${{ inputs.tag }}
+        run: pnpm -r --filter "./packages/**" publish --access public --no-git-checks --report-summary --tag ${{ inputs.tag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: 'true'
+      - name: Upload publish summary
+        if: ${{ always() && inputs.publish }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnpm-publish-summary
+          path: pnpm-publish-summary.json
+          if-no-files-found: warn
+      # A partial publish (some packages failed or were skipped) must fail the release, not
+      # leave npm in a mixed state. Re-running this workflow is the recovery path: pnpm
+      # skips versions already on the registry.
+      - name: Verify every package is on npm at the local version
+        if: ${{ inputs.publish }}
+        run: node tools/check-npm-published.mjs --tag ${{ inputs.tag }}

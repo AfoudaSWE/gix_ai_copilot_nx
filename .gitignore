@@ -35,3 +35,10 @@ Thumbs.db
 # packed release tarballs (tools/verify-packages.mjs)
 .packs/
 apps/docs/dist-ssr/
+
+# local business documents, not part of the SDK
+GIX_Quotation_Kit/
+GIX_Quotation_Kit.zip
+
+# pnpm publish --report-summary output (release workflow)
+pnpm-publish-summary.json
