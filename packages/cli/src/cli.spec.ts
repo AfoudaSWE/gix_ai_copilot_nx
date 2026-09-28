@@ -27,7 +27,7 @@ describe('aicopilot CLI', () => {
     expect(text()).toContain('doctor');
     const version = await workspace();
     expect(await run(['--version'], version.io)).toBe(0);
-    expect(version.text()).toBe('0.1.0');
+    expect(version.text()).toBe('0.1.1');
     const bad = await workspace();
     expect(await run(['frobnicate'], bad.io)).toBe(2);
     expect(await run(['init', '--nope'], bad.io)).toBe(2);
@@ -39,7 +39,7 @@ describe('aicopilot CLI', () => {
       expect(await run(['init', 'app', '--template', template, '--name', `demo-${template}`], io)).toBe(0);
       const pkg = JSON.parse(await readFile(join(cwd, 'app', 'package.json'), 'utf8')) as { name: string; dependencies: Record<string, string> };
       expect(pkg.name).toBe(`demo-${template}`);
-      expect(pkg.dependencies['@gixcopilot/node']).toBe('^0.1.0');
+      expect(pkg.dependencies['@gixcopilot/node']).toBe('^0.1.1');
       expect(existsSync(join(cwd, 'app', '.env.example'))).toBe(true);
       expect(await readFile(join(cwd, 'app', '.gitignore'), 'utf8')).toContain('.env');
       // No real secret ever written: .env.example has empty placeholders only.

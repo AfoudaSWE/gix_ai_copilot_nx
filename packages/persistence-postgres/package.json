@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/persistence-postgres",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "PostgreSQL persistence for production: tenant-scoped conversations, memory, immutable audit and usage storage, plus a reviewed migration runner with rollback files.",
   "license": "MIT",
   "repository": {

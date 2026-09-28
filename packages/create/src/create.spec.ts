@@ -87,7 +87,7 @@ describe('planProject', () => {
       const plan = planProject(detectProject(root), { framework, server: true, serverDir: 'copilot-server', packageManager: 'npm', install: true });
       const commands = plan.steps.filter((step) => step.kind === 'command');
       expect(commands[0]).toMatchObject({ command: 'npm', args: ['install', ...expected[framework]] });
-      expect(commands.some((step) => step.args.join(' ').includes('@gixcopilot/cli@0.1.0 init copilot-server --template node'))).toBe(true);
+      expect(commands.some((step) => step.args.join(' ').includes('@gixcopilot/cli@0.1.1 init copilot-server --template node'))).toBe(true);
       expect(plan.next[0]).toContain('copilot:server');
     }
   });
@@ -109,7 +109,7 @@ describe('main', () => {
     expect(help.text()).toContain('npm create @gixcopilot');
     const version = io(process.cwd());
     expect(await main(['--version'], version.io)).toBe(0);
-    expect(version.text()).toBe('0.1.0');
+    expect(version.text()).toBe('0.1.1');
     expect(await main(['--framework', 'svelte'], io(process.cwd()).io)).toBe(2);
     expect(await main(['--pm', 'deno'], io(process.cwd()).io)).toBe(2);
   });
@@ -120,7 +120,7 @@ describe('main', () => {
     expect(await main(['--yes'], run.io)).toBe(0);
     expect(run.commands.map((step) => `${step.command} ${step.args.join(' ')}`)).toEqual([
       'npm install @gixcopilot/vue',
-      'npx -y @gixcopilot/cli@0.1.0 init copilot-server --template node --name shop-copilot-server',
+      'npx -y @gixcopilot/cli@0.1.1 init copilot-server --template node --name shop-copilot-server',
       'npm install',
     ]);
     expect(await readFile(join(root, 'src/copilot/CopilotPanel.vue'), 'utf8')).toBe('<!-- mine -->');

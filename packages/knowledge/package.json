@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/knowledge",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Framework-independent knowledge source, document, and loader contracts for the AI Copilot SDK - the ingestion boundary RAG builds on.",
   "license": "MIT",
   "repository": {

@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/tools",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Framework-independent canonical tool architecture for the AI Copilot SDK: tool definitions, registry, resolver, and execution runtime shared by backend and frontend tools.",
   "license": "MIT",
   "repository": {

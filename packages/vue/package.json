@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/vue",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Vue 3 adapter for the AI Copilot SDK: plugin, composables and an accessible chat component over the shared headless chat store.",
   "license": "MIT",
   "repository": {

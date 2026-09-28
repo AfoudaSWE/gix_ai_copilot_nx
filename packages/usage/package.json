@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/usage",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Usage accounting (tokens, requests, tools, agents, workflows, RAG), configurable cost estimation, and admission policies: rate limits, quotas and budgets.",
   "license": "MIT",
   "repository": {

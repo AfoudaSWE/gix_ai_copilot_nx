@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/redis",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Redis coordination for multi-instance deployments: distributed rate limiting, lease locks and health checks.",
   "license": "MIT",
   "repository": {

@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/react",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Headless React adapter for the Copilot client.",
   "license": "MIT",
   "repository": {

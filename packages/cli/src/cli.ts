@@ -3,7 +3,7 @@ import { addAgent, addMcp, addTool, db, dev, doctor, evalCommand, importOpenApi,
 import type { CliIo, Flags } from './commands.js';
 import { addApi, apiCheck, mcpServe } from './connect.js';
 
-export const VERSION = '0.1.0';
+export const VERSION = '0.1.1';
 
 const HELP: Readonly<Record<string, string>> = {
   main: `aicopilot ${VERSION} — AI Copilot SDK command line
