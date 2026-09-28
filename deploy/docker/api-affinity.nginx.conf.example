@@ -1,0 +1,54 @@
+# Example: several Copilot API instances behind open-source nginx, with session affinity.
+#
+# Why: the live run registry and frontend tool bridge are process-local. POST /runs/:runId/cancel
+# and POST /runs/:runId/tool-results must reach the instance that started the run (see
+# docs/production/SCALING.md). The run id is assigned by the instance that serves POST /runs,
+# so the edge cannot route by run id alone. Pin each client to one instance instead.
+#
+# nginx issues a first-party affinity cookie on a client's first request and hashes on it
+# from then on (open-source nginx has no `sticky` directive; that is NGINX Plus). The first
+# request hashes on the same value it puts in the cookie, so it lands where later ones will.
+# Server-to-server callers must send the cookie back (or call one instance directly).
+#
+# Kubernetes ingress-nginx users get the same with:
+#   nginx.ingress.kubernetes.io/affinity: "cookie"
+#   nginx.ingress.kubernetes.io/session-cookie-name: "gix_api_affinity"
+
+# Routing key: the cookie when present, otherwise this request's id (which becomes the cookie).
+map $cookie_gix_api_affinity $gix_affinity_key {
+  ""      $request_id;
+  default $cookie_gix_api_affinity;
+}
+
+# Set the cookie only when the client does not have one yet. An empty value sends no header.
+# The value is only a routing key; it carries no identity or authority.
+map $cookie_gix_api_affinity $gix_affinity_set_cookie {
+  ""      "gix_api_affinity=$request_id; Path=/api/; HttpOnly; Secure; SameSite=Lax";
+  default "";
+}
+
+upstream copilot_api {
+  # Consistent hashing keeps most clients on the same instance when one is added or removed.
+  hash $gix_affinity_key consistent;
+  server api-1:3000 max_fails=3 fail_timeout=10s;
+  server api-2:3000 max_fails=3 fail_timeout=10s;
+  keepalive 32;
+}
+
+server {
+  listen 8080;
+  server_name _;
+
+  location /api/ {
+    proxy_pass http://copilot_api/;
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+    proxy_set_header Host $host;
+    proxy_set_header X-Request-Id $request_id;
+    add_header Set-Cookie $gix_affinity_set_cookie always;
+
+    # Runs stream over SSE: never buffer, and keep the idle timeout above your longest run.
+    proxy_buffering off;
+    proxy_read_timeout 600s;
+  }
+}
