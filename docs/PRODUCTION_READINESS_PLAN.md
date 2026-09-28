@@ -61,6 +61,9 @@ mixed state (expected to fail today).
 
 ## Stage 3 — Publish all 42 packages at one version
 
+> **Superseded (2026-09-28):** the owner chose to skip 0.1.2 and release 0.2.0 directly
+> (Stage 7), deprecating every earlier version. The deprecation step below applies to 0.2.0.
+
 **Goal:** every package is on npm at the same version.
 
 A published version can't be republished, so publish **0.1.2** (not 0.1.1) for all
@@ -128,6 +131,8 @@ process-local.
 - **Long term (new feature, needs an explicit go-ahead):** a Redis-backed run registry
   and bridge using `@gixcopilot/redis` pub/sub, so any instance can route a cancel request
   or a tool result.
+- **Decision (2026-09-28): no, not for 0.2.0.** Sticky routing is documented and required
+  for multi-instance deployments. Revisit when a user needs deployments without affinity.
 
 ### 5.3 Document the known limits for users
 
@@ -186,14 +191,12 @@ Run it once Stages 1–6 are done.
 - [x] 1 — Root cause of the partial publish recorded (`docs/RELEASING.md`, from npm
       publish timestamps)
 - [x] 2 — `check-npm-published.mjs` and a release workflow post-publish check
-- [ ] 3 — All 42 packages on npm at 0.1.2; older versions deprecated. _Needs a publish; npm
-      still shows 15 ok, 27 stale or missing (2026-09-28)._
+- [x] 3 — Superseded by Stage 7: all packages released together at 0.2.0
 - [ ] 4 — Docker suites run in CI; scaffolder verified from npm; smoke test made opt-in.
       _Done: `REQUIRE_DOCKER=1` in CI and release, `RUN_OPENAI_SMOKE=1` opt-in. Open:
       scaffolder and install matrix from npm (blocked on Stage 3)._
 - [x] 5.1 — Tool timeout aborts the tool (with a regression test)
-- [ ] 5.2 — Sticky-routing docs shipped; Redis registry decided (yes or no). _Docs and
-      `deploy/docker/api-affinity.nginx.conf.example` shipped; Redis registry undecided._
+- [x] 5.2 — Sticky-routing docs shipped; Redis registry decided: no (for now)
 - [x] 5.3 — Known limitations in the READMEs
 - [x] 5.4 — `CHANGELOG.md` generated
 - [x] 6 — Keywords, stability labels, repo cleanup

@@ -25,7 +25,8 @@
    deployment cannot route a cancel request to whichever instance holds the run. Phase 12 supports
    independent runs on multiple instances but still needs routing affinity for cancel and
    frontend tool-result requests; see [Scaling](production/SCALING.md).
-   _(Since: Phase 1; still open in Phase 12)_
+   _(Since: Phase 1; still open in Phase 12.)_ 2026-09-28: a Redis-backed registry was
+   declined for 0.2.0; session affinity is required and documented instead.
 
 Phase 4 review: no new debt was introduced. `@gixcopilot/context` ships with the same
 per-package `*.spec.ts`-in-`dist/` characteristic as item 1 above (not additional debt, the
