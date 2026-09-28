@@ -208,6 +208,30 @@ Transport-independent wire protocol for the AI Copilot SDK: Message, Thread, Run
 
 **Types (70):** `AgentDelegationCompletedEvent`, `AgentDelegationStartedEvent`, `AgentHandoffEvent`, `AgentRoutingDecidedEvent`, `AgentRunCancelledEvent`, `AgentRunCompletedEvent`, `AgentRunFailedEvent`, `AgentRunStartedEvent`, `ApprovalApprovedEvent`, `ApprovalExpiredEvent`, `ApprovalRejectedEvent`, `ApprovalRequestedEvent`, `ContentPart`, `CopilotErrorCode`, `CopilotErrorMetadata`, `CopilotErrorOptions`, `CopilotEvent`, `CopilotEventBase`, `CopilotEventType`, `DataClassification`, `ErrorEvent`, `EventId`, `FinishReason`, `Message`, `MessageDeltaEvent`, `MessageEndEvent`, `MessageId`, `MessageRole`, `MessageStartEvent`, `ParsedEvent`, `ProtocolVersion`, `PublicCopilotError`, `Run`, `RunCancelledEvent`, `RunCompletedEvent`, `RunFailedEvent`, `RunId`, `RunStartedEvent`, `RunStatus`, `Thread`, `ThreadId`, `ToolActionPreview`, `ToolActionReversibility`, `ToolActionRisk`, `ToolApprovalLevel`, `ToolCall`, `ToolCallCompletedEvent`, `ToolCallFailedEvent`, `ToolCallId`, `ToolCallRequestedEvent`, `ToolCallStartedEvent`, `ToolChangePreview`, `ToolExecutionLocation`, `ToolLifecycleEvent`, `ToolManifestEntry`, `ToolResult`, `ToolSecurityManifest`, `ToolSource`, `UnknownCopilotEvent`, `Usage`, `WorkflowCheckpointSavedEvent`, `WorkflowRunCancelledEvent`, `WorkflowRunCompletedEvent`, `WorkflowRunFailedEvent`, `WorkflowRunPausedEvent`, `WorkflowRunResumedEvent`, `WorkflowRunStartedEvent`, `WorkflowStepCompletedEvent`, `WorkflowStepFailedEvent`, `WorkflowStepStartedEvent`
 
+## @gixcopilot/provider-mock
+
+Deterministic, non-network ModelProvider used for tests, examples, and CI - no real AI dependency.
+
+**Values (1):** `createMockProvider`
+
+**Types (4):** `MockFailure`, `MockProviderOptions`, `MockProviderScenario`, `MockProviderScenarioInput`
+
+## @gixcopilot/provider-openai
+
+OpenAI streaming ModelProvider adapter for the AI Copilot SDK. The only package in the workspace allowed to depend on the openai SDK.
+
+**Values (7):** `createOpenAIProvider`, `fromOpenAIToolName`, `mapFinishReason`, `toNormalizedError`, `toOpenAIMessage`, `toOpenAIMessages`, `toOpenAIToolName`
+
+**Types (1):** `CreateOpenAIProviderOptions`
+
+## @gixcopilot/provider
+
+Provider-independent model contracts, registry, and model runtime for the AI Copilot SDK.
+
+**Values (8):** `DEFAULT_RETRY_POLICY`, `ToolCallAssembler`, `computeBackoffDelayMs`, `createModelExecutor`, `createModelProviderRegistry`, `createModelRuntime`, `generateObject`, `sleep`
+
+**Types (22):** `CreateModelExecutorOptions`, `CreateModelRuntimeOptions`, `GenerateObjectOptions`, `GenerateObjectResult`, `ModelExecutionOptions`, `ModelExecutionRequest`, `ModelLatency`, `ModelMessage`, `ModelProvider`, `ModelProviderRegistry`, `ModelReference`, `ModelRequest`, `ModelRuntime`, `ModelRuntimeDefaults`, `ModelRuntimeTelemetryEvent`, `ModelRuntimeTelemetryListener`, `ModelStreamEvent`, `ModelStreamEventType`, `ModelToolCall`, `ModelToolDefinition`, `RetryPolicy`, `ToolCallDeltaFragment`
+
 ## @gixcopilot/rag
 
 Framework-independent RAG pipeline for the AI Copilot SDK: chunking, embeddings, vector-store abstraction, permission-aware retrieval, reranking, and citations.
@@ -298,6 +322,14 @@ Usage accounting (tokens, requests, tools, agents, workflows, RAG), configurable
 
 **Types (18):** `AdmissionRateLimiter`, `BudgetAction`, `BudgetPolicy`, `CreateUsageAdmissionOptions`, `LimitScope`, `ModelPrice`, `PricingTable`, `QuotaPolicy`, `RateLimitPolicy`, `ScopedUsageStore`, `UsageDimension`, `UsageEvent`, `UsageKind`, `UsageQuery`, `UsageRecorderOptions`, `UsageRow`, `UsageStore`, `UsageWarning`
 
+## @gixcopilot/vectorstore-pgvector
+
+PostgreSQL + pgvector VectorStore adapter for @gixcopilot/rag - the only package in the workspace allowed to depend on drizzle-orm/pg for RAG storage.
+
+**Values (4):** `EMBEDDING_DIMENSIONS`, `createPgVectorStore`, `knowledgeChunks`, `memoryEmbeddings`
+
+**Types (2):** `CreatePgVectorStoreOptions`, `PgVectorStore`
+
 ## @gixcopilot/vue
 
 Vue 3 adapter for the AI Copilot SDK: plugin, composables and an accessible chat component over the shared headless chat store.
@@ -315,35 +347,3 @@ Deterministic workflow engine for the AI Copilot SDK - defineWorkflow, function/
 **Values (28):** `DEFAULT_WORKFLOW_RETRY_POLICY`, `agentStep`, `approvalStep`, `buildCompensationPlan`, `computeStepBackoffMs`, `conditionStep`, `createInMemoryCheckpointStore`, `createInlineJobExecutor`, `createWorkflowEngine`, `createWorkflowTestHarness`, `defineWorkflow`, `functionStep`, `isCompensatableStep`, `isStepErrorRetryable`, `parallelStep`, `toolStep`, `validateWorkflowGraph`, `workflowCheckpointSavedEvent`, `workflowRunCancelledEvent`, `workflowRunCompletedEvent`, `workflowRunFailedEvent`, `workflowRunPausedEvent`, `workflowRunResumedEvent`, `workflowRunStartedEvent`, `workflowStepCompletedEvent`, `workflowStepFailedEvent`, `workflowStepJobId`, `workflowStepStartedEvent`
 
 **Types (29):** `AgentStep`, `AnyWorkflowDefinition`, `AnyWorkflowStep`, `ApprovalStep`, `CheckpointListFilter`, `CheckpointStore`, `ConditionStep`, `CreateWorkflowEngineOptions`, `CreateWorkflowTestHarnessOptions`, `DefineWorkflowOptions`, `FunctionStep`, `JobExecutor`, `ParallelStep`, `ResumeWorkflowOptions`, `RetryPolicy`, `StartWorkflowOptions`, `ToolStep`, `WorkflowCheckpoint`, `WorkflowDefinition`, `WorkflowEngine`, `WorkflowEventCorrelation`, `WorkflowEventListener`, `WorkflowRunStatus`, `WorkflowStep`, `WorkflowStepContext`, `WorkflowStepRecord`, `WorkflowStepStatus`, `WorkflowTestHarness`, `WorkflowValidationError`
-
-## @gixcopilot/provider-mock
-
-Deterministic, non-network ModelProvider used for tests, examples, and CI - no real AI dependency.
-
-**Values (1):** `createMockProvider`
-
-**Types (4):** `MockFailure`, `MockProviderOptions`, `MockProviderScenario`, `MockProviderScenarioInput`
-
-## @gixcopilot/provider-openai
-
-OpenAI streaming ModelProvider adapter for the AI Copilot SDK. The only package in the workspace allowed to depend on the openai SDK.
-
-**Values (7):** `createOpenAIProvider`, `fromOpenAIToolName`, `mapFinishReason`, `toNormalizedError`, `toOpenAIMessage`, `toOpenAIMessages`, `toOpenAIToolName`
-
-**Types (1):** `CreateOpenAIProviderOptions`
-
-## @gixcopilot/provider
-
-Provider-independent model contracts, registry, and model runtime for the AI Copilot SDK.
-
-**Values (8):** `DEFAULT_RETRY_POLICY`, `ToolCallAssembler`, `computeBackoffDelayMs`, `createModelExecutor`, `createModelProviderRegistry`, `createModelRuntime`, `generateObject`, `sleep`
-
-**Types (22):** `CreateModelExecutorOptions`, `CreateModelRuntimeOptions`, `GenerateObjectOptions`, `GenerateObjectResult`, `ModelExecutionOptions`, `ModelExecutionRequest`, `ModelLatency`, `ModelMessage`, `ModelProvider`, `ModelProviderRegistry`, `ModelReference`, `ModelRequest`, `ModelRuntime`, `ModelRuntimeDefaults`, `ModelRuntimeTelemetryEvent`, `ModelRuntimeTelemetryListener`, `ModelStreamEvent`, `ModelStreamEventType`, `ModelToolCall`, `ModelToolDefinition`, `RetryPolicy`, `ToolCallDeltaFragment`
-
-## @gixcopilot/vectorstore-pgvector
-
-PostgreSQL + pgvector VectorStore adapter for @gixcopilot/rag - the only package in the workspace allowed to depend on drizzle-orm/pg for RAG storage.
-
-**Values (4):** `EMBEDDING_DIMENSIONS`, `createPgVectorStore`, `knowledgeChunks`, `memoryEmbeddings`
-
-**Types (2):** `CreatePgVectorStoreOptions`, `PgVectorStore`

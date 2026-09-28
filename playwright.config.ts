@@ -11,7 +11,8 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
-  reporter: 'list',
+  // On CI, the github reporter turns each failure into a job annotation readable on the run page.
+  reporter: process.env['CI'] ? [['github'], ['list']] : 'list',
   webServer: [
     {
       command: 'node examples/react-basic/dist/server.js',

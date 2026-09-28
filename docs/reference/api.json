@@ -4222,6 +4222,260 @@
       ]
     },
     {
+      "name": "@gixcopilot/provider-mock",
+      "slug": "provider-mock",
+      "description": "Deterministic, non-network ModelProvider used for tests, examples, and CI - no real AI dependency.",
+      "status": "beta",
+      "directory": "packages/providers/mock",
+      "subpaths": [],
+      "peerDependencies": [],
+      "values": [
+        {
+          "name": "createMockProvider",
+          "kind": "function",
+          "signature": "function createMockProvider(options?: MockProviderOptions): ModelProvider;"
+        }
+      ],
+      "types": [
+        {
+          "name": "MockFailure",
+          "kind": "interface",
+          "signature": "interface MockFailure {\n    readonly code: CopilotErrorCode;\n    readonly message: string;\n    readonly retryable?: boolean;\n}"
+        },
+        {
+          "name": "MockProviderOptions",
+          "kind": "interface",
+          "signature": "interface MockProviderOptions {\n    readonly id?: string;\n    readonly scenario?: MockProviderScenarioInput;\n}"
+        },
+        {
+          "name": "MockProviderScenario",
+          "kind": "interface",
+          "signature": "interface MockProviderScenario {\n    readonly chunks?: readonly string[];\n    readonly delayMsPerChunk?: number;\n    readonly usage?: Usage;\n    readonly finishReason?: FinishReason;\n    readonly failBeforeFirstChunk?: MockFailure;\n    readonly failDuringStream?: MockFailure & {\n        readonly afterChunks: number;\n    };\n    readonly toolCalls?: readonly ModelToolCall[];\n}"
+        },
+        {
+          "name": "MockProviderScenarioInput",
+          "kind": "type",
+          "signature": "type MockProviderScenarioInput = MockProviderScenario | ((attempt: number) => MockProviderScenario);"
+        }
+      ]
+    },
+    {
+      "name": "@gixcopilot/provider-openai",
+      "slug": "provider-openai",
+      "description": "OpenAI streaming ModelProvider adapter for the AI Copilot SDK. The only package in the workspace allowed to depend on the openai SDK.",
+      "status": "beta",
+      "directory": "packages/providers/openai",
+      "subpaths": [],
+      "peerDependencies": [],
+      "values": [
+        {
+          "name": "createOpenAIProvider",
+          "kind": "function",
+          "signature": "function createOpenAIProvider(options?: CreateOpenAIProviderOptions): ModelProvider;"
+        },
+        {
+          "name": "fromOpenAIToolName",
+          "kind": "function",
+          "signature": "function fromOpenAIToolName(name: string): string;"
+        },
+        {
+          "name": "mapFinishReason",
+          "kind": "function",
+          "signature": "function mapFinishReason(reason: string | null | undefined): FinishReason;"
+        },
+        {
+          "name": "toNormalizedError",
+          "kind": "function",
+          "signature": "function toNormalizedError(error: unknown): CopilotError;"
+        },
+        {
+          "name": "toOpenAIMessage",
+          "kind": "function",
+          "signature": "function toOpenAIMessage(message: ModelMessage): OpenAI.ChatCompletionMessageParam;"
+        },
+        {
+          "name": "toOpenAIMessages",
+          "kind": "function",
+          "signature": "function toOpenAIMessages(messages: readonly ModelMessage[]): OpenAI.ChatCompletionMessageParam[];"
+        },
+        {
+          "name": "toOpenAIToolName",
+          "kind": "function",
+          "signature": "function toOpenAIToolName(name: string): string;"
+        }
+      ],
+      "types": [
+        {
+          "name": "CreateOpenAIProviderOptions",
+          "kind": "interface",
+          "signature": "interface CreateOpenAIProviderOptions {\n    readonly id?: string;\n    readonly apiKey?: string;\n    readonly baseURL?: string;\n    readonly fetch?: typeof fetch;\n    readonly client?: OpenAI;\n}"
+        }
+      ]
+    },
+    {
+      "name": "@gixcopilot/provider",
+      "slug": "provider",
+      "description": "Provider-independent model contracts, registry, and model runtime for the AI Copilot SDK.",
+      "status": "beta",
+      "directory": "packages/providers/provider-core",
+      "subpaths": [],
+      "peerDependencies": [],
+      "values": [
+        {
+          "name": "DEFAULT_RETRY_POLICY",
+          "kind": "const",
+          "signature": "const DEFAULT_RETRY_POLICY: RetryPolicy;"
+        },
+        {
+          "name": "ToolCallAssembler",
+          "kind": "class",
+          "signature": "class ToolCallAssembler {\n    #private;\n    push(fragment: ToolCallDeltaFragment): void;\n    finalize(): readonly ModelToolCall[];\n    get isEmpty(): boolean;\n}"
+        },
+        {
+          "name": "computeBackoffDelayMs",
+          "kind": "function",
+          "signature": "function computeBackoffDelayMs(policy: RetryPolicy, attempt: number, random?: () => number): number;"
+        },
+        {
+          "name": "createModelExecutor",
+          "kind": "function",
+          "signature": "function createModelExecutor(options: CreateModelExecutorOptions): Executor;"
+        },
+        {
+          "name": "createModelProviderRegistry",
+          "kind": "function",
+          "signature": "function createModelProviderRegistry(initial?: readonly ModelProvider[]): ModelProviderRegistry;"
+        },
+        {
+          "name": "createModelRuntime",
+          "kind": "function",
+          "signature": "function createModelRuntime(options: CreateModelRuntimeOptions): ModelRuntime;"
+        },
+        {
+          "name": "generateObject",
+          "kind": "function",
+          "signature": "function generateObject<TSchema extends z.ZodType>(options: GenerateObjectOptions<TSchema>): Promise<GenerateObjectResult<TSchema>>;"
+        },
+        {
+          "name": "sleep",
+          "kind": "function",
+          "signature": "function sleep(ms: number, signal?: AbortSignal): Promise<void>;"
+        }
+      ],
+      "types": [
+        {
+          "name": "CreateModelExecutorOptions",
+          "kind": "interface",
+          "signature": "interface CreateModelExecutorOptions {\n    readonly runtime: ModelRuntime;\n    readonly model?: ModelReference;\n    readonly temperature?: number;\n    readonly maxOutputTokens?: number;\n    readonly metadata?: Readonly<Record<string, unknown>>;\n    readonly timeoutMs?: number;\n}"
+        },
+        {
+          "name": "CreateModelRuntimeOptions",
+          "kind": "interface",
+          "signature": "interface CreateModelRuntimeOptions {\n    readonly providers: readonly ModelProvider[];\n    readonly defaults?: ModelRuntimeDefaults;\n    readonly defaultProvider?: string;\n    readonly defaultModel?: string;\n    readonly onTelemetry?: ModelRuntimeTelemetryListener;\n}"
+        },
+        {
+          "name": "GenerateObjectOptions",
+          "kind": "interface",
+          "signature": "interface GenerateObjectOptions<TSchema extends z.ZodType> {\n    readonly runtime: ModelRuntime;\n    readonly model?: ModelReference;\n    readonly messages: readonly ModelMessage[];\n    readonly schema: TSchema;\n    readonly temperature?: number;\n    readonly timeoutMs?: number;\n    readonly signal?: AbortSignal;\n}"
+        },
+        {
+          "name": "GenerateObjectResult",
+          "kind": "interface",
+          "signature": "interface GenerateObjectResult<TSchema extends z.ZodType> {\n    readonly object: z.infer<TSchema>;\n}"
+        },
+        {
+          "name": "ModelExecutionOptions",
+          "kind": "interface",
+          "signature": "interface ModelExecutionOptions {\n    readonly signal?: AbortSignal;\n}"
+        },
+        {
+          "name": "ModelExecutionRequest",
+          "kind": "interface",
+          "signature": "interface ModelExecutionRequest {\n    readonly model?: ModelReference;\n    readonly messages: readonly ModelMessage[];\n    readonly temperature?: number;\n    readonly maxOutputTokens?: number;\n    readonly metadata?: Readonly<Record<string, unknown>>;\n    readonly timeoutMs?: number;\n    readonly signal?: AbortSignal;\n    readonly tools?: readonly ModelToolDefinition[];\n}"
+        },
+        {
+          "name": "ModelLatency",
+          "kind": "interface",
+          "signature": "interface ModelLatency {\n    readonly totalMs: number;\n    readonly timeToFirstChunkMs?: number;\n}"
+        },
+        {
+          "name": "ModelMessage",
+          "kind": "interface",
+          "signature": "interface ModelMessage {\n    readonly role: MessageRole;\n    readonly content: readonly ContentPart[];\n}"
+        },
+        {
+          "name": "ModelProvider",
+          "kind": "interface",
+          "signature": "interface ModelProvider {\n    readonly id: string;\n    stream(request: ModelRequest, options?: ModelExecutionOptions): AsyncIterable<ModelStreamEvent>;\n}"
+        },
+        {
+          "name": "ModelProviderRegistry",
+          "kind": "interface",
+          "signature": "interface ModelProviderRegistry {\n    register(provider: ModelProvider): void;\n    get(providerId: string): ModelProvider | undefined;\n    require(providerId: string): ModelProvider;\n    list(): readonly string[];\n}"
+        },
+        {
+          "name": "ModelReference",
+          "kind": "interface",
+          "signature": "interface ModelReference {\n    readonly provider: string;\n    readonly model: string;\n}"
+        },
+        {
+          "name": "ModelRequest",
+          "kind": "interface",
+          "signature": "interface ModelRequest {\n    readonly model: string;\n    readonly messages: readonly ModelMessage[];\n    readonly temperature?: number;\n    readonly maxOutputTokens?: number;\n    readonly metadata?: Readonly<Record<string, unknown>>;\n    readonly tools?: readonly ModelToolDefinition[];\n}"
+        },
+        {
+          "name": "ModelRuntime",
+          "kind": "interface",
+          "signature": "interface ModelRuntime {\n    stream(request: ModelExecutionRequest): AsyncGenerator<ModelStreamEvent, void, undefined>;\n    readonly registry: ModelProviderRegistry;\n}"
+        },
+        {
+          "name": "ModelRuntimeDefaults",
+          "kind": "interface",
+          "signature": "interface ModelRuntimeDefaults {\n    readonly timeoutMs?: number;\n    readonly retry?: RetryPolicy;\n}"
+        },
+        {
+          "name": "ModelRuntimeTelemetryEvent",
+          "kind": "type",
+          "signature": "type ModelRuntimeTelemetryEvent = {\n    readonly type: 'attempt_started';"
+        },
+        {
+          "name": "ModelRuntimeTelemetryListener",
+          "kind": "type",
+          "signature": "type ModelRuntimeTelemetryListener = (event: ModelRuntimeTelemetryEvent) => void;"
+        },
+        {
+          "name": "ModelStreamEvent",
+          "kind": "type",
+          "signature": "type ModelStreamEvent = {\n    readonly type: 'model.started';"
+        },
+        {
+          "name": "ModelStreamEventType",
+          "kind": "type",
+          "signature": "type ModelStreamEventType = ModelStreamEvent['type'];"
+        },
+        {
+          "name": "ModelToolCall",
+          "kind": "interface",
+          "signature": "interface ModelToolCall {\n    readonly id: string;\n    readonly name: string;\n    readonly arguments: Readonly<Record<string, unknown>>;\n}"
+        },
+        {
+          "name": "ModelToolDefinition",
+          "kind": "interface",
+          "signature": "interface ModelToolDefinition {\n    readonly name: string;\n    readonly description: string;\n    readonly parameters: Readonly<Record<string, unknown>>;\n}"
+        },
+        {
+          "name": "RetryPolicy",
+          "kind": "interface",
+          "signature": "interface RetryPolicy {\n    readonly maxAttempts: number;\n    readonly baseDelayMs: number;\n    readonly maxDelayMs: number;\n}"
+        },
+        {
+          "name": "ToolCallDeltaFragment",
+          "kind": "interface",
+          "signature": "interface ToolCallDeltaFragment {\n    readonly index: number;\n    readonly id?: string;\n    readonly name?: string;\n    readonly argumentsDelta?: string;\n}"
+        }
+      ]
+    },
+    {
       "name": "@gixcopilot/rag",
       "slug": "rag",
       "description": "Framework-independent RAG pipeline for the AI Copilot SDK: chunking, embeddings, vector-store abstraction, permission-aware retrieval, reranking, and citations.",
@@ -7328,6 +7582,49 @@
       ]
     },
     {
+      "name": "@gixcopilot/vectorstore-pgvector",
+      "slug": "vectorstore-pgvector",
+      "description": "PostgreSQL + pgvector VectorStore adapter for @gixcopilot/rag - the only package in the workspace allowed to depend on drizzle-orm/pg for RAG storage.",
+      "status": "beta",
+      "directory": "packages/vectorstores/pgvector",
+      "subpaths": [],
+      "peerDependencies": [],
+      "values": [
+        {
+          "name": "EMBEDDING_DIMENSIONS",
+          "kind": "const",
+          "signature": "const EMBEDDING_DIMENSIONS = 1536;"
+        },
+        {
+          "name": "createPgVectorStore",
+          "kind": "function",
+          "signature": "function createPgVectorStore(options?: CreatePgVectorStoreOptions): PgVectorStore;"
+        },
+        {
+          "name": "knowledgeChunks",
+          "kind": "const",
+          "signature": "const knowledgeChunks: import(\"drizzle-orm/pg-core\").PgTableWithColumns<{\n    name: \"knowledge_chunks\";"
+        },
+        {
+          "name": "memoryEmbeddings",
+          "kind": "const",
+          "signature": "const memoryEmbeddings: import(\"drizzle-orm/pg-core\").PgTableWithColumns<{\n    name: \"memory_embeddings\";"
+        }
+      ],
+      "types": [
+        {
+          "name": "CreatePgVectorStoreOptions",
+          "kind": "interface",
+          "signature": "interface CreatePgVectorStoreOptions {\n    readonly connectionString?: string;\n    readonly pool?: Pool;\n    readonly table?: 'knowledge' | 'memory';\n}"
+        },
+        {
+          "name": "PgVectorStore",
+          "kind": "interface",
+          "signature": "interface PgVectorStore extends VectorStore {\n    close(): Promise<void>;\n}"
+        }
+      ]
+    },
+    {
       "name": "@gixcopilot/vue",
       "slug": "vue",
       "description": "Vue 3 adapter for the AI Copilot SDK: plugin, composables and an accessible chat component over the shared headless chat store.",
@@ -7718,303 +8015,6 @@
           "name": "WorkflowValidationError",
           "kind": "interface",
           "signature": "interface WorkflowValidationError {\n    readonly reason: 'DUPLICATE_STEP_ID' | 'UNKNOWN_DEPENDENCY' | 'CYCLE_DETECTED' | 'UNKNOWN_BRANCH' | 'BRANCH_NOT_INDEPENDENT';\n    readonly stepId?: string;\n    readonly message: string;\n}"
-        }
-      ]
-    },
-    {
-      "name": "@gixcopilot/provider-mock",
-      "slug": "provider-mock",
-      "description": "Deterministic, non-network ModelProvider used for tests, examples, and CI - no real AI dependency.",
-      "status": "beta",
-      "directory": "packages/providers/mock",
-      "subpaths": [],
-      "peerDependencies": [],
-      "values": [
-        {
-          "name": "createMockProvider",
-          "kind": "function",
-          "signature": "function createMockProvider(options?: MockProviderOptions): ModelProvider;"
-        }
-      ],
-      "types": [
-        {
-          "name": "MockFailure",
-          "kind": "interface",
-          "signature": "interface MockFailure {\n    readonly code: CopilotErrorCode;\n    readonly message: string;\n    readonly retryable?: boolean;\n}"
-        },
-        {
-          "name": "MockProviderOptions",
-          "kind": "interface",
-          "signature": "interface MockProviderOptions {\n    readonly id?: string;\n    readonly scenario?: MockProviderScenarioInput;\n}"
-        },
-        {
-          "name": "MockProviderScenario",
-          "kind": "interface",
-          "signature": "interface MockProviderScenario {\n    readonly chunks?: readonly string[];\n    readonly delayMsPerChunk?: number;\n    readonly usage?: Usage;\n    readonly finishReason?: FinishReason;\n    readonly failBeforeFirstChunk?: MockFailure;\n    readonly failDuringStream?: MockFailure & {\n        readonly afterChunks: number;\n    };\n    readonly toolCalls?: readonly ModelToolCall[];\n}"
-        },
-        {
-          "name": "MockProviderScenarioInput",
-          "kind": "type",
-          "signature": "type MockProviderScenarioInput = MockProviderScenario | ((attempt: number) => MockProviderScenario);"
-        }
-      ]
-    },
-    {
-      "name": "@gixcopilot/provider-openai",
-      "slug": "provider-openai",
-      "description": "OpenAI streaming ModelProvider adapter for the AI Copilot SDK. The only package in the workspace allowed to depend on the openai SDK.",
-      "status": "beta",
-      "directory": "packages/providers/openai",
-      "subpaths": [],
-      "peerDependencies": [],
-      "values": [
-        {
-          "name": "createOpenAIProvider",
-          "kind": "function",
-          "signature": "function createOpenAIProvider(options?: CreateOpenAIProviderOptions): ModelProvider;"
-        },
-        {
-          "name": "fromOpenAIToolName",
-          "kind": "function",
-          "signature": "function fromOpenAIToolName(name: string): string;"
-        },
-        {
-          "name": "mapFinishReason",
-          "kind": "function",
-          "signature": "function mapFinishReason(reason: string | null | undefined): FinishReason;"
-        },
-        {
-          "name": "toNormalizedError",
-          "kind": "function",
-          "signature": "function toNormalizedError(error: unknown): CopilotError;"
-        },
-        {
-          "name": "toOpenAIMessage",
-          "kind": "function",
-          "signature": "function toOpenAIMessage(message: ModelMessage): OpenAI.ChatCompletionMessageParam;"
-        },
-        {
-          "name": "toOpenAIMessages",
-          "kind": "function",
-          "signature": "function toOpenAIMessages(messages: readonly ModelMessage[]): OpenAI.ChatCompletionMessageParam[];"
-        },
-        {
-          "name": "toOpenAIToolName",
-          "kind": "function",
-          "signature": "function toOpenAIToolName(name: string): string;"
-        }
-      ],
-      "types": [
-        {
-          "name": "CreateOpenAIProviderOptions",
-          "kind": "interface",
-          "signature": "interface CreateOpenAIProviderOptions {\n    readonly id?: string;\n    readonly apiKey?: string;\n    readonly baseURL?: string;\n    readonly fetch?: typeof fetch;\n    readonly client?: OpenAI;\n}"
-        }
-      ]
-    },
-    {
-      "name": "@gixcopilot/provider",
-      "slug": "provider",
-      "description": "Provider-independent model contracts, registry, and model runtime for the AI Copilot SDK.",
-      "status": "beta",
-      "directory": "packages/providers/provider-core",
-      "subpaths": [],
-      "peerDependencies": [],
-      "values": [
-        {
-          "name": "DEFAULT_RETRY_POLICY",
-          "kind": "const",
-          "signature": "const DEFAULT_RETRY_POLICY: RetryPolicy;"
-        },
-        {
-          "name": "ToolCallAssembler",
-          "kind": "class",
-          "signature": "class ToolCallAssembler {\n    #private;\n    push(fragment: ToolCallDeltaFragment): void;\n    finalize(): readonly ModelToolCall[];\n    get isEmpty(): boolean;\n}"
-        },
-        {
-          "name": "computeBackoffDelayMs",
-          "kind": "function",
-          "signature": "function computeBackoffDelayMs(policy: RetryPolicy, attempt: number, random?: () => number): number;"
-        },
-        {
-          "name": "createModelExecutor",
-          "kind": "function",
-          "signature": "function createModelExecutor(options: CreateModelExecutorOptions): Executor;"
-        },
-        {
-          "name": "createModelProviderRegistry",
-          "kind": "function",
-          "signature": "function createModelProviderRegistry(initial?: readonly ModelProvider[]): ModelProviderRegistry;"
-        },
-        {
-          "name": "createModelRuntime",
-          "kind": "function",
-          "signature": "function createModelRuntime(options: CreateModelRuntimeOptions): ModelRuntime;"
-        },
-        {
-          "name": "generateObject",
-          "kind": "function",
-          "signature": "function generateObject<TSchema extends z.ZodType>(options: GenerateObjectOptions<TSchema>): Promise<GenerateObjectResult<TSchema>>;"
-        },
-        {
-          "name": "sleep",
-          "kind": "function",
-          "signature": "function sleep(ms: number, signal?: AbortSignal): Promise<void>;"
-        }
-      ],
-      "types": [
-        {
-          "name": "CreateModelExecutorOptions",
-          "kind": "interface",
-          "signature": "interface CreateModelExecutorOptions {\n    readonly runtime: ModelRuntime;\n    readonly model?: ModelReference;\n    readonly temperature?: number;\n    readonly maxOutputTokens?: number;\n    readonly metadata?: Readonly<Record<string, unknown>>;\n    readonly timeoutMs?: number;\n}"
-        },
-        {
-          "name": "CreateModelRuntimeOptions",
-          "kind": "interface",
-          "signature": "interface CreateModelRuntimeOptions {\n    readonly providers: readonly ModelProvider[];\n    readonly defaults?: ModelRuntimeDefaults;\n    readonly defaultProvider?: string;\n    readonly defaultModel?: string;\n    readonly onTelemetry?: ModelRuntimeTelemetryListener;\n}"
-        },
-        {
-          "name": "GenerateObjectOptions",
-          "kind": "interface",
-          "signature": "interface GenerateObjectOptions<TSchema extends z.ZodType> {\n    readonly runtime: ModelRuntime;\n    readonly model?: ModelReference;\n    readonly messages: readonly ModelMessage[];\n    readonly schema: TSchema;\n    readonly temperature?: number;\n    readonly timeoutMs?: number;\n    readonly signal?: AbortSignal;\n}"
-        },
-        {
-          "name": "GenerateObjectResult",
-          "kind": "interface",
-          "signature": "interface GenerateObjectResult<TSchema extends z.ZodType> {\n    readonly object: z.infer<TSchema>;\n}"
-        },
-        {
-          "name": "ModelExecutionOptions",
-          "kind": "interface",
-          "signature": "interface ModelExecutionOptions {\n    readonly signal?: AbortSignal;\n}"
-        },
-        {
-          "name": "ModelExecutionRequest",
-          "kind": "interface",
-          "signature": "interface ModelExecutionRequest {\n    readonly model?: ModelReference;\n    readonly messages: readonly ModelMessage[];\n    readonly temperature?: number;\n    readonly maxOutputTokens?: number;\n    readonly metadata?: Readonly<Record<string, unknown>>;\n    readonly timeoutMs?: number;\n    readonly signal?: AbortSignal;\n    readonly tools?: readonly ModelToolDefinition[];\n}"
-        },
-        {
-          "name": "ModelLatency",
-          "kind": "interface",
-          "signature": "interface ModelLatency {\n    readonly totalMs: number;\n    readonly timeToFirstChunkMs?: number;\n}"
-        },
-        {
-          "name": "ModelMessage",
-          "kind": "interface",
-          "signature": "interface ModelMessage {\n    readonly role: MessageRole;\n    readonly content: readonly ContentPart[];\n}"
-        },
-        {
-          "name": "ModelProvider",
-          "kind": "interface",
-          "signature": "interface ModelProvider {\n    readonly id: string;\n    stream(request: ModelRequest, options?: ModelExecutionOptions): AsyncIterable<ModelStreamEvent>;\n}"
-        },
-        {
-          "name": "ModelProviderRegistry",
-          "kind": "interface",
-          "signature": "interface ModelProviderRegistry {\n    register(provider: ModelProvider): void;\n    get(providerId: string): ModelProvider | undefined;\n    require(providerId: string): ModelProvider;\n    list(): readonly string[];\n}"
-        },
-        {
-          "name": "ModelReference",
-          "kind": "interface",
-          "signature": "interface ModelReference {\n    readonly provider: string;\n    readonly model: string;\n}"
-        },
-        {
-          "name": "ModelRequest",
-          "kind": "interface",
-          "signature": "interface ModelRequest {\n    readonly model: string;\n    readonly messages: readonly ModelMessage[];\n    readonly temperature?: number;\n    readonly maxOutputTokens?: number;\n    readonly metadata?: Readonly<Record<string, unknown>>;\n    readonly tools?: readonly ModelToolDefinition[];\n}"
-        },
-        {
-          "name": "ModelRuntime",
-          "kind": "interface",
-          "signature": "interface ModelRuntime {\n    stream(request: ModelExecutionRequest): AsyncGenerator<ModelStreamEvent, void, undefined>;\n    readonly registry: ModelProviderRegistry;\n}"
-        },
-        {
-          "name": "ModelRuntimeDefaults",
-          "kind": "interface",
-          "signature": "interface ModelRuntimeDefaults {\n    readonly timeoutMs?: number;\n    readonly retry?: RetryPolicy;\n}"
-        },
-        {
-          "name": "ModelRuntimeTelemetryEvent",
-          "kind": "type",
-          "signature": "type ModelRuntimeTelemetryEvent = {\n    readonly type: 'attempt_started';"
-        },
-        {
-          "name": "ModelRuntimeTelemetryListener",
-          "kind": "type",
-          "signature": "type ModelRuntimeTelemetryListener = (event: ModelRuntimeTelemetryEvent) => void;"
-        },
-        {
-          "name": "ModelStreamEvent",
-          "kind": "type",
-          "signature": "type ModelStreamEvent = {\n    readonly type: 'model.started';"
-        },
-        {
-          "name": "ModelStreamEventType",
-          "kind": "type",
-          "signature": "type ModelStreamEventType = ModelStreamEvent['type'];"
-        },
-        {
-          "name": "ModelToolCall",
-          "kind": "interface",
-          "signature": "interface ModelToolCall {\n    readonly id: string;\n    readonly name: string;\n    readonly arguments: Readonly<Record<string, unknown>>;\n}"
-        },
-        {
-          "name": "ModelToolDefinition",
-          "kind": "interface",
-          "signature": "interface ModelToolDefinition {\n    readonly name: string;\n    readonly description: string;\n    readonly parameters: Readonly<Record<string, unknown>>;\n}"
-        },
-        {
-          "name": "RetryPolicy",
-          "kind": "interface",
-          "signature": "interface RetryPolicy {\n    readonly maxAttempts: number;\n    readonly baseDelayMs: number;\n    readonly maxDelayMs: number;\n}"
-        },
-        {
-          "name": "ToolCallDeltaFragment",
-          "kind": "interface",
-          "signature": "interface ToolCallDeltaFragment {\n    readonly index: number;\n    readonly id?: string;\n    readonly name?: string;\n    readonly argumentsDelta?: string;\n}"
-        }
-      ]
-    },
-    {
-      "name": "@gixcopilot/vectorstore-pgvector",
-      "slug": "vectorstore-pgvector",
-      "description": "PostgreSQL + pgvector VectorStore adapter for @gixcopilot/rag - the only package in the workspace allowed to depend on drizzle-orm/pg for RAG storage.",
-      "status": "beta",
-      "directory": "packages/vectorstores/pgvector",
-      "subpaths": [],
-      "peerDependencies": [],
-      "values": [
-        {
-          "name": "EMBEDDING_DIMENSIONS",
-          "kind": "const",
-          "signature": "const EMBEDDING_DIMENSIONS = 1536;"
-        },
-        {
-          "name": "createPgVectorStore",
-          "kind": "function",
-          "signature": "function createPgVectorStore(options?: CreatePgVectorStoreOptions): PgVectorStore;"
-        },
-        {
-          "name": "knowledgeChunks",
-          "kind": "const",
-          "signature": "const knowledgeChunks: import(\"drizzle-orm/pg-core\").PgTableWithColumns<{\n    name: \"knowledge_chunks\";"
-        },
-        {
-          "name": "memoryEmbeddings",
-          "kind": "const",
-          "signature": "const memoryEmbeddings: import(\"drizzle-orm/pg-core\").PgTableWithColumns<{\n    name: \"memory_embeddings\";"
-        }
-      ],
-      "types": [
-        {
-          "name": "CreatePgVectorStoreOptions",
-          "kind": "interface",
-          "signature": "interface CreatePgVectorStoreOptions {\n    readonly connectionString?: string;\n    readonly pool?: Pool;\n    readonly table?: 'knowledge' | 'memory';\n}"
-        },
-        {
-          "name": "PgVectorStore",
-          "kind": "interface",
-          "signature": "interface PgVectorStore extends VectorStore {\n    close(): Promise<void>;\n}"
         }
       ]
     }

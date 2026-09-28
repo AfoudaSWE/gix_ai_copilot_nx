@@ -6,10 +6,15 @@
 //   node tools/api-reference.mjs [--check]
 
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join, relative, resolve, sep } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
 const check = process.argv.includes('--check');
+// Directory listing order and path separators differ between Windows and Linux; sort by the
+// root-relative posix path so the output is identical on every platform (CI checks it).
+const posix = (file) => relative(root, file).split(sep).join('/');
+const byPath = (a, b) => (posix(a) < posix(b) ? -1 : posix(a) > posix(b) ? 1 : 0);
+const lf = (text) => text.replace(/\r\n/g, '\n');
 
 function packageDirs() {
   const out = [];
@@ -19,7 +24,7 @@ function packageDirs() {
       if (statSync(dir).isDirectory() && existsSync(join(dir, 'package.json'))) out.push(dir);
     }
   }
-  return out;
+  return out.sort(byPath);
 }
 
 function exportsOf(dts, bundled) {
@@ -60,7 +65,7 @@ function declarationFiles(dir) {
     }
   };
   visit(join(dir, 'dist'));
-  return out.sort();
+  return out.sort(byPath);
 }
 
 /** The declared signature of one export: its kind plus declaration text (bodies elided). */
@@ -105,13 +110,13 @@ for (const dir of packageDirs()) {
   const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'));
   if (pkg.private) continue;
   const bundled = existsSync(join(dir, 'dist', 'types'));
-  const candidates = [join(dir, 'dist', 'index.d.ts'), ...(bundled ? readdirSync(join(dir, 'dist', 'types')).map((file) => join(dir, 'dist', 'types', file)) : [])];
-  const dts = candidates.filter(existsSync).map((file) => readFileSync(file, 'utf8')).join('\n');
+  const candidates = [join(dir, 'dist', 'index.d.ts'), ...(bundled ? readdirSync(join(dir, 'dist', 'types')).map((file) => join(dir, 'dist', 'types', file)).sort(byPath) : [])];
+  const dts = candidates.filter(existsSync).map((file) => lf(readFileSync(file, 'utf8'))).join('\n');
   if (!dts) throw new Error(`${pkg.name}: no built declarations; run pnpm build first`);
   const { values, types } = exportsOf(dts, bundled);
   const subpaths = Object.keys(pkg.exports ?? {}).filter((key) => key !== '.' && key !== './package.json');
   const declarations = declarationFiles(dir)
-    .map((file) => readFileSync(file, 'utf8').replace(/\/\*[\s\S]*?\*\//g, ''))
+    .map((file) => lf(readFileSync(file, 'utf8')).replace(/\/\*[\s\S]*?\*\//g, ''))
     .join('\n');
   const describe = (name) => ({ name, ...declarationOf(name.replace(/ \(namespace\)$/, ''), declarations) });
   const slug = pkg.name.split('/')[1];

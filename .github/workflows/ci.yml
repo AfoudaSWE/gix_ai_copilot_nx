@@ -137,5 +137,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Lint, type-check (incl. quickstart snippets), test, build and prerender the site
         run: pnpm exec nx run-many -t lint typecheck test build -p docs
+      # The reference is generated from every package's built declarations.
+      - run: pnpm exec nx run-many -t build
       - name: API reference (docs/reference/api.md + api.json) is current
         run: node tools/api-reference.mjs --check
