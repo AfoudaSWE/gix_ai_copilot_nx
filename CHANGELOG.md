@@ -1,0 +1,43 @@
+# Changelog
+
+All `@gixcopilot/*` packages share one version. Entries are generated from conventional
+commits by `nx release changelog`; see [docs/RELEASING.md](docs/RELEASING.md).
+
+## 0.1.1 (2026-09-28)
+
+### 🚀 Features
+
+- integrate OpenAI provider and update demo to support live streaming ([83d6a91](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/83d6a91))
+- implement tool resolver and runtime with serialization ([d38aec1](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/d38aec1))
+- add state patch tool and related functionality ([ccebf50](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/ccebf50))
+- integrate real OpenAI model into generative UI example and update related documentation ([364ace6](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/364ace6))
+- implement tool name mapping functions and update related tests ([1d82317](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/1d82317))
+- update pnpm workspace and vitest aliases for new packages ([fc6f707](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/fc6f707))
+- add AGENTS.md and CONSTITUTION.md as foundational documents for project guidelines ([93f4e91](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/93f4e91))
+- add smoke test, secret scan, and package verification tools ([4953210](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/4953210))
+- add Vue 3 adapter for AI Copilot SDK ([2d9dd4d](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/2d9dd4d))
+- **chat:** implement chat store with context and tool management ([3de7c43](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/3de7c43))
+- **client:** add framework-independent streaming client ([41a3e43](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/41a3e43))
+- **client:** support model execution metadata ([f03c322](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/f03c322))
+- **connectors:** add HTTP API manifest handling and schema validation ([91ae4d2](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/91ae4d2))
+- **context:** introduce resolved context and state store with comprehensive tests ([76b58a1](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/76b58a1))
+- **core:** add run lifecycle and event sequencing ([d6a324c](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/d6a324c))
+- **core:** extend Executor for multi-turn messages and completion metadata ([46ee07f](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/46ee07f))
+- **devtools:** implement read-only diagnostics endpoint with authentication options ([1cb554f](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/1cb554f))
+- **openapi:** add OpenAPI types and validation logic ([50a5ce9](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/50a5ce9))
+- **protocol:** define core protocol contracts ([55b99d6](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/55b99d6))
+- **protocol:** add FinishReason and extend the error taxonomy ([0222f51](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/0222f51))
+- **provider:** add deterministic mock model provider ([0e183ff](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/0e183ff))
+- **provider-openai:** add openai streaming adapter ([8613447](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/8613447))
+- **runtime:** define provider-independent model contracts and runtime ([1761d19](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/1761d19))
+- **server:** add http and sse runtime adapter ([6552d23](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/6552d23))
+- **server:** connect model runtime to sse runs ([59bb7c6](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/59bb7c6))
+- **telemetry:** implement OpenTelemetry adapter for tracing and metrics collection ([2518393](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/2518393))
+- **tests:** add security and simulation testing framework ([d9e1e49](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/d9e1e49))
+- **ui:** add Copilot UI components and functionality ([b2d82b4](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/b2d82b4))
+- **ui:** add ApprovalCard and ApprovalList components with tests ([3d79a5c](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/3d79a5c))
+- **workflows:** add workflow event handling and tracing ([55705ef](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/55705ef))
+
+### ❤️ Thank You
+
+- ahmed khaled @AfouDaa
