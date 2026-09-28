@@ -1,5 +1,7 @@
 # @gixcopilot/react
 
+> **Status:** Stable. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 Headless React 19 adapter over `@gixcopilot/client`, `@gixcopilot/context`,
 `@gixcopilot/tools`, and `@gixcopilot/generative-ui`. It owns local chat presentation state
 and the React bindings for application context/shared state, tool calling, and generative

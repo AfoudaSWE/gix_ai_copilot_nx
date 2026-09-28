@@ -1,5 +1,7 @@
 # `@gixcopilot/evals`
 
+> **Status:** Beta. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 Evaluates AI behavior across a dataset. It is not a unit-test library.
 
 ## Install
@@ -84,9 +86,17 @@ thresholds are built in.
 ## Non-responsibilities
 
 - No model provider. Live evals use your application's own provider runtime inside the target.
-- No CLI. Run evals from a script (see `examples/evals`); the CLI is Phase 12.
+- No CLI of its own. Run evals from a script (see `examples/evals`) or with
+  `npx aicopilot eval` from [`@gixcopilot/cli`](https://github.com/AfoudaSWE/gix_ai_copilot_nx/tree/main/packages/cli).
 - No annotation platform, dashboards or hosted storage.
 - Cost is always an estimate from pricing you configure. Nothing is billed or enforced.
+
+## Known limitations
+
+- Groundedness is a lexical evidence-overlap heuristic, not semantic verification. The
+  optional LLM judge is also heuristic; treat both as signals, not proof.
+- Recorded replay needs a payload-capturing recording, and a replay can diverge when it takes
+  a different path than the original run.
 
 ## Documentation
 

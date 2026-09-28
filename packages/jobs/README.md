@@ -1,5 +1,7 @@
 # @gixcopilot/jobs
 
+> **Status:** Beta. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 BullMQ (Redis) implementation of the workflow `JobExecutor` port, plus dead-letter inspection.
 Workflow steps become queue jobs with stable ids, so duplicate delivery does not double-apply a
 step; exhausted or permanently failing jobs move to an inspectable dead-letter queue.

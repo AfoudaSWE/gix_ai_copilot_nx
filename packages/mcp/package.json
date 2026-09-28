@@ -2,6 +2,17 @@
   "name": "@gixcopilot/mcp",
   "version": "0.1.1",
   "description": "Connects to MCP servers and turns their tools into canonical, security-governed AI tools for the AI Copilot SDK.",
+  "keywords": [
+    "ai",
+    "copilot",
+    "llm",
+    "agent",
+    "sdk",
+    "typescript",
+    "mcp",
+    "model-context-protocol",
+    "tools"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

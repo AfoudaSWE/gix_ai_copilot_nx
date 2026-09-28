@@ -2,6 +2,18 @@
   "name": "@gixcopilot/testing",
   "version": "0.1.1",
   "description": "Deterministic testing SDK for AI Copilot applications - request-aware test models, tool mocks and assertions, security/RAG/memory/approval fixtures, agent and workflow simulation, a one-call copilot harness, and side-effect-free replay of recorded runs.",
+  "keywords": [
+    "ai",
+    "copilot",
+    "llm",
+    "agent",
+    "sdk",
+    "typescript",
+    "testing",
+    "mocks",
+    "vitest",
+    "fixtures"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

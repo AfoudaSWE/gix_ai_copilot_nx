@@ -1,5 +1,7 @@
 # @gixcopilot/client
 
+> **Status:** Stable. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 ## Purpose
 
 ## Install

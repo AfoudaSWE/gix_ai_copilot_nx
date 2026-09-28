@@ -2,6 +2,18 @@
   "name": "@gixcopilot/cli",
   "version": "0.1.1",
   "description": "The aicopilot command line: init, add tool/agent/mcp/api, import-openapi, api check, mcp serve, dev, test, eval, doctor and db migrations.",
+  "keywords": [
+    "ai",
+    "copilot",
+    "llm",
+    "agent",
+    "sdk",
+    "typescript",
+    "cli",
+    "scaffolding",
+    "codegen",
+    "evals"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

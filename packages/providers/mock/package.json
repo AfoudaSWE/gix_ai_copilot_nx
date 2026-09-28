@@ -2,6 +2,17 @@
   "name": "@gixcopilot/provider-mock",
   "version": "0.1.1",
   "description": "Deterministic, non-network ModelProvider used for tests, examples, and CI - no real AI dependency.",
+  "keywords": [
+    "ai",
+    "copilot",
+    "llm",
+    "agent",
+    "sdk",
+    "typescript",
+    "provider",
+    "mock",
+    "testing"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

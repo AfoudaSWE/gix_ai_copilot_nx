@@ -2,6 +2,18 @@
   "name": "@gixcopilot/react",
   "version": "0.1.1",
   "description": "Headless React adapter for the Copilot client.",
+  "keywords": [
+    "ai",
+    "copilot",
+    "llm",
+    "agent",
+    "sdk",
+    "typescript",
+    "react",
+    "hooks",
+    "chat",
+    "headless"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

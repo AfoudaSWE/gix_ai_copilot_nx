@@ -24,3 +24,22 @@ the server advertise the capability or tool?) over version sniffing.
 **Database vs software rollback**: migrations are expand/migrate/contract, so the previous
 release keeps working on the new schema until the contract step, which ships at least one
 release later ([DATABASE](production/DATABASE.md)).
+
+## Stability levels
+
+Every package README states its level on the line under its title. The level says how much
+change to expect between releases, on top of the SemVer rules above.
+
+| Level            | Meaning                                                                                                                                                                                  |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Stable**       | Safe for production. Even before 1.0.0, a breaking change goes through the deprecation cycle above (deprecate in one minor, remove no earlier than the next), with a migration guide. |
+| **Beta**         | Feature-complete and tested, suitable for production with pinned versions. Its API may still change in a minor release; every change is listed in the release notes and migrations.  |
+| **Experimental** | Early. May change or be removed in any release. Not for production.                                                                                                                      |
+
+| Level  | Packages                                                                                                                                                                                                                                                                              |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stable | protocol, core, client, server, provider, provider-openai, provider-mock, tools, security, context, headless, generative-ui, react, ui                                                                                                                                                 |
+| Beta   | agents, angular, checkpoint-postgres, cli, config, connectors, create, devtools, evals, integrations, jobs, knowledge, management, mcp, memory, model-router, node, openapi, persistence-postgres, rag, redis, telemetry, tenancy, testing, usage, vectorstore-pgvector, vue, workflows |
+
+A package moves from Beta to Stable in a minor release, noted in the changelog. It never moves
+back down; a Stable API that needs to break follows the deprecation cycle.

@@ -2,6 +2,18 @@
   "name": "@gixcopilot/tools",
   "version": "0.1.1",
   "description": "Framework-independent canonical tool architecture for the AI Copilot SDK: tool definitions, registry, resolver, and execution runtime shared by backend and frontend tools.",
+  "keywords": [
+    "ai",
+    "copilot",
+    "llm",
+    "agent",
+    "sdk",
+    "typescript",
+    "tools",
+    "function-calling",
+    "tool-calling",
+    "zod"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

@@ -2,6 +2,17 @@
   "name": "@gixcopilot/config",
   "version": "0.1.1",
   "description": "Typed production configuration: schema, precedence (defaults < file < env < code), environment rules, fail-fast validation and a secret-provider boundary.",
+  "keywords": [
+    "ai",
+    "copilot",
+    "llm",
+    "agent",
+    "sdk",
+    "typescript",
+    "config",
+    "configuration",
+    "validation"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

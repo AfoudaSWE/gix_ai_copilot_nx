@@ -1,5 +1,7 @@
 # @gixcopilot/vue
 
+> **Status:** Beta. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 Vue 3 adapter for the AI Copilot SDK. It wraps the same framework-independent chat store
 (`@gixcopilot/headless`) as the React and Angular adapters: a plugin, composables with reactive
 state, and an accessible `<CopilotChat>` component. The browser only talks to your copilot

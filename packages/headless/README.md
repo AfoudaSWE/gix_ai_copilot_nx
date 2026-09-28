@@ -1,5 +1,7 @@
 # @gixcopilot/headless
 
+> **Status:** Stable. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 The framework-neutral chat layer shared by `@gixcopilot/react` and `@gixcopilot/angular`
 (extracted from the React SDK in Phase 12 so the Angular adapter reuses it instead of forking it).
 

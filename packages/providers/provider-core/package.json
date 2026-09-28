@@ -2,6 +2,18 @@
   "name": "@gixcopilot/provider",
   "version": "0.1.1",
   "description": "Provider-independent model contracts, registry, and model runtime for the AI Copilot SDK.",
+  "keywords": [
+    "ai",
+    "copilot",
+    "llm",
+    "agent",
+    "sdk",
+    "typescript",
+    "provider",
+    "model",
+    "streaming",
+    "retry"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

@@ -1,5 +1,7 @@
 # @gixcopilot/usage
 
+> **Status:** Beta. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 Usage accounting, configurable cost estimation and usage policies (**Beta**). Usage is
 accounting, not billing. A billing system may consume the events later.
 

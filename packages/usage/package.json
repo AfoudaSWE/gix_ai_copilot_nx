@@ -2,6 +2,18 @@
   "name": "@gixcopilot/usage",
   "version": "0.1.1",
   "description": "Usage accounting (tokens, requests, tools, agents, workflows, RAG), configurable cost estimation, and admission policies: rate limits, quotas and budgets.",
+  "keywords": [
+    "ai",
+    "copilot",
+    "llm",
+    "agent",
+    "sdk",
+    "typescript",
+    "usage",
+    "cost",
+    "tokens",
+    "billing"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

@@ -2,6 +2,17 @@
   "name": "@gixcopilot/context",
   "version": "0.1.1",
   "description": "Framework-independent application context and shared state engine for the AI Copilot SDK: registration, scopes, priority, serialization, token budgeting, and resolution.",
+  "keywords": [
+    "ai",
+    "copilot",
+    "llm",
+    "agent",
+    "sdk",
+    "typescript",
+    "context",
+    "token-budget",
+    "prompt"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

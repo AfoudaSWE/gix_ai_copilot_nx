@@ -1,5 +1,7 @@
 # @gixcopilot/ui
 
+> **Status:** Stable. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 Composable React chat, modal popup, and in-flow sidebar built only on
 `@gixcopilot/react`. React peer range: `^19.0.0`, tested with 19.3.0.
 

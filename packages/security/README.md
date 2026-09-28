@@ -1,5 +1,7 @@
 # @gixcopilot/security
 
+> **Status:** Stable. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 Enterprise security layer for the AI Copilot SDK (Phase 7): identity and tenant context from a
 trusted `AuthenticationAdapter`, RBAC permissions, ABAC policies, risk classification, the
 **Action Firewall** that every tool call passes through, human-in-the-loop approvals with an

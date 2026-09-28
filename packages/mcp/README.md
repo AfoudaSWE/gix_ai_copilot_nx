@@ -1,5 +1,7 @@
 # @gixcopilot/mcp
 
+> **Status:** Beta. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 Discover and register governed tools from an MCP server through the official SDK adapter.
 
 ## Install
@@ -15,7 +17,8 @@ import { registerMCP } from '@gixcopilot/mcp';
 import { createToolRegistry } from '@gixcopilot/tools';
 const registry = createToolRegistry();
 const integration = await registerMCP({
-  serverId: 'company', registry,
+  serverId: 'company',
+  registry,
   transport: { kind: 'stdio', command: 'node', args: ['./server.mjs'] },
   tools: { search: { permission: 'documents.read', risk: 'read-only', approval: 'none' } },
 });
@@ -36,6 +39,13 @@ Streamable HTTP (`handleRequest(request)`, web-standard: Node, Next.js, Bun, Den
 authentication, permissions, approvals and audit. Tools advertise read-only/destructive hints
 from their risk; errors return the public error code only. No code needed:
 `npx aicopilot mcp serve apis/<id>.api.yaml`.
+
+## Known limitations
+
+- Resource and prompt discovery returns the first page only; paginated servers are not
+  followed.
+- A resource read returns the first text item.
+- Custom MCP clients without state subscriptions need explicit cleanup by the host.
 
 ## Documentation
 

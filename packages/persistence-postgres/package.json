@@ -2,6 +2,18 @@
   "name": "@gixcopilot/persistence-postgres",
   "version": "0.1.1",
   "description": "PostgreSQL persistence for production: tenant-scoped conversations, memory, immutable audit and usage storage, plus a reviewed migration runner with rollback files.",
+  "keywords": [
+    "ai",
+    "copilot",
+    "llm",
+    "agent",
+    "sdk",
+    "typescript",
+    "postgres",
+    "drizzle",
+    "pgvector",
+    "persistence"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

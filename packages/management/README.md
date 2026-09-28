@@ -1,5 +1,7 @@
 # @gixcopilot/management
 
+> **Status:** Beta. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 The AI Copilot control plane (**Beta**): authorized, audited, tenant-scoped management
 services and the `/management/v1` HTTP API used by `apps/platform`.
 

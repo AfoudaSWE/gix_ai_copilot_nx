@@ -2,6 +2,17 @@
   "name": "@gixcopilot/headless",
   "version": "0.1.1",
   "description": "Framework-neutral chat store and copilot composition shared by the React and Angular adapters.",
+  "keywords": [
+    "ai",
+    "copilot",
+    "llm",
+    "agent",
+    "sdk",
+    "typescript",
+    "headless",
+    "state",
+    "framework-agnostic"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

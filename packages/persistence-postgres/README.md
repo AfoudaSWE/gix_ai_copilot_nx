@@ -1,5 +1,7 @@
 # @gixcopilot/persistence-postgres
 
+> **Status:** Beta. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 Production PostgreSQL persistence for the AI Copilot SDK (**Beta**): tenant-scoped
 conversations (threads, messages, runs), durable memory, append-only audit, usage events,
 and the reviewed migration runner. Server-only; requires PostgreSQL 16+ with the `vector`

@@ -2,6 +2,17 @@
   "name": "@gixcopilot/tenancy",
   "version": "0.1.1",
   "description": "Multi-tenancy primitives: authenticated runtime scope (tenant/project/environment), the project/environment model, tenant-scoped conversation storage ports and a server run recorder.",
+  "keywords": [
+    "ai",
+    "copilot",
+    "llm",
+    "agent",
+    "sdk",
+    "typescript",
+    "tenancy",
+    "multi-tenant",
+    "isolation"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

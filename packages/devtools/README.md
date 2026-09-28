@@ -1,5 +1,7 @@
 # `@gixcopilot/devtools`
 
+> **Status:** Beta. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 Framework-independent DevTools core. It reads the diagnostics stream that
 `@gixcopilot/telemetry`'s recording adapter already captures and projects it into records the
 DevTools panels display: runs, messages, context budget, state history, tools and firewall

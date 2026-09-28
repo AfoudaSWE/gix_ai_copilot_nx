@@ -2,6 +2,18 @@
   "name": "@gixcopilot/checkpoint-postgres",
   "version": "0.1.1",
   "description": "PostgreSQL CheckpointStore adapter for @gixcopilot/workflows - the only other package besides @gixcopilot/vectorstore-pgvector allowed to depend on drizzle-orm/pg.",
+  "keywords": [
+    "ai",
+    "copilot",
+    "llm",
+    "agent",
+    "sdk",
+    "typescript",
+    "postgres",
+    "checkpoint",
+    "workflow",
+    "persistence"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

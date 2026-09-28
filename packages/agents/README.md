@@ -1,5 +1,7 @@
 # @gixcopilot/agents
 
+> **Status:** Beta. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 Agent runtime for the AI Copilot SDK (Phase 10): versioned agent definitions, an agent registry
 with graph validation, deterministic and model-based routing, delegation and handoff with
 least-privilege tool/knowledge/memory intersection, planning, and run limits (iterations, tool

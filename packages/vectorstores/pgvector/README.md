@@ -1,5 +1,7 @@
 # @gixcopilot/vectorstore-pgvector
 
+> **Status:** Beta. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 Production PostgreSQL + [pgvector](https://github.com/pgvector/pgvector) implementation of
 `@gixcopilot/rag`'s storage-agnostic `VectorStore` contract. The only package in the workspace
 depending on `drizzle-orm`/`pg` — that dependency stays out of the core RAG/memory abstractions.

@@ -1,5 +1,7 @@
 # @gixcopilot/model-router
 
+> **Status:** Beta. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 Production model routing for the AI Copilot SDK (**Beta**). Provider-neutral: it routes
 between whatever provider adapters you register (OpenAI, the mock provider, or your own
 `ModelProvider`).

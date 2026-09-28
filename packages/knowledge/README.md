@@ -1,5 +1,7 @@
 # @gixcopilot/knowledge
 
+> **Status:** Beta. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 Framework-independent knowledge source, document, and loader contracts for the AI Copilot SDK —
 files, text, Markdown, PDF, DOCX, HTML/web, APIs, databases, object storage, and MCP resources,
 each normalized into the same `KnowledgeDocument` shape. No chunking, embedding, or vector-store

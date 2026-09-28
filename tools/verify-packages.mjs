@@ -7,7 +7,7 @@
 //
 // Fails (exit 1) when a tarball contains test files, build caches, env files or anything that
 // looks like a secret, when an `exports` / `types` / `bin` target is missing from the tarball,
-// when a README, LICENSE file or `license` field is missing, or when the packed manifest still has `workspace:` specifiers.
+// when a README, LICENSE file, `license` or `keywords` field is missing, or when the packed manifest still has `workspace:` specifiers.
 
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
@@ -147,6 +147,7 @@ for (const dir of publishableDirs()) {
   if (!files.some((file) => /^readme\.md$/i.test(file))) problems.push('README.md missing');
   if (!files.some((file) => /^licen[sc]e(\.md|\.txt)?$/i.test(file))) problems.push('LICENSE file missing');
   if (!packed.license) problems.push('license field missing');
+  if (!Array.isArray(packed.keywords) || packed.keywords.length === 0) problems.push('keywords field missing');
   if (!packed.types && !packed.exports?.['.']?.types) problems.push('no type declarations declared');
   const specifiers = { ...packed.dependencies, ...packed.peerDependencies, ...packed.optionalDependencies };
   for (const [name, range] of Object.entries(specifiers)) {

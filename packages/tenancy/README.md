@@ -1,5 +1,7 @@
 # @gixcopilot/tenancy
 
+> **Status:** Beta. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 Multi-tenancy primitives for the AI Copilot SDK (**Beta**). Platform-neutral, no storage
 dependencies.
 

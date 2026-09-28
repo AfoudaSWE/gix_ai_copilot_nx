@@ -2,6 +2,17 @@
   "name": "@gixcopilot/integrations",
   "version": "0.1.1",
   "description": "A common registry tracking external integrations (OpenAPI, MCP, future connectors) for the AI Copilot SDK.",
+  "keywords": [
+    "ai",
+    "copilot",
+    "llm",
+    "agent",
+    "sdk",
+    "typescript",
+    "integrations",
+    "connectors",
+    "tools"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

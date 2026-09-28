@@ -1,5 +1,7 @@
 # @gixcopilot/angular
 
+> **Status:** Beta. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 Angular adapter for the AI Copilot SDK (**Beta**, Angular 21). It adapts the same
 framework-independent client, chat store (`@gixcopilot/headless`), context engine, tool runtime,
 state store and trusted generative-UI registry that the React adapter uses. It does not have a

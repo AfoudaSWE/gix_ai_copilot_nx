@@ -1,5 +1,7 @@
 # @gixcopilot/node
 
+> **Status:** Beta. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 Node.js SDK for the AI Copilot SDK (**Beta**). `createCopilot()` composes the existing server
 (`@gixcopilot/server`), core runtime, model runtime, backend tools and security into one
 object. It is a composition layer, not a second runtime.

@@ -2,6 +2,18 @@
   "name": "@gixcopilot/generative-ui",
   "version": "0.1.1",
   "description": "Framework-independent safe generative UI and AI-writable shared-state bridge for the AI Copilot SDK: a trusted component registry and structured UI/state requests carried entirely over the canonical tool-calling pipeline.",
+  "keywords": [
+    "ai",
+    "copilot",
+    "llm",
+    "agent",
+    "sdk",
+    "typescript",
+    "generative-ui",
+    "components",
+    "schema",
+    "ui"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

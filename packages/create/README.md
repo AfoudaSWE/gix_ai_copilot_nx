@@ -1,5 +1,7 @@
 # @gixcopilot/create
 
+> **Status:** Beta. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 Add an AI copilot to your app with one command. It works in an existing **React**, **Vue** or
 **Angular** project (or an empty folder), and by default also creates a **Node copilot server**
 so your model API key never reaches the browser.

@@ -1,5 +1,7 @@
 # @gixcopilot/rag
 
+> **Status:** Beta. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 Framework-independent chunking, embeddings, a storage-agnostic vector store contract, permission-
 aware retrieval, reranking, and citations for the AI Copilot SDK. Retrieval reuses Phase 7's
 `SecurityContext`/`Policy`/`DataPolicy` directly — there is no second authorization model — and

@@ -1,5 +1,7 @@
 # @gixcopilot/config
 
+> **Status:** Beta. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 One typed production configuration model for AI Copilot servers and workers (**Beta**).
 
 ## Install

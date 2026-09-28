@@ -1,5 +1,7 @@
 # `@gixcopilot/telemetry`
 
+> **Status:** Beta. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 Framework independent observability adapters and diagnostics for copilot runs. The public API is exported from `src/index.ts`.
 
 ## Install

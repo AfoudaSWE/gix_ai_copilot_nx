@@ -2,6 +2,17 @@
   "name": "@gixcopilot/memory",
   "version": "0.1.1",
   "description": "Framework-independent memory architecture for the AI Copilot SDK - working, session, durable, and semantic memory, kept explicitly distinct from conversation history and RAG.",
+  "keywords": [
+    "ai",
+    "copilot",
+    "llm",
+    "agent",
+    "sdk",
+    "typescript",
+    "memory",
+    "long-term-memory",
+    "session"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

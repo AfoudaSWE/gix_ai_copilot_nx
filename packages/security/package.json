@@ -2,6 +2,19 @@
   "name": "@gixcopilot/security",
   "version": "0.1.1",
   "description": "Framework-independent AI Action Firewall, RBAC/ABAC, human-in-the-loop approval, PII redaction, and audit trail for the AI Copilot SDK.",
+  "keywords": [
+    "ai",
+    "copilot",
+    "llm",
+    "agent",
+    "sdk",
+    "typescript",
+    "security",
+    "rbac",
+    "abac",
+    "human-in-the-loop",
+    "audit"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

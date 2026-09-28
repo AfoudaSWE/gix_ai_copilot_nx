@@ -1,5 +1,7 @@
 # @gixcopilot/integrations
 
+> **Status:** Beta. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 Maintain a small host-owned registry of integration identity, health and capabilities.
 
 ## Install

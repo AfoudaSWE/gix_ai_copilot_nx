@@ -2,6 +2,18 @@
   "name": "@gixcopilot/redis",
   "version": "0.1.1",
   "description": "Redis coordination for multi-instance deployments: distributed rate limiting, lease locks and health checks.",
+  "keywords": [
+    "ai",
+    "copilot",
+    "llm",
+    "agent",
+    "sdk",
+    "typescript",
+    "redis",
+    "rate-limit",
+    "locks",
+    "pubsub"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

@@ -2,6 +2,17 @@
   "name": "@gixcopilot/provider-openai",
   "version": "0.1.1",
   "description": "OpenAI streaming ModelProvider adapter for the AI Copilot SDK. The only package in the workspace allowed to depend on the openai SDK.",
+  "keywords": [
+    "ai",
+    "copilot",
+    "llm",
+    "agent",
+    "sdk",
+    "typescript",
+    "provider",
+    "openai",
+    "gpt"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

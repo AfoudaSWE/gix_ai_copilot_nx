@@ -2,6 +2,18 @@
   "name": "@gixcopilot/protocol",
   "version": "0.1.1",
   "description": "Transport-independent wire protocol for the AI Copilot SDK: Message, Thread, Run, and CopilotEvent contracts.",
+  "keywords": [
+    "ai",
+    "copilot",
+    "llm",
+    "agent",
+    "sdk",
+    "typescript",
+    "protocol",
+    "events",
+    "schema",
+    "zod"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

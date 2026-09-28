@@ -2,6 +2,18 @@
   "name": "@gixcopilot/jobs",
   "version": "0.1.1",
   "description": "BullMQ/Redis JobExecutor adapter for @gixcopilot/workflows - background scheduling for workflow step execution, kept behind the workflows package's own JobExecutor port.",
+  "keywords": [
+    "ai",
+    "copilot",
+    "llm",
+    "agent",
+    "sdk",
+    "typescript",
+    "jobs",
+    "bullmq",
+    "queue",
+    "background-jobs"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

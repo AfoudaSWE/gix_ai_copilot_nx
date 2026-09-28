@@ -1,5 +1,7 @@
 # `@gixcopilot/testing`
 
+> **Status:** Beta. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 Deterministic testing for AI copilot applications. Only the model is scripted. Tools, the
 Action Firewall, RAG, memory, approvals, agents and workflows are the real runtime packages.
 

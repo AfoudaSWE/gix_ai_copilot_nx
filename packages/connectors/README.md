@@ -1,5 +1,7 @@
 # @gixcopilot/connectors
 
+> **Status:** Beta. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 Connect the copilot to **any HTTP or GraphQL API**, whatever language or framework it is built
 with (Laravel, Django, FastAPI, Spring, .NET, Rails, Go, Express, legacy PHP…). No OpenAPI
 document is needed: declare the endpoints the copilot may use, and each becomes a typed,

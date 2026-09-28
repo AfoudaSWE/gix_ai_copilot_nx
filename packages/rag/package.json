@@ -2,6 +2,18 @@
   "name": "@gixcopilot/rag",
   "version": "0.1.1",
   "description": "Framework-independent RAG pipeline for the AI Copilot SDK: chunking, embeddings, vector-store abstraction, permission-aware retrieval, reranking, and citations.",
+  "keywords": [
+    "ai",
+    "copilot",
+    "llm",
+    "agent",
+    "sdk",
+    "typescript",
+    "rag",
+    "retrieval",
+    "embeddings",
+    "vector-search"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

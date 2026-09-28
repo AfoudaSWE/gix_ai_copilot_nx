@@ -1,5 +1,7 @@
 # @gixcopilot/memory
 
+> **Status:** Beta. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 Framework-independent memory architecture for the AI Copilot SDK — working, session, durable, and
 semantic memory, kept explicitly distinct from conversation history and from RAG. Ownership
 (`user`/`session`/`tenant`/`workspace`/`application`) is derived only from a trusted

@@ -1,5 +1,7 @@
 # @gixcopilot/openapi
 
+> **Status:** Beta. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 Generate canonical tools from explicitly selected OpenAPI operations.
 
 ## Install

@@ -1,5 +1,7 @@
 # @gixcopilot/checkpoint-postgres
 
+> **Status:** Beta. See [stability levels](https://github.com/AfoudaSWE/gix_ai_copilot_nx/blob/main/docs/VERSIONING.md#stability-levels).
+
 PostgreSQL (Drizzle + `pg`) implementation of the `CheckpointStore` port from
 `@gixcopilot/workflows`, so workflow runs survive process restarts and can be resumed by any
 server or worker instance.
