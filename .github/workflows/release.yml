@@ -45,6 +45,20 @@ jobs:
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # npm also answers 404 when the token is sent but cannot write to the scope. Show which
+      # account both npm and pnpm authenticate as, and that account's access to the scope.
+      - name: Check npm authentication and scope access
+        if: ${{ inputs.publish }}
+        run: |
+          echo "npm whoami:  $(npm whoami)"
+          echo "pnpm whoami: $(pnpm whoami)"
+          npm access list packages @gixcopilot
+          if ! npm access list packages @gixcopilot | grep -q 'read-write'; then
+            echo "::error::The NPM_TOKEN account has no read-write access to @gixcopilot packages. Use a granular token with Read and write on the @gixcopilot scope (or all packages), with 2FA bypass, created by an owner of the gixcopilot org."
+            exit 1
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - run: pnpm install --frozen-lockfile
       - name: Validate everything
         run: pnpm exec nx run-many -t lint typecheck test build
