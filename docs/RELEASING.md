@@ -39,16 +39,16 @@ Provenance attestations need a CI OIDC token, so only the release workflow adds 
    `packages/cli/src/templates.ts`. Their tests fail if these drift from `package.json`.
    After bumping and building, regenerate the API reference (`node tools/api-reference.mjs`);
    CI fails when `docs/reference/api.json` is stale.
-1. `pnpm exec nx release version <patch|minor|major|prerelease> --dry-run`, then without
+2. `pnpm exec nx release version <patch|minor|major|prerelease> --dry-run`, then without
    `--dry-run` to bump every package and create the release commit and tag.
-2. `pnpm exec nx release changelog <version>` prepends the entry to
+3. `pnpm exec nx release changelog <version>` prepends the entry to
    [CHANGELOG.md](../CHANGELOG.md), pushes, and creates the GitHub release (needs a
    `GITHUB_TOKEN` with `contents: write`). Add `--dry-run` first to preview.
-3. Rebuild and run the checks above.
-4. Publish as above, or run the [release workflow](../.github/workflows/release.yml) with
-   `publish: true`. It uses the `NPM_TOKEN` repository secret (an npm automation token for
-   `gixtech`) and publishes with provenance.
-5. Confirm the registry matches: `node tools/check-npm-published.mjs` (the release workflow
+4. Rebuild and run the checks above.
+5. Publish as above, or run the [release workflow](../.github/workflows/release.yml) with
+   `publish: true`. It uses the `NPM_TOKEN` repository secret (an npm automation or granular publish token
+   for the `@gixcopilot` scope; the workflow fails at its first step without it) and publishes with provenance.
+6. Confirm the registry matches: `node tools/check-npm-published.mjs` (the release workflow
    runs this after publishing and fails on any missing or stale package).
 
 Prereleases go to the `next` dist-tag (`--tag next`; check with
