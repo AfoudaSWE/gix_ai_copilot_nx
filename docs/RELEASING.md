@@ -83,6 +83,11 @@ Reconstructed from `npm view @gixcopilot/<name> time` (the run logs were not ava
 - **0.1.1** (2026-09-28, 09:37–13:50 UTC) was not a workflow run: 15 packages published by
   hand over four hours, exactly `@gixcopilot/node` and its dependency closure.
 
+Neither version came from the release workflow: the repository had no `NPM_TOKEN` secret
+(the first workflow publish, on 2026-09-28, failed with `E404 ... PUT` because npm hides
+unauthenticated writes as "not found"). The workflow now fails at its first step when the
+secret is missing.
+
 Fix: publish only through the release workflow, which now uploads the publish summary and
 fails on any missing or stale package (`tools/check-npm-published.mjs`). On `E429`, wait and
 re-run the workflow for the same version.

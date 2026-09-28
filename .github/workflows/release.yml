@@ -35,6 +35,16 @@ jobs:
         with: { version: '11.1.2' }
       - uses: actions/setup-node@v4
         with: { node-version: '22.15.0', cache: pnpm, registry-url: 'https://registry.npmjs.org' }
+      # Without a token npm answers the first PUT with a misleading 404; fail fast instead.
+      - name: Require the NPM_TOKEN secret when publishing
+        if: ${{ inputs.publish }}
+        run: |
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "::error::The NPM_TOKEN repository secret is not set (npm automation or granular publish token for @gixcopilot)."
+            exit 1
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - run: pnpm install --frozen-lockfile
       - name: Validate everything
         run: pnpm exec nx run-many -t lint typecheck test build
