@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  actions: read # nrwl/nx-set-shas reads earlier workflow runs
 
 concurrency:
   group: ci-${{ github.ref }}
