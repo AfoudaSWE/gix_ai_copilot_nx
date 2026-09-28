@@ -97,6 +97,9 @@ jobs:
         run: node tools/verify-packages.mjs --out .packs --keep
       - name: Consumer projects from tarballs (Node, React, Angular, CLI-generated)
         run: node tools/consumer-test.mjs --packs .packs
+      # Node 22 ships npm 10, which most users have; also check the current npm.
+      - name: Consumer projects with npm 11
+        run: node tools/consumer-test.mjs --packs .packs --npm 11
       - name: Client bundle budgets
         run: node tools/bundle-report.mjs --check
 

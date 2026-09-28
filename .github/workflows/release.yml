@@ -66,6 +66,7 @@ jobs:
         run: |
           node tools/verify-packages.mjs --out .packs --keep
           node tools/consumer-test.mjs --packs .packs
+          node tools/consumer-test.mjs --packs .packs --npm 11
       - name: Preview version
         run: pnpm exec nx release version ${{ inputs.specifier }} --dry-run
       - name: Publish to npm

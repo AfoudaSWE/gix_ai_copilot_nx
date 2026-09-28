@@ -11,13 +11,15 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 
-const { values } = parseArgs({ options: { packs: { type: 'string' }, only: { type: 'string' }, keep: { type: 'boolean' }, templates: { type: 'string' } } });
+const { values } = parseArgs({ options: { packs: { type: 'string' }, only: { type: 'string' }, keep: { type: 'boolean' }, templates: { type: 'string' }, npm: { type: 'string' } } });
 if (!values.packs) throw new Error('--packs <dir> is required (output of tools/verify-packages.mjs --out <dir> --keep)');
 const packs = resolve(values.packs);
 const only = values.only ? values.only.split(',') : ['node', 'react', 'angular', 'cli'];
-// npm 10.9 crashes resolving Vitest's dependency tree (arborist #loadPeerSet); the generated
-// projects document npm 11+ or pnpm, so the consumers install with npm 11.
-const npm = 'npm@11';
+// --npm <version> runs the consumers with that npm (e.g. 11) via npx; by default they use the
+// npm that ships with the current Node, which is what most users have (Node 22: npm 10).
+const npmVersion = values.npm;
+const npm = 'npm';
+const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const NPX = process.platform === 'win32' ? 'npx.cmd' : 'npx';
 const npx = process.platform === 'win32' ? 'npx.cmd' : 'npx';
 const shell = process.platform === 'win32';
@@ -32,7 +34,7 @@ if (Object.keys(tarballs).length === 0) throw new Error(`No @gixcopilot tarballs
 const root = mkdtempSync(join(tmpdir(), 'gix-consumers-'));
 const results = [];
 const run = (cwd, command, args, extraEnv = {}) =>
-  execFileSync(command === npm ? NPX : command, command === npm ? ['-y', 'npm@11', ...args] : args, { cwd, stdio: 'pipe', encoding: 'utf8', shell, env: { ...process.env, ...extraEnv, npm_config_audit: 'false', npm_config_fund: 'false' }, maxBuffer: 64 * 1024 * 1024 });
+  execFileSync(command === npm ? (npmVersion ? NPX : NPM) : command, command === npm && npmVersion ? ['-y', `npm@${npmVersion}`, ...args] : args, { cwd, stdio: 'pipe', encoding: 'utf8', shell, env: { ...process.env, ...extraEnv, npm_config_audit: 'false', npm_config_fund: 'false' }, maxBuffer: 64 * 1024 * 1024 });
 
 function project(name, pkg, files) {
   const dir = join(root, name);
