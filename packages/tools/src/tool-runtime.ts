@@ -69,10 +69,16 @@ class ToolAbortedSignal extends Error {
   }
 }
 
+/**
+ * Races `work` against the run signal and an optional deadline. On timeout it also aborts
+ * `toolController` - the signal the tool itself received - so a timed-out tool is told to
+ * stop instead of running on (and causing side effects) after the caller saw TIMEOUT.
+ */
 async function raceWithDeadline<T>(
   work: Promise<T>,
   signal: AbortSignal,
   timeoutMs: number | undefined,
+  toolController: AbortController,
 ): Promise<T> {
   if (signal.aborted) {
     throw new ToolAbortedSignal();
@@ -82,7 +88,9 @@ async function raceWithDeadline<T>(
       timeoutMs !== undefined
         ? setTimeout(() => {
             cleanup();
-            reject(new ToolTimeoutSignal());
+            const timeout = new ToolTimeoutSignal();
+            toolController.abort(timeout);
+            reject(timeout);
           }, timeoutMs)
         : undefined;
 
@@ -168,13 +176,21 @@ export function createToolRuntime(options: CreateToolRuntimeOptions): ToolRuntim
     options.onEvent?.({ phase: 'started', toolCallId, name });
 
     const timeoutMs = tool.metadata?.timeoutMs ?? options.defaultTimeoutMs;
+    // The tool gets its own signal: it follows the run signal, and additionally aborts when
+    // this call's deadline elapses (without aborting the whole run).
+    const toolController = new AbortController();
+    const forwardRunAbort = (): void => {
+      toolController.abort(context.signal.reason);
+    };
+    context.signal.addEventListener('abort', forwardRunAbort, { once: true });
     let rawOutput: unknown;
     try {
       if (context.signal.aborted) throw new ToolAbortedSignal();
       rawOutput = await raceWithDeadline(
-        tool.execute(parsedInput.data, context),
+        tool.execute(parsedInput.data, { ...context, signal: toolController.signal }),
         context.signal,
         timeoutMs,
+        toolController,
       );
     } catch (caught) {
       const error =
@@ -188,6 +204,8 @@ export function createToolRuntime(options: CreateToolRuntimeOptions): ToolRuntim
               );
       options.onEvent?.({ phase: 'failed', toolCallId, name, error: error.toPublicJSON() });
       return { status: 'error', toolCallId, error: error.toPublicJSON() };
+    } finally {
+      context.signal.removeEventListener('abort', forwardRunAbort);
     }
 
     if (tool.outputSchema) {

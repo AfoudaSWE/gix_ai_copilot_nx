@@ -11,7 +11,7 @@ export interface ToolCallRecord {
   /** Global, 1-based order across every mock in the same `ToolMocks` (by invocation). */
   readonly order: number;
   readonly runId: string;
-  /** `pending` while still executing - e.g. after the runtime already gave up on a timeout. */
+  /** `pending` while still executing; `cancelled` when its signal aborted (run cancel or the call's timeout). */
   readonly outcome: 'pending' | 'succeeded' | 'failed' | 'cancelled';
 }
 

@@ -129,9 +129,11 @@ Phase 11/12 scope, not debt. See [Phase 10 issues](phases/phase-10/Phase_10_Issu
 
 ## Phase 11 completion-review limits
 
-The Phase 5 tool runtime rejects a timed-out tool call but does not abort the signal passed to
-the tool, so a timed-out tool keeps running; found through Phase 11 tool mocks and left
-unchanged because it is Phase 5 behavior. Approval-wait spans are separate traces joined by run
+~~The Phase 5 tool runtime rejects a timed-out tool call but does not abort the signal passed to
+the tool, so a timed-out tool keeps running.~~ Fixed in production-readiness hardening
+(2026-09-28): each tool call now receives its own signal, which follows the run signal and also
+aborts when the call's deadline elapses (`packages/tools/src/tool-runtime.ts`, with regression
+tests). Approval-wait spans are separate traces joined by run
 id, not nested under the request. Tenant-scoped DevTools live streaming re-projects the session
 per event. The recording adapter is a bounded in-memory ring buffer, not durable storage or
 audit retention. Groundedness is a lexical evidence-overlap heuristic, and an LLM judge is

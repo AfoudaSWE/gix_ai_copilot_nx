@@ -79,8 +79,8 @@ describe('createCopilotTestHarness + tool mocks (Section 72, 76-78, 188)', () =>
     });
     const run = await harness.run('Look both up.');
     expect(run.answer).toBe('Both failed.');
-    // The runtime gave up at 20ms; the call was made and is still pending (see Phase 11 Issues).
-    expect(mocks.callsTo('slow.lookup')[0]?.outcome).toBe('pending');
+    // The runtime gave up at 20ms and aborted the call's own signal, so the mock stopped.
+    expect(mocks.callsTo('slow.lookup')[0]?.outcome).toBe('cancelled');
     expect(toolTimeline(run.session).find((entry) => entry.name === 'slow.lookup')?.error?.code).toBe('TIMEOUT');
     expect(mocks.callsTo('broken.lookup')[0]?.outcome).toBe('failed');
     expect(toolTimeline(run.session).every((entry) => entry.status === 'failed')).toBe(true);

@@ -148,6 +148,60 @@ describe('createToolRuntime', () => {
     expect(result.status === 'error' && result.error.code).toBe('TIMEOUT');
   });
 
+  it('aborts the signal the tool received when its timeout elapses, without aborting the run', async () => {
+    let toolSignal: AbortSignal | undefined;
+    const registry = createToolRegistry();
+    registry.register(
+      defineTool({
+        name: 'slow',
+        description: 'x',
+        input: z.object({}),
+        metadata: { timeoutMs: 10 },
+        execute(_input, ctx) {
+          toolSignal = ctx.signal;
+          return new Promise(() => {
+            /* never resolves */
+          });
+        },
+      }),
+    );
+    const runtime = createToolRuntime({ resolver: createDefaultToolResolver(registry) });
+    const run = new AbortController();
+    const result = await runtime.execute(request('slow', {}, { context: context(run.signal) }));
+    expect(result.status === 'error' && result.error.code).toBe('TIMEOUT');
+    expect(toolSignal?.aborted).toBe(true);
+    expect(run.signal.aborted).toBe(false);
+  });
+
+  it('forwards run cancellation to the signal the tool received', async () => {
+    let toolSignal: AbortSignal | undefined;
+    const registry = createToolRegistry();
+    registry.register(
+      defineTool({
+        name: 'slow',
+        description: 'x',
+        input: z.object({}),
+        execute(_input, ctx) {
+          toolSignal = ctx.signal;
+          return new Promise(() => {
+            /* never resolves */
+          });
+        },
+      }),
+    );
+    const runtime = createToolRuntime({ resolver: createDefaultToolResolver(registry) });
+    const run = new AbortController();
+    const pending = runtime.execute(request('slow', {}, { context: context(run.signal) }));
+    await vi.waitFor(() => {
+      expect(toolSignal).toBeDefined();
+    });
+    expect(toolSignal?.aborted).toBe(false);
+    run.abort();
+    const result = await pending;
+    expect(result.status === 'error' && result.error.code).toBe('CANCELLED');
+    expect(toolSignal?.aborted).toBe(true);
+  });
+
   it('cancels via the execution context signal, reporting CANCELLED', async () => {
     const registry = createToolRegistry();
     registry.register(
