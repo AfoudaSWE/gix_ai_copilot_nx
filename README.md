@@ -223,17 +223,17 @@ Install from npm, for example `npm install @gixcopilot/react react` or
 
 ## Capability maturity
 
-These labels describe the current repository evidence, not a published support promise.
-Packages are published to npm at version 0.1.0 (pre-1.0; APIs may change in minor releases).
+All 42 packages are published to npm together at **0.2.0** (pre-1.0). Each package README
+states its stability level; the policy and full list are in [Versioning](docs/VERSIONING.md#stability-levels).
 
-| Capability | Status | Main package or app |
-| --- | --- | --- |
-| Protocol, streaming, React | Beta | `protocol`, `core`, `server`, `client`, `react`, `ui` |
-| Tools, generative UI, Action Firewall | Beta | `tools`, `generative-ui`, `security` |
-| Any HTTP/GraphQL API, OpenAPI, MCP (client and server), RAG, memory | Beta | `connectors`, `openapi`, `mcp`, `rag`, `memory` |
-| Agents, workflows, DevTools, evaluations | Beta | `agents`, `workflows`, `devtools`, `evals` |
-| Angular, Vue and Node SDKs, CLI, installer | Beta | `angular`, `vue`, `node`, `cli`, `create` |
-| Management platform and production deployment | Experimental | `management`, `apps/platform`, `apps/api`, `apps/worker` |
+| Level | Packages |
+| --- | --- |
+| Stable | `protocol`, `core`, `client`, `server`, `provider`, `provider-openai`, `provider-mock`, `tools`, `security`, `context`, `headless`, `generative-ui`, `react`, `ui` |
+| Beta | everything else, including `angular`, `vue`, `node`, `cli`, `create`, `connectors`, `openapi`, `mcp`, `rag`, `memory`, `agents`, `workflows`, `devtools`, `evals`, `management` |
+
+The sample apps (`apps/platform`, `apps/api`, `apps/worker`) are reference deployments, not
+published packages. Multi-instance API deployments need session affinity; see
+[Scaling](docs/production/SCALING.md).
 
 ## Testing
 

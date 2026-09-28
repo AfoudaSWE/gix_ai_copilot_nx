@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/workflows",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Deterministic workflow engine for the AI Copilot SDK - defineWorkflow, function/tool/agent/approval/condition/parallel steps, checkpoints, pause/resume/cancel, retry, and compensation.",
   "keywords": [
     "ai",

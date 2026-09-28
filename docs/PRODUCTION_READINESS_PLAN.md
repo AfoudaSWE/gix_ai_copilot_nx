@@ -191,13 +191,15 @@ Run it once Stages 1–6 are done.
 - [x] 1 — Root cause of the partial publish recorded (`docs/RELEASING.md`, from npm
       publish timestamps)
 - [x] 2 — `check-npm-published.mjs` and a release workflow post-publish check
-- [x] 3 — Superseded by Stage 7: all packages released together at 0.2.0
+- [x] 3 — Superseded by Stage 7 (owner decision 2026-09-28: no 0.1.2; release 0.2.0)
 - [ ] 4 — Docker suites run in CI; scaffolder verified from npm; smoke test made opt-in.
       _Done: `REQUIRE_DOCKER=1` in CI and release, `RUN_OPENAI_SMOKE=1` opt-in. Open:
-      scaffolder and install matrix from npm (blocked on Stage 3)._
+      scaffolder and install matrix from npm, after the 0.2.0 publish._
 - [x] 5.1 — Tool timeout aborts the tool (with a regression test)
 - [x] 5.2 — Sticky-routing docs shipped; Redis registry decided: no (for now)
 - [x] 5.3 — Known limitations in the READMEs
 - [x] 5.4 — `CHANGELOG.md` generated
 - [x] 6 — Keywords, stability labels, repo cleanup
-- [ ] 7 — 0.2.0 released and verified
+- [ ] 7 — 0.2.0 released and verified. _Versions bumped, changelog written, README and
+      PROJECT_STATUS updated; waiting on the Release workflow run, the npm check and the
+      deprecation of 0.1.x._

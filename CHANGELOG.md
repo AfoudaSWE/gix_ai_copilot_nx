@@ -3,6 +3,30 @@
 All `@gixcopilot/*` packages share one version. Entries are generated from conventional
 commits by `nx release changelog`; see [docs/RELEASING.md](docs/RELEASING.md).
 
+## 0.2.0 (2026-09-28)
+
+First production-ready release. All 42 `@gixcopilot/*` packages are published together at
+one version; every earlier 0.1.x version is deprecated because it was a partial release.
+
+### 🚀 Features
+
+- **examples:** add copilot to users-crud ([d5a3422](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/d5a3422))
+
+### 🩹 Fixes
+
+- **tools:** abort a tool's signal when its call times out, so a timed-out tool stops ([2d9577b](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/2d9577b))
+- **cli, create:** scaffold apps against the released SDK version instead of `^0.1.1` ([c23268f](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/c23268f))
+
+### 🏗 Release and CI
+
+- **ci:** fail the release on a partial publish, and fail CI when Docker suites would skip ([a591a42](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/a591a42))
+- **examples:** real-OpenAI smoke tests are opt-in via `RUN_OPENAI_SMOKE=1` ([be32a3d](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/be32a3d))
+- **packages:** keywords on every package, stability labels, known limitations in READMEs ([0c0bc13](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/0c0bc13))
+
+### 📖 Documentation
+
+- **scaling:** session affinity is required for multi-instance API deployments ([2ccd10b](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/2ccd10b))
+
 ## 0.1.1 (2026-09-28)
 
 ### 🚀 Features

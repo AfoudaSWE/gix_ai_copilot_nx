@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/memory",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Framework-independent memory architecture for the AI Copilot SDK - working, session, durable, and semantic memory, kept explicitly distinct from conversation history and RAG.",
   "keywords": [
     "ai",

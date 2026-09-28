@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/rag",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Framework-independent RAG pipeline for the AI Copilot SDK: chunking, embeddings, vector-store abstraction, permission-aware retrieval, reranking, and citations.",
   "keywords": [
     "ai",

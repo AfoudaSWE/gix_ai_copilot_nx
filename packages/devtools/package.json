@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/devtools",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Framework-independent DevTools core for the AI Copilot SDK - projects the telemetry diagnostics stream into inspectable runs, messages, context, state, tools, security, RAG, memory, agents, workflows, events and traces; safe debug-bundle export/import; and an opt-in, authenticated, read-only Fastify transport.",
   "keywords": [
     "ai",

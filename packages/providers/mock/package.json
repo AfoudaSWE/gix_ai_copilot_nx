@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/provider-mock",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Deterministic, non-network ModelProvider used for tests, examples, and CI - no real AI dependency.",
   "keywords": [
     "ai",

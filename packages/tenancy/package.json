@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/tenancy",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Multi-tenancy primitives: authenticated runtime scope (tenant/project/environment), the project/environment model, tenant-scoped conversation storage ports and a server run recorder.",
   "keywords": [
     "ai",

@@ -363,6 +363,18 @@ phase is started without an explicit instruction naming it.
 - The post-upgrade 64-project `pnpm validate` gate passed (235 of 254 tasks executed, 19 cached). Real PostgreSQL/Redis suites, 11 Chromium tests, all eight initial clean tarball consumers and the upgraded enterprise starter passed. See [Phase 12 testing](phases/phase-12/Phase_12_Testing.md) for exact results and limits.
 - The owner reversed the earlier proprietary decision: packages are MIT licensed and published to npm from the `gixtech` account; see [Releasing](RELEASING.md). The owner confirmed revocation and rotation of the previously committed real credential and completion of the exposure review. The production audit prompted an upgrade to patched Drizzle ORM 0.45.3; the audit reported no known vulnerabilities. Docker smoke passed 10/10 checks on rebuilt images. See [Phase 12 issues](phases/phase-12/Phase_12_Issues.md).
 
+## Production readiness — 0.2.0 (post-Phase 12 hardening)
+
+- Not a new phase; tracked in [Production readiness plan](PRODUCTION_READINESS_PLAN.md).
+- 0.2.0 releases all 42 packages at one version, replacing the partial 0.1.0/0.1.1 publishes
+  (root cause in [Releasing](RELEASING.md#what-happened-with-010-and-011)); earlier versions
+  are deprecated. The release workflow now fails on any partial publish.
+- Fixes: a timed-out tool call now aborts the tool's signal; the CLI and `create` scaffold
+  apps against the released SDK version.
+- Stability levels are recorded in [Versioning](VERSIONING.md#stability-levels). A
+  Redis-backed run registry was declined for 0.2.0; multi-instance deployments require
+  session affinity ([Scaling](production/SCALING.md)).
+
 ## Current Validation (Phase 11 completion)
 
 Before any Phase 11 change: 41/41 projects, 1,154 tests passed, 4 skipped. Final tree:

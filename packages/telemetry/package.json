@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/telemetry",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Observability foundation for the AI Copilot SDK - a TelemetryAdapter port (no-op, OpenTelemetry, and in-memory recording implementations), semantic conventions, safe redaction, metrics, cost estimation, and instrumentation wrappers that observe the runtime without becoming it.",
   "keywords": [
     "ai",

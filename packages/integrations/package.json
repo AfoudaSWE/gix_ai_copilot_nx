@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/integrations",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "A common registry tracking external integrations (OpenAPI, MCP, future connectors) for the AI Copilot SDK.",
   "keywords": [
     "ai",
