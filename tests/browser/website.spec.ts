@@ -53,9 +53,13 @@ test.describe('GIX AI website and docs', () => {
 
   test('search with Ctrl+K finds an API and opens its reference entry', async ({ page }) => {
     await page.goto('/docs');
-    await page.keyboard.press('Control+k');
     const dialog = page.getByRole('dialog', { name: 'Search documentation' });
-    await expect(dialog).toBeVisible();
+    // The prerendered page is visible before hydration attaches the shortcut listener; on a slow
+    // runner the first press can land before it, so repeat it until the dialog opens.
+    await expect(async () => {
+      await page.keyboard.press('Control+k');
+      await expect(dialog).toBeVisible({ timeout: 1000 });
+    }).toPass();
     await page.keyboard.type('useCopilotContext');
     await expect(dialog.getByRole('option').first()).toContainText('useCopilotContext');
     expect(await axeViolations(page, '.search-dialog')).toEqual([]);
