@@ -6,19 +6,19 @@ export const TEMPLATES: readonly Template[] = ['node', 'react', 'angular', 'ente
 export interface TemplateOptions {
   readonly name: string;
   readonly template: Template;
-  /** Version range for @gixcopilot packages (default ^0.2.0; keep in step with package.json). */
+  /** Version range for @gixcopilot packages (default ^0.2.1; keep in step with package.json). */
   readonly sdkVersion?: string;
   /** Local tarballs (`pnpm pack` output) to install instead of the registry: package -> file: spec. */
   readonly sdkTarballs?: Readonly<Record<string, string>>;
 }
 
-const TOOLCHAIN = { typescript: '5.9.3', '@types/node': '22.20.3', vitest: '5.0.1', zod: '4.6.5', react: '19.3.0', '@types/react': '19.3.0', '@types/react-dom': '19.3.0', vite: '8.3.0', angular: '21.2.24', rxjs: '7.8.2' } as const;
+const TOOLCHAIN = { typescript: '5.9.3', '@types/node': '22.20.3', vitest: '^5.0.1', zod: '4.6.5', react: '19.3.0', '@types/react': '19.3.0', '@types/react-dom': '19.3.0', vite: '8.3.0', angular: '21.2.24', rxjs: '7.8.2' } as const;
 
 function sdk(options: TemplateOptions, name: string): string {
-  return options.sdkTarballs?.[`@gixcopilot/${name}`] ?? options.sdkVersion ?? '^0.2.0';
+  return options.sdkTarballs?.[`@gixcopilot/${name}`] ?? options.sdkVersion ?? '^0.2.1';
 }
 
-function packageJson(options: TemplateOptions, extra: { scripts: Record<string, string>; sdk: string[]; dependencies?: Record<string, string>; devDependencies?: Record<string, string> }): string {
+function packageJson(options: TemplateOptions, extra: { scripts: Record<string, string>; sdk: string[]; dependencies?: Record<string, string>; devDependencies?: Record<string, string>; overrides?: Record<string, string> }): string {
   const dependencies: Record<string, string> = { zod: TOOLCHAIN.zod, ...extra.dependencies };
   for (const name of extra.sdk) dependencies[`@gixcopilot/${name}`] = sdk(options, name);
   const pkg: Record<string, unknown> = {
@@ -34,8 +34,9 @@ function packageJson(options: TemplateOptions, extra: { scripts: Record<string, 
   // Local tarballs: transitive @gixcopilot packages must resolve to tarballs too.
   if (options.sdkTarballs && Object.keys(options.sdkTarballs).length > 0) {
     pkg['pnpm'] = { overrides: options.sdkTarballs };
-    pkg['overrides'] = options.sdkTarballs;
   }
+  const overrides = { ...extra.overrides, ...options.sdkTarballs };
+  if (Object.keys(overrides).length > 0) pkg['overrides'] = overrides;
   return `${JSON.stringify(pkg, null, 2)}\n`;
 }
 
@@ -229,6 +230,9 @@ function angularFiles(options: TemplateOptions): PlannedFile[] {
         dependencies: { '@angular/common': angular, '@angular/compiler': angular, '@angular/core': angular, '@angular/platform-browser': angular, rxjs: TOOLCHAIN.rxjs, tslib: '^2.8.1' },
         // @angular/build 21 declares an optional peer on Vitest 4.
         devDependencies: { '@angular/build': angular, '@angular/cli': angular, '@angular/compiler-cli': angular, vitest: '4.1.11' },
+        // Vite's optional devtools peers ask for vitest@*, which npm 10 resolves to Vitest 5 and
+        // then crashes on (TypeError: reading 'edgesOut'). Keep the whole tree on Vitest 4.
+        overrides: { vitest: '4.1.11' },
       }),
     },
     {

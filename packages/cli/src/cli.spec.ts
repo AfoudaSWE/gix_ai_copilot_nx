@@ -40,9 +40,13 @@ describe('aicopilot CLI', () => {
     for (const template of ['node', 'react', 'angular', 'enterprise']) {
       const { cwd, io } = await workspace();
       expect(await run(['init', 'app', '--template', template, '--name', `demo-${template}`], io)).toBe(0);
-      const pkg = JSON.parse(await readFile(join(cwd, 'app', 'package.json'), 'utf8')) as { name: string; dependencies: Record<string, string> };
+      const pkg = JSON.parse(await readFile(join(cwd, 'app', 'package.json'), 'utf8')) as { name: string; dependencies: Record<string, string>; devDependencies: Record<string, string>; overrides?: Record<string, string> };
       expect(pkg.name).toBe(`demo-${template}`);
       expect(pkg.dependencies['@gixcopilot/node']).toBe(`^${PACKAGE_VERSION}`);
+      // npm 10 crashes ('edgesOut') when an exact vitest pin disagrees with the vitest@* its
+      // optional peers resolve to: other templates take a range, Angular overrides the tree.
+      if (template === 'angular') expect(pkg.overrides?.['vitest']).toBe(pkg.devDependencies['vitest']);
+      else expect(pkg.devDependencies['vitest']).toMatch(/^\^/);
       expect(existsSync(join(cwd, 'app', '.env.example'))).toBe(true);
       expect(await readFile(join(cwd, 'app', '.gitignore'), 'utf8')).toContain('.env');
       // No real secret ever written: .env.example has empty placeholders only.

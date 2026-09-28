@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/management",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "The AI Copilot control plane: authorized, audited, tenant-scoped management services and HTTP API for projects, environments, models, agents, tools, OpenAPI, MCP, knowledge, prompts, evaluations, traces, audit, usage and tenants.",
   "keywords": [
     "ai",

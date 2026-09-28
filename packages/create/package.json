@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/create",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "One-command installer: `npm create @gixcopilot` adds an AI copilot to a React, Vue or Angular app together with a Node copilot server.",
   "license": "MIT",
   "repository": {
