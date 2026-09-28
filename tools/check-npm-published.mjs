@@ -3,11 +3,13 @@
 // so a partial publish (some packages published, the rest failed or skipped) turns a release
 // red instead of leaving npm in a mixed state. See docs/RELEASING.md.
 //
-//   node tools/check-npm-published.mjs [--expect <version>] [--tag <dist-tag>] [--json]
+//   node tools/check-npm-published.mjs [--expect <version>] [--tag <dist-tag>] [--wait <seconds>] [--json]
 //
 // Without --expect, each package's local package.json version is expected. Fails (exit 1)
 // when any package is missing from npm (404) or its dist-tag (default `latest`) does not
 // point at the expected version. Registry/network errors also fail, never pass silently.
+// --wait re-checks the packages that are not ok yet until that many seconds pass: the registry
+// can take minutes to serve versions that were just published (new package names the longest).
 
 import { execFile } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
@@ -22,6 +24,7 @@ const { values } = parseArgs({
     expect: { type: 'string' },
     tag: { type: 'string', default: 'latest' },
     json: { type: 'boolean' },
+    wait: { type: 'string', default: '0' },
   },
 });
 
@@ -48,7 +51,7 @@ const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
 async function registryVersion(name, tag) {
   try {
-    const { stdout } = await run(npm, ['view', name, `dist-tags.${tag}`], {
+    const { stdout } = await run(npm, ['view', name, `dist-tags.${tag}`, '--prefer-online'], {
       shell: process.platform === 'win32',
       encoding: 'utf8',
     });
@@ -60,21 +63,28 @@ async function registryVersion(name, tag) {
   }
 }
 
-const packages = publishablePackages();
-const results = [];
-// Small batches: fast, without tripping registry rate limits.
-for (let index = 0; index < packages.length; index += 8) {
-  const batch = packages.slice(index, index + 8);
-  results.push(
-    ...(await Promise.all(
-      batch.map(async (pkg) => {
-        const expected = values.expect ?? pkg.local;
-        const { version, error } = await registryVersion(pkg.name, values.tag);
-        const status = error ? 'error' : version === null ? 'missing' : version === expected ? 'ok' : 'stale';
-        return { ...pkg, expected, registry: version, status, error };
-      }),
-    )),
-  );
+async function check(pkg) {
+  const expected = values.expect ?? pkg.local;
+  const { version, error } = await registryVersion(pkg.name, values.tag);
+  const status = error ? 'error' : version === null ? 'missing' : version === expected ? 'ok' : 'stale';
+  return { ...pkg, expected, registry: version, status, error };
+}
+
+async function checkAll(list) {
+  const out = [];
+  // Small batches: fast, without tripping registry rate limits.
+  for (let index = 0; index < list.length; index += 8) out.push(...(await Promise.all(list.slice(index, index + 8).map(check))));
+  return out;
+}
+
+const deadline = Date.now() + Number(values.wait) * 1000;
+let results = await checkAll(publishablePackages());
+while (results.some((result) => result.status !== 'ok') && Date.now() < deadline) {
+  const pending = results.filter((result) => result.status !== 'ok');
+  console.error(`${pending.length} package(s) not served at the expected version yet; re-checking in 20s.`);
+  await new Promise((done) => setTimeout(done, 20_000));
+  const rechecked = new Map((await checkAll(pending)).map((result) => [result.name, result]));
+  results = results.map((result) => rechecked.get(result.name) ?? result);
 }
 
 const failed = results.filter((result) => result.status !== 'ok');

@@ -86,4 +86,5 @@ jobs:
       # skips versions already on the registry.
       - name: Verify every package is on npm at the local version
         if: ${{ inputs.publish }}
-        run: node tools/check-npm-published.mjs --tag ${{ inputs.tag }}
+        # The registry can take minutes to serve new versions; wait up to 15 minutes.
+        run: node tools/check-npm-published.mjs --tag ${{ inputs.tag }} --wait 900
