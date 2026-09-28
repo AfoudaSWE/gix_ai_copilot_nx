@@ -12,15 +12,18 @@ import type { CopilotEvent } from '@gixcopilot/protocol';
 import { createOpenAiDemoServer, resolveOpenAiConfig } from './backend.js';
 
 /**
- * Section 53's optional real-provider smoke test. Only runs when OPENAI_API_KEY is set;
- * otherwise SKIPPED, never FAILED, and never part of the deterministic CI requirement (see
- * `integration.spec.tsx`, which always uses the mock backend). Makes real network calls to
- * OpenAI's API and costs real (tiny) money when it runs.
+ * Section 53's optional real-provider smoke test. Opt-in: only runs when RUN_OPENAI_SMOKE=1
+ * and OPENAI_API_KEY are both set, so a key already present in a developer's shell never
+ * turns `pnpm validate` into a paid, network-dependent run. Otherwise SKIPPED, never FAILED,
+ * and never part of the deterministic CI requirement (see `integration.spec.tsx`, which
+ * always uses the mock backend). Makes real network calls to OpenAI's API and costs real
+ * (tiny) money when it runs.
  *
  * Run explicitly with:
- *   OPENAI_API_KEY=sk-... pnpm --filter @gixcopilot/react-generative-ui test -- openai-smoke
+ *   RUN_OPENAI_SMOKE=1 OPENAI_API_KEY=sk-... pnpm --filter @gixcopilot/react-generative-ui test -- openai-smoke
  */
-const apiKey = process.env['OPENAI_API_KEY'];
+const apiKey =
+  process.env['RUN_OPENAI_SMOKE'] === '1' ? process.env['OPENAI_API_KEY'] : undefined;
 
 async function startRealServer(): Promise<{ app: FastifyInstance; baseUrl: string }> {
   const app = createOpenAiDemoServer(resolveOpenAiConfig());
@@ -94,5 +97,5 @@ describe.skipIf(!apiKey)(
 );
 
 if (!apiKey) {
-  console.log('[openai-smoke] SKIPPED: OPENAI_API_KEY is not set.');
+  console.log('[openai-smoke] SKIPPED: set RUN_OPENAI_SMOKE=1 and OPENAI_API_KEY to run.');
 }

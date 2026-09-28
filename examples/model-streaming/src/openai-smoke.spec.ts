@@ -4,15 +4,16 @@ import { createOpenAIProvider } from '@gixcopilot/provider-openai';
 import type { ModelStreamEvent } from '@gixcopilot/provider';
 
 /**
- * Section 53's optional real-provider smoke test. Only runs when OPENAI_API_KEY is set in
- * the environment; otherwise it is SKIPPED, never FAILED, and is never part of the
+ * Section 53's optional real-provider smoke test. Opt-in: only runs when RUN_OPENAI_SMOKE=1
+ * and OPENAI_API_KEY are both set; otherwise it is SKIPPED, never FAILED, and is never part of the
  * deterministic CI requirement (see `pnpm test` / Phase_2_Testing.md) - this file makes a
  * real network call to OpenAI's API and costs real (tiny) money when it does run.
  *
  * Run explicitly with:
- *   OPENAI_API_KEY=sk-... pnpm --filter @gixcopilot/model-streaming-demo test -- openai-smoke
+ *   RUN_OPENAI_SMOKE=1 OPENAI_API_KEY=sk-... pnpm --filter @gixcopilot/model-streaming-demo test -- openai-smoke
  */
-const apiKey = process.env['OPENAI_API_KEY'];
+const apiKey =
+  process.env['RUN_OPENAI_SMOKE'] === '1' ? process.env['OPENAI_API_KEY'] : undefined;
 
 describe.skipIf(!apiKey)(
   'OpenAI provider smoke test (requires OPENAI_API_KEY, real network call)',
@@ -46,5 +47,5 @@ describe.skipIf(!apiKey)(
 );
 
 if (!apiKey) {
-  console.log('[openai-smoke] SKIPPED: OPENAI_API_KEY is not set.');
+  console.log('[openai-smoke] SKIPPED: set RUN_OPENAI_SMOKE=1 and OPENAI_API_KEY to run.');
 }
