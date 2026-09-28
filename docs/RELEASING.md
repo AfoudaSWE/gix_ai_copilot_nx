@@ -34,6 +34,9 @@ Provenance attestations need a CI OIDC token, so only the release workflow adds 
 
 ## Later releases
 
+1. Bump the hard-coded scaffolder versions to the new version: `VERSION` in
+   `packages/cli/src/cli.ts` and `packages/create/src/plan.ts`, and the default SDK range in
+   `packages/cli/src/templates.ts`. Their tests fail if these drift from `package.json`.
 1. `pnpm exec nx release version <patch|minor|major|prerelease> --dry-run`, then without
    `--dry-run` to bump every package and create the release commit and tag.
 2. `pnpm exec nx release changelog <version>` prepends the entry to

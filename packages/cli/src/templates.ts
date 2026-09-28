@@ -6,7 +6,7 @@ export const TEMPLATES: readonly Template[] = ['node', 'react', 'angular', 'ente
 export interface TemplateOptions {
   readonly name: string;
   readonly template: Template;
-  /** Version range for @gixcopilot packages (default ^0.1.1). */
+  /** Version range for @gixcopilot packages (default ^0.2.0; keep in step with package.json). */
   readonly sdkVersion?: string;
   /** Local tarballs (`pnpm pack` output) to install instead of the registry: package -> file: spec. */
   readonly sdkTarballs?: Readonly<Record<string, string>>;
@@ -15,7 +15,7 @@ export interface TemplateOptions {
 const TOOLCHAIN = { typescript: '5.9.3', '@types/node': '22.20.3', vitest: '5.0.1', zod: '4.6.5', react: '19.3.0', '@types/react': '19.3.0', '@types/react-dom': '19.3.0', vite: '8.3.0', angular: '21.2.24', rxjs: '7.8.2' } as const;
 
 function sdk(options: TemplateOptions, name: string): string {
-  return options.sdkTarballs?.[`@gixcopilot/${name}`] ?? options.sdkVersion ?? '^0.1.1';
+  return options.sdkTarballs?.[`@gixcopilot/${name}`] ?? options.sdkVersion ?? '^0.2.0';
 }
 
 function packageJson(options: TemplateOptions, extra: { scripts: Record<string, string>; sdk: string[]; dependencies?: Record<string, string>; devDependencies?: Record<string, string> }): string {

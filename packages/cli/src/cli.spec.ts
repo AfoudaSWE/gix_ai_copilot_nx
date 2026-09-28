@@ -1,11 +1,14 @@
 import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { run } from './index.js';
 import type { CliIo } from './index.js';
 import { toolNameFromSlug } from './names.js';
+
+// The hard-coded VERSION must match the published version, or scaffolded apps pin old packages.
+const PACKAGE_VERSION = (JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { version: string }).version;
 
 async function workspace(env: Record<string, string> = {}) {
   const cwd = await mkdtemp(join(tmpdir(), 'aicopilot-cli-'));
@@ -27,7 +30,7 @@ describe('aicopilot CLI', () => {
     expect(text()).toContain('doctor');
     const version = await workspace();
     expect(await run(['--version'], version.io)).toBe(0);
-    expect(version.text()).toBe('0.1.1');
+    expect(version.text()).toBe(PACKAGE_VERSION);
     const bad = await workspace();
     expect(await run(['frobnicate'], bad.io)).toBe(2);
     expect(await run(['init', '--nope'], bad.io)).toBe(2);
@@ -39,7 +42,7 @@ describe('aicopilot CLI', () => {
       expect(await run(['init', 'app', '--template', template, '--name', `demo-${template}`], io)).toBe(0);
       const pkg = JSON.parse(await readFile(join(cwd, 'app', 'package.json'), 'utf8')) as { name: string; dependencies: Record<string, string> };
       expect(pkg.name).toBe(`demo-${template}`);
-      expect(pkg.dependencies['@gixcopilot/node']).toBe('^0.1.1');
+      expect(pkg.dependencies['@gixcopilot/node']).toBe(`^${PACKAGE_VERSION}`);
       expect(existsSync(join(cwd, 'app', '.env.example'))).toBe(true);
       expect(await readFile(join(cwd, 'app', '.gitignore'), 'utf8')).toContain('.env');
       // No real secret ever written: .env.example has empty placeholders only.
