@@ -183,8 +183,8 @@ Run it once Stages 1–6 are done.
 
 ## Checklist
 
-- [ ] 1 — Root cause of the partial publish recorded. _Recovery path and likely causes are
-      in `docs/RELEASING.md`; the actual cause still needs the Release run's Actions log._
+- [x] 1 — Root cause of the partial publish recorded (`docs/RELEASING.md`, from npm
+      publish timestamps)
 - [x] 2 — `check-npm-published.mjs` and a release workflow post-publish check
 - [ ] 3 — All 42 packages on npm at 0.1.2; older versions deprecated. _Needs a publish; npm
       still shows 15 ok, 27 stale or missing (2026-09-28)._
