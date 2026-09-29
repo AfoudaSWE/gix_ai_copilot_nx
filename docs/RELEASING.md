@@ -30,7 +30,9 @@ pnpm -r --filter "./packages/**" publish --access public --no-git-checks
 
 pnpm publishes in dependency order, rewrites `workspace:*` to real versions, and publishes
 `@gixcopilot/angular` from its ng-packagr `dist` directory (`publishConfig.directory`).
-Provenance attestations need a CI OIDC token, so only the release workflow adds them (`NPM_CONFIG_PROVENANCE=true`).
+Provenance: the release workflow sets `NPM_CONFIG_PROVENANCE=true`, but pnpm 11 does not apply it, so 0.2.x was
+published **without** provenance attestations. Moving to npm trusted publishing (OIDC) is the planned fix; it also
+removes the `NPM_TOKEN`, whose granular write tokens expire after at most 90 days.
 
 ## Later releases
 
@@ -38,7 +40,8 @@ Provenance attestations need a CI OIDC token, so only the release workflow adds 
    `packages/cli/src/cli.ts` and `packages/create/src/plan.ts`, and the default SDK range in
    `packages/cli/src/templates.ts`. Their tests fail if these drift from `package.json`.
    After bumping and building, regenerate the API reference (`node tools/api-reference.mjs`);
-   CI fails when `docs/reference/api.json` is stale.
+   CI fails when `docs/reference/api.json` is stale. Also update `version` in `apps/docs/src/site.ts`
+   (shown in the documentation site footer).
 2. `pnpm exec nx release version <patch|minor|major|prerelease> --dry-run`, then without
    `--dry-run` to bump every package and create the release commit and tag.
 3. `pnpm exec nx release changelog <version>` prepends the entry to
@@ -47,7 +50,7 @@ Provenance attestations need a CI OIDC token, so only the release workflow adds 
 4. Rebuild and run the checks above.
 5. Publish as above, or run the [release workflow](../.github/workflows/release.yml) with
    `publish: true`. It uses the `NPM_TOKEN` repository secret (an npm automation or granular publish token
-   for the `@gixcopilot` scope; the workflow fails at its first step without it) and publishes with provenance.
+   for the `@gixcopilot` scope; the workflow fails at its first step without it).
 6. Confirm the registry matches: `node tools/check-npm-published.mjs` (the release workflow
    runs this after publishing and fails on any missing or stale package).
 

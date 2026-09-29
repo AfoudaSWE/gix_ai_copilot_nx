@@ -3,6 +3,17 @@
 All `@gixcopilot/*` packages share one version. Entries are generated from conventional
 commits by `nx release changelog`; see [docs/RELEASING.md](docs/RELEASING.md).
 
+## Unreleased
+
+### 🩹 Fixes
+
+- **cli:** `aicopilot doctor` no longer warns that npm 10 cannot install generated projects, and
+  the generated README no longer asks for npm 11+ (fixed in 0.2.1)
+
+### 📖 Documentation
+
+- Migration guide from 0.1.x to 0.2.x; guides, release notes and the site version updated for 0.2.2
+
 ## 0.2.2 (2026-09-29)
 
 ### 🩹 Fixes

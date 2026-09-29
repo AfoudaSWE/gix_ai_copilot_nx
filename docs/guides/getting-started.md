@@ -22,7 +22,7 @@ steps below explain what it sets up.
 npx @gixcopilot/cli init my-copilot --template react    # or node, angular, enterprise
 cd my-copilot
 cp .env.example .env                                    # OPENAI_API_KEY=... (server-side only)
-npm install                                             # npm 11+ or pnpm
+npm install                                             # or pnpm install / yarn
 npm run build && npm test
 ```
 

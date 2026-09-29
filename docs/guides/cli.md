@@ -23,4 +23,4 @@ npx @gixcopilot/cli <command> [options]      # or install @gixcopilot/cli and ru
 
 Every command supports `--help` with examples and `--version`. Commands never prompt, so
 behavior is identical in CI. Exit codes: 0 success, 1 failure, 2 usage error. Generated
-projects need npm 11+ or pnpm (npm 10.9 cannot install Vitest's dependency tree).
+projects install with npm 10+ (the npm that ships with Node 22), pnpm or yarn.
