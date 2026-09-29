@@ -19,11 +19,15 @@ echo "${#names[@]} package(s) to deprecate."
 otp=""
 for name in "${names[@]}"; do
   while true; do
-    [ -n "$otp" ] || read -r -p "npm one-time code: " otp
+    while [ -z "$otp" ]; do
+      read -r -p "npm one-time code (6 digits from your authenticator app): " otp
+      otp="${otp//[[:space:]]/}"
+    done
     if out=$(npm deprecate "$name@<$below" "$message" --otp "$otp" 2>&1); then
       echo "deprecated $name@<$below"
       break
-    elif grep -q "EOTP\|one-time pass" <<<"$out"; then
+    elif grep -qi "EOTP\|one-time pass\|E401\|E404" <<<"$out"; then
+      # npm reports a missing/wrong code as EOTP, and sometimes as 401/404 on the PUT.
       echo "Code rejected or expired."
       otp=""
     else
