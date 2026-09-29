@@ -295,6 +295,17 @@ export default tseslint.config(
               onlyDependOnLibsWithTags: ['scope:node', 'scope:protocol', 'scope:core', 'scope:client', 'scope:provider', 'scope:provider-adapter', 'scope:security', 'scope:server', 'scope:telemetry', 'scope:tools'],
             },
             {
+              // Development plane only (ADR 0023): the Developer Studio discovers, proposes and
+              // applies approved changes. Nothing in the application plane may depend on it.
+              sourceTag: 'scope:studio',
+              onlyDependOnLibsWithTags: ['scope:studio', 'scope:protocol', 'scope:security', 'scope:tools', 'scope:openapi', 'scope:provider', 'scope:core'],
+            },
+            {
+              // The Studio's live preview bundle: the real UI, nothing else (ADR 0023).
+              sourceTag: 'scope:studio-preview',
+              onlyDependOnLibsWithTags: ['scope:studio-preview', 'scope:react', 'scope:ui'],
+            },
+            {
               sourceTag: 'scope:config',
               onlyDependOnLibsWithTags: ['scope:config'],
             },
@@ -386,6 +397,7 @@ export default tseslint.config(
                 'scope:usage',
                 'scope:management',
                 'scope:cli',
+                'scope:studio',
                 'scope:example',
               ],
             },
@@ -422,6 +434,23 @@ export default tseslint.config(
           patterns: [
             { group: ['node:*'], message: 'Browser/neutral packages must not import Node built-ins.' },
             { group: ['fastify', 'pg', 'ioredis', 'bullmq', 'openai', 'drizzle-orm', 'drizzle-orm/*'], message: 'Server-only dependency in a browser/neutral package.' },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // Developer Studio (ADR 0023): discovery and generators are read-only by construction.
+    // They see the repository only through ReadonlyWorkspace and may not reach a writer.
+    files: ['packages/studio/src/{discovery,generators}/**/*.ts'],
+    ignores: ['**/*.spec.ts', '**/*.spec-helper.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            { group: ['**/apply/*', '**/apply/**'], message: 'Generators and discovery must not reach the apply engine: generate() never writes.' },
+            { group: ['node:fs', 'node:fs/*', 'fs', 'fs/*', 'node:child_process', 'child_process'], message: 'Use ReadonlyWorkspace; discovery and generators never write files or spawn processes.' },
           ],
         },
       ],

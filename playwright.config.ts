@@ -57,6 +57,13 @@ export default defineConfig({
       env: { PLATFORM_API_TARGET: 'http://127.0.0.1:4102' },
     },
     {
+      // The Developer Studio on a real createCopilot server, discovering a copy of the sample app.
+      command: 'node examples/studio/dist/main.js',
+      url: 'http://127.0.0.1:4120/health',
+      reuseExistingServer: false,
+      env: { PORT: '4120', STUDIO_COPY_ROOT: '1', NODE_ENV: 'development' },
+    },
+    {
       // The GIX AI website + documentation portal: the prerendered production build.
       command: 'node apps/docs/node_modules/vite/bin/vite.js preview apps/docs --config apps/docs/vite.config.ts',
       url: 'http://127.0.0.1:5200/',

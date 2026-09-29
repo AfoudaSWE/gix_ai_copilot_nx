@@ -40,6 +40,7 @@ change to expect between releases, on top of the SemVer rules above.
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Stable | protocol, core, client, server, provider, provider-openai, provider-mock, tools, security, context, headless, generative-ui, react, ui                                                                                                                                                 |
 | Beta   | agents, angular, checkpoint-postgres, cli, config, connectors, create, devtools, evals, integrations, jobs, knowledge, management, mcp, memory, model-router, node, openapi, persistence-postgres, rag, redis, telemetry, tenancy, testing, usage, vectorstore-pgvector, vue, workflows |
+| Experimental | studio                                                                                                                                                                                                                                                                            |
 
 A package moves from Beta to Stable in a minor release, noted in the changelog. It never moves
 back down; a Stable API that needs to break follows the deprecation cycle.

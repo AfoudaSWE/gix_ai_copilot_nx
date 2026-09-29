@@ -69,3 +69,9 @@ Phase 11 completion: built `@gixcopilot/devtools`, `@gixcopilot/testing`, `@gixc
 | [0021](adr/0021-model-fallback-and-usage-enforcement.md) | Classify fallback before any model output; never replay completed tool actions; enforce scoped admission; keep token usage separate from estimated cost. |
 | [0022](adr/0022-website-and-documentation-portal.md) | One Vite + React app for website and docs; repository Markdown as the source; readable URLs with static prerender; build-time search and API data; type-checked samples. |
 
+
+| Developer Studio ADR | Decision |
+| --- | --- |
+| [0023](adr/0023-development-and-application-planes.md) | Development plane (Studio, development only) vs application plane (end users); development capabilities are never tools; reserved namespaces enforced at registry, review and apply; no Studio in production; generate/apply separated by type and lint rule. |
+
+Developer Studio enhancement (post-Phase 12, not a phase): see [enhancement plan](developer-studio/ENHANCEMENT_PLAN.md) and [status](developer-studio/ENHANCEMENT_STATUS.md).

@@ -47,6 +47,9 @@
       "path": "packages/devtools"
     },
     {
+      "path": "packages/studio"
+    },
+    {
       "path": "packages/testing"
     },
     {

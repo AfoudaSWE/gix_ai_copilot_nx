@@ -42,3 +42,6 @@ GIX_Quotation_Kit.zip
 
 # pnpm publish --report-summary output (release workflow)
 pnpm-publish-summary.json
+
+# Developer Studio test scratch output
+packages/studio/.generated-check-*/

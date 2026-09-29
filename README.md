@@ -76,6 +76,13 @@ Client -> Server -> Core -> (default executor | Model Runtime -> Provider) -> SS
 - **`@gixcopilot/devtools`** (Phase 11) — read-only, viewer-scoped inspectors over recorded
   diagnostics, safe debug bundles, and an opt-in authenticated `/server` transport;
   **`apps/devtools`** is the React DevTools UI.
+- **`@gixcopilot/studio`** (post-Phase 12, experimental) — the development-only
+  Developer Studio at `/__gix`: read-only project discovery, proposal-only generators (API/OpenAPI →
+  tools, state → context, components → generative UI, auth → policies, agents, skills, knowledge),
+  preview/diff, selective approval, and a deterministic apply engine with conflict detection, secret
+  scanning and post-apply validation. Nothing changes in your repository until you approve it, and
+  nothing is registered in production. See [Developer Studio](docs/developer-studio/README.md) and
+  [ADR 0023](docs/adr/0023-development-and-application-planes.md).
 - **`@gixcopilot/testing`** (Phase 11) — deterministic test models, tool mocks, security/RAG/
   memory/approval fixtures, agent and workflow simulation, and side-effect-free replay.
 - **`@gixcopilot/evals`** (Phase 11) — datasets, evaluators, reports, baseline comparison and CI
@@ -115,6 +122,7 @@ packages/
   vectorstores/pgvector/  agents/ workflows/ jobs/ checkpoint-postgres/   (Phases 9-10)
   telemetry/            @gixcopilot/telemetry (Phase 11)
   devtools/             @gixcopilot/devtools (+ /server) (Phase 11)
+  studio/               @gixcopilot/studio (+ /server) Developer Studio, development only
   testing/              @gixcopilot/testing (Phase 11)
   evals/                @gixcopilot/evals (Phase 11)
   config/ tenancy/ persistence-postgres/ redis/ model-router/ usage/ management/ (Phase 12)
@@ -223,12 +231,13 @@ Install from npm, for example `npm install @gixcopilot/react react` or
 
 ## Capability maturity
 
-All 42 packages are published to npm together at one version (**0.2.2**, pre-1.0). Each package README
+All 43 packages are published to npm together at one version (**0.2.2**, pre-1.0). Each package README
 states its stability level; the policy and full list are in [Versioning](docs/VERSIONING.md#stability-levels).
 
 | Level | Packages |
 | --- | --- |
 | Stable | `protocol`, `core`, `client`, `server`, `provider`, `provider-openai`, `provider-mock`, `tools`, `security`, `context`, `headless`, `generative-ui`, `react`, `ui` |
+| Experimental | `studio` (development-only Developer Studio) |
 | Beta | everything else, including `angular`, `vue`, `node`, `cli`, `create`, `connectors`, `openapi`, `mcp`, `rag`, `memory`, `agents`, `workflows`, `devtools`, `evals`, `management` |
 
 The sample apps (`apps/platform`, `apps/api`, `apps/worker`) are reference deployments, not

@@ -14,7 +14,8 @@
     "devtools-app",
     "api",
     "platform",
-    "docs"
+    "docs",
+    "example-studio"
   ],
   "targets": {
     "typecheck": {

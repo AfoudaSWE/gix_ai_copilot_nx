@@ -50,6 +50,8 @@ export const workspaceAliases = {
   // The subpath entry precedes its package entry so the longer specifier wins.
   '@gixcopilot/devtools/server': `${workspaceRoot}packages/devtools/src/server/index.ts`,
   '@gixcopilot/devtools': `${workspaceRoot}packages/devtools/src/index.ts`,
+  '@gixcopilot/studio/server': `${workspaceRoot}packages/studio/src/server/index.ts`,
+  '@gixcopilot/studio': `${workspaceRoot}packages/studio/src/index.ts`,
   '@gixcopilot/testing': `${workspaceRoot}packages/testing/src/index.ts`,
   '@gixcopilot/evals': `${workspaceRoot}packages/evals/src/index.ts`,
   '@gixcopilot/jobs': `${workspaceRoot}packages/jobs/src/index.ts`,

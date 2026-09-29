@@ -379,6 +379,17 @@ phase is started without an explicit instruction naming it.
   Redis-backed run registry was declined for 0.2.0; multi-instance deployments require
   session affinity ([Scaling](production/SCALING.md)).
 
+## Developer Studio enhancement (post-Phase 12, in progress)
+
+- Not a new phase. Tracked in [Developer Studio plan](developer-studio/ENHANCEMENT_PLAN.md) and
+  [status](developer-studio/ENHANCEMENT_STATUS.md); architecture rule in
+  [ADR 0023](adr/0023-development-and-application-planes.md).
+- Added `@gixcopilot/studio` (experimental, `private`, unpublished): `/__gix` Studio and
+  development API, read-only discovery, nine proposal-only generators, preview/diff, selective
+  approval, apply engine with conflict detection, secret scan and post-apply validation, and
+  lifecycle diagnostics. Not yet done: React Studio with a live `@gixcopilot/ui` preview, browser
+  E2E, and `createCopilot`/`init` wiring.
+
 ## Current Validation (Phase 11 completion)
 
 Before any Phase 11 change: 41/41 projects, 1,154 tests passed, 4 skipped. Final tree:
