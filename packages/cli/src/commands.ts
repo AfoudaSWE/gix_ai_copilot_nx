@@ -326,7 +326,7 @@ export async function doctor(io: CliIo, flags: Flags): Promise<number> {
   const [major = 0, minor = 0] = process.versions.node.split('.').map(Number);
   checks.push({ name: 'node', status: major > 22 || (major === 22 && minor >= 12) ? 'ok' : 'fail', detail: `Node ${process.versions.node} (requires >= 22.12)` });
   const npmVersion = /npm\/(\d+)\./.exec(io.env['npm_config_user_agent'] ?? '')?.[1];
-  if (npmVersion && Number(npmVersion) < 11) checks.push({ name: 'npm', status: 'warn', detail: `npm ${npmVersion} cannot install Vitest's dependency tree; use npm 11+ or pnpm` });
+  if (npmVersion && Number(npmVersion) < 10) checks.push({ name: 'npm', status: 'warn', detail: `npm ${npmVersion} is older than the npm 10 that ships with Node 22; generated projects are tested with npm 10+, pnpm and yarn` });
   let config: Awaited<ReturnType<typeof loadConfig>> | undefined;
   try {
     const file = join(io.cwd, 'aicopilot.config.json');
