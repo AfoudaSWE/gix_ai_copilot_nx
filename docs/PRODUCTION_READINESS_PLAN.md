@@ -201,6 +201,6 @@ Run it once Stages 1–6 are done.
 - [x] 5.3 — Known limitations in the READMEs
 - [x] 5.4 — `CHANGELOG.md` generated
 - [x] 6 — Keywords, stability labels, repo cleanup
-- [ ] 7 — 0.2.x released and verified. _0.2.0 and 0.2.1: all 42 packages on npm. 0.2.2
-      (yarn 1 fix): tagged, waiting on the Release run. Open: deprecate 0.1.x
-      (`bash tools/deprecate-old-versions.sh`, needs the owner's npm 2FA code)._
+- [ ] 7 — 0.2.x released and verified. _Done: all 42 packages on npm at 0.2.2 (2026-09-29),
+      verified from npm with npm 10/11, pnpm, yarn 1 and Node 22/24. Open: deprecate 0.1.x
+      with the "Deprecate old versions" workflow._
