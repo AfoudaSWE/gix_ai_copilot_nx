@@ -223,7 +223,7 @@ Install from npm, for example `npm install @gixcopilot/react react` or
 
 ## Capability maturity
 
-All 42 packages are published to npm together at **0.2.0** (pre-1.0). Each package README
+All 42 packages are published to npm together at one version (**0.2.1**, pre-1.0). Each package README
 states its stability level; the policy and full list are in [Versioning](docs/VERSIONING.md#stability-levels).
 
 | Level | Packages |

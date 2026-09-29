@@ -598,7 +598,7 @@
         {
           "name": "VERSION",
           "kind": "const",
-          "signature": "const VERSION = \"0.2.0\";"
+          "signature": "const VERSION = \"0.2.1\";"
         },
         {
           "name": "defaultIo",
@@ -1276,7 +1276,7 @@
         {
           "name": "HELP",
           "kind": "const",
-          "signature": "const HELP = \"@gixcopilot/create 0.2.0: add an AI copilot to a React, Vue or Angular app, with a Node copilot server.\\n\\nUsage:\\n  npm create @gixcopilot@latest [dir] [-- options]\\n  npx @gixcopilot/create [dir] [options]\\n\\nRun it inside an existing app to add the copilot there, or give a new directory to create an app.\\nIt asks a few questions; --yes accepts every default.\\n\\nOptions:\\n  --framework <react|vue|angular|none>  Frontend to integrate (default: detected)\\n  --server / --no-server                 Add a Node copilot server (default: yes)\\n  --server-dir <dir>                     Where the server goes (default: copilot-server)\\n  --pm <npm|pnpm|yarn|bun>               Package manager (default: detected)\\n  --skip-install                         Write files only; install dependencies yourself\\n  --dry-run                              Show what would happen and change nothing\\n  -y, --yes                              Accept all defaults, never prompt\\n  -h, --help, -v, --version\\n\\nExisting files are never overwritten. The model API key lives only in the server's .env.\";"
+          "signature": "const HELP = \"@gixcopilot/create 0.2.1: add an AI copilot to a React, Vue or Angular app, with a Node copilot server.\\n\\nUsage:\\n  npm create @gixcopilot@latest [dir] [-- options]\\n  npx @gixcopilot/create [dir] [options]\\n\\nRun it inside an existing app to add the copilot there, or give a new directory to create an app.\\nIt asks a few questions; --yes accepts every default.\\n\\nOptions:\\n  --framework <react|vue|angular|none>  Frontend to integrate (default: detected)\\n  --server / --no-server                 Add a Node copilot server (default: yes)\\n  --server-dir <dir>                     Where the server goes (default: copilot-server)\\n  --pm <npm|pnpm|yarn|bun>               Package manager (default: detected)\\n  --skip-install                         Write files only; install dependencies yourself\\n  --dry-run                              Show what would happen and change nothing\\n  -y, --yes                              Accept all defaults, never prompt\\n  -h, --help, -v, --version\\n\\nExisting files are never overwritten. The model API key lives only in the server's .env.\";"
         },
         {
           "name": "PACKAGE_MANAGERS",
@@ -1286,7 +1286,7 @@
         {
           "name": "VERSION",
           "kind": "const",
-          "signature": "const VERSION = \"0.2.0\";"
+          "signature": "const VERSION = \"0.2.1\";"
         },
         {
           "name": "defaultIo",
