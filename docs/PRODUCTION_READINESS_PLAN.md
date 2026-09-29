@@ -192,16 +192,15 @@ Run it once Stages 1–6 are done.
       publish timestamps)
 - [x] 2 — `check-npm-published.mjs` and a release workflow post-publish check
 - [x] 3 — Superseded by Stage 7 (owner decision 2026-09-28: no 0.1.2; release 0.2.0)
-- [ ] 4 — Docker suites run in CI; scaffolder verified from npm; smoke test made opt-in.
-      _Done: Docker suites run green in CI (`REQUIRE_DOCKER=1`); `RUN_OPENAI_SMOKE=1` opt-in;
-      consumers tested with npm 10 and npm 11 in CI. Verifying the 0.2.0 scaffolder from npm
-      found an npm 10 install crash, fixed in 0.2.1. Open: the npm/pnpm/yarn and Node 22/24
-      matrix against 0.2.1 from npm._
+- [x] 4 — Docker suites run green in CI (`REQUIRE_DOCKER=1`); `RUN_OPENAI_SMOKE=1` opt-in;
+      consumers tested with npm 10 and npm 11 in CI. Verified from npm (0.2.1): all four
+      templates with npm 10 and 11; node and react with pnpm, yarn 1 and Node 24. Found and
+      fixed: npm 10 install crash (0.2.1), yarn 1 missing `vite` peer (0.2.2).
 - [x] 5.1 — Tool timeout aborts the tool (with a regression test)
 - [x] 5.2 — Sticky-routing docs shipped; Redis registry decided: no (for now)
 - [x] 5.3 — Known limitations in the READMEs
 - [x] 5.4 — `CHANGELOG.md` generated
 - [x] 6 — Keywords, stability labels, repo cleanup
-- [ ] 7 — 0.2.x released and verified. _0.2.0: all 42 packages on npm (2026-09-28). 0.2.1
-      (npm 10 scaffolder fix): tagged, waiting on the Release run. Open: deprecate 0.1.x
+- [ ] 7 — 0.2.x released and verified. _0.2.0 and 0.2.1: all 42 packages on npm. 0.2.2
+      (yarn 1 fix): tagged, waiting on the Release run. Open: deprecate 0.1.x
       (`bash tools/deprecate-old-versions.sh`, needs the owner's npm 2FA code)._

@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/config",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Typed production configuration: schema, precedence (defaults < file < env < code), environment rules, fail-fast validation and a secret-provider boundary.",
   "keywords": [
     "ai",

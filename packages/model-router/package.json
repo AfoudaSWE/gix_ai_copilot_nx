@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/model-router",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Production model routing: deterministic strategies (fixed, fallback, capability, policy), capability metadata, per-model health and side-effect-safe fallback.",
   "keywords": [
     "ai",

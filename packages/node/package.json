@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/node",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Node.js SDK: createCopilot() composes the server, runtime, model providers, tools and security for Fastify, node:http/Express, or in-process use.",
   "keywords": [
     "ai",

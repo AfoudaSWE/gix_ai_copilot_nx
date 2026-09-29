@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/core",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Framework-independent runtime foundation for the AI Copilot SDK: run lifecycle, event sequencing, and cancellation over a generic executor boundary.",
   "keywords": [
     "ai",
