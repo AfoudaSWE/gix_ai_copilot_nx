@@ -598,7 +598,7 @@
         {
           "name": "VERSION",
           "kind": "const",
-          "signature": "const VERSION = \"0.2.2\";"
+          "signature": "const VERSION = \"0.2.3\";"
         },
         {
           "name": "defaultIo",
@@ -1276,7 +1276,7 @@
         {
           "name": "HELP",
           "kind": "const",
-          "signature": "const HELP = \"@gixcopilot/create 0.2.2: add an AI copilot to a React, Vue or Angular app, with a Node copilot server.\\n\\nUsage:\\n  npm create @gixcopilot@latest [dir] [-- options]\\n  npx @gixcopilot/create [dir] [options]\\n\\nRun it inside an existing app to add the copilot there, or give a new directory to create an app.\\nIt asks a few questions; --yes accepts every default.\\n\\nOptions:\\n  --framework <react|vue|angular|none>  Frontend to integrate (default: detected)\\n  --server / --no-server                 Add a Node copilot server (default: yes)\\n  --server-dir <dir>                     Where the server goes (default: copilot-server)\\n  --pm <npm|pnpm|yarn|bun>               Package manager (default: detected)\\n  --skip-install                         Write files only; install dependencies yourself\\n  --dry-run                              Show what would happen and change nothing\\n  -y, --yes                              Accept all defaults, never prompt\\n  -h, --help, -v, --version\\n\\nExisting files are never overwritten. The model API key lives only in the server's .env.\";"
+          "signature": "const HELP = \"@gixcopilot/create 0.2.3: add an AI copilot to a React, Vue or Angular app, with a Node copilot server.\\n\\nUsage:\\n  npm create @gixcopilot@latest [dir] [-- options]\\n  npx @gixcopilot/create [dir] [options]\\n\\nRun it inside an existing app to add the copilot there, or give a new directory to create an app.\\nIt asks a few questions; --yes accepts every default.\\n\\nOptions:\\n  --framework <react|vue|angular|none>  Frontend to integrate (default: detected)\\n  --server / --no-server                 Add a Node copilot server (default: yes)\\n  --server-dir <dir>                     Where the server goes (default: copilot-server)\\n  --pm <npm|pnpm|yarn|bun>               Package manager (default: detected)\\n  --skip-install                         Write files only; install dependencies yourself\\n  --dry-run                              Show what would happen and change nothing\\n  -y, --yes                              Accept all defaults, never prompt\\n  -h, --help, -v, --version\\n\\nExisting files are never overwritten. The model API key lives only in the server's .env.\";"
         },
         {
           "name": "PACKAGE_MANAGERS",
@@ -1286,7 +1286,7 @@
         {
           "name": "VERSION",
           "kind": "const",
-          "signature": "const VERSION = \"0.2.2\";"
+          "signature": "const VERSION = \"0.2.3\";"
         },
         {
           "name": "defaultIo",
@@ -3310,7 +3310,7 @@
         {
           "name": "Copilot",
           "kind": "interface",
-          "signature": "interface Copilot {\n    readonly app: FastifyApp;\n    client(headers?: Readonly<Record<string, string>>): CopilotClient;\n    run(input: string | CopilotRunInput): Promise<CopilotRunResult>;\n    stream(input: string | CopilotRunInput): AsyncIterable<CopilotEvent>;\n    nodeHandler(): (request: IncomingMessage, response: ServerResponse) => void;\n    fetchHandler(options?: {\n        readonly basePath?: string;\n    }): (request: Request) => Promise<Response>;\n    listen(options?: {\n        readonly host?: string;\n        readonly port?: number;\n    }): Promise<string>;\n    close(): Promise<void>;\n}"
+          "signature": "interface Copilot {\n    readonly app: FastifyApp;\n    readonly model: ModelReference;\n    readonly modelRuntime: ModelRuntime;\n    readonly toolRegistry?: ToolRegistry;\n    readonly firewallEnabled: boolean;\n    client(headers?: Readonly<Record<string, string>>): CopilotClient;\n    run(input: string | CopilotRunInput): Promise<CopilotRunResult>;\n    stream(input: string | CopilotRunInput): AsyncIterable<CopilotEvent>;\n    nodeHandler(): (request: IncomingMessage, response: ServerResponse) => void;\n    fetchHandler(options?: {\n        readonly basePath?: string;\n    }): (request: Request) => Promise<Response>;\n    listen(options?: {\n        readonly host?: string;\n        readonly port?: number;\n    }): Promise<string>;\n    close(): Promise<void>;\n}"
         },
         {
           "name": "CopilotRunInput",
@@ -5716,6 +5716,504 @@
           "name": "RunRegistry",
           "kind": "interface",
           "signature": "interface RunRegistry {\n    register(run: RuntimeRun): void;\n    unregister(runId: RunId): void;\n    get(runId: RunId): RuntimeRun | undefined;\n    cancelAll(): void;\n}"
+        }
+      ]
+    },
+    {
+      "name": "@gixcopilot/studio",
+      "slug": "studio",
+      "description": "Development-only GIX Developer Studio (/__gix): read-only project discovery, proposal-producing generators, preview/diff, explicit approval and a deterministic apply engine. Never exposed in production.",
+      "status": "beta",
+      "directory": "packages/studio",
+      "subpaths": [
+        "@gixcopilot/studio/server"
+      ],
+      "peerDependencies": [
+        "fastify",
+        "typescript"
+      ],
+      "values": [
+        {
+          "name": "ApplyRefusedError",
+          "kind": "class",
+          "signature": "class ApplyRefusedError extends Error {\n    constructor(message: string);\n}"
+        },
+        {
+          "name": "DEFAULT_DETECTORS",
+          "kind": "const",
+          "signature": "const DEFAULT_DETECTORS: readonly ProjectDetector[];"
+        },
+        {
+          "name": "DEFAULT_GENERATORS",
+          "kind": "const",
+          "signature": "const DEFAULT_GENERATORS: readonly AnyGenerator[];"
+        },
+        {
+          "name": "DEFAULT_WORKSPACE_LIMITS",
+          "kind": "const",
+          "signature": "const DEFAULT_WORKSPACE_LIMITS: WorkspaceLimits;"
+        },
+        {
+          "name": "DEVELOPMENT_AGENTS",
+          "kind": "const",
+          "signature": "const DEVELOPMENT_AGENTS: readonly CapabilityDescriptor[];"
+        },
+        {
+          "name": "DEVELOPMENT_CAPABILITIES",
+          "kind": "const",
+          "signature": "const DEVELOPMENT_CAPABILITIES: readonly CapabilityDescriptor[];"
+        },
+        {
+          "name": "DEVELOPMENT_SKILLS",
+          "kind": "const",
+          "signature": "const DEVELOPMENT_SKILLS: readonly CapabilityDescriptor[];"
+        },
+        {
+          "name": "DEVELOPMENT_TOOLS",
+          "kind": "const",
+          "signature": "const DEVELOPMENT_TOOLS: readonly CapabilityDescriptor[];"
+        },
+        {
+          "name": "PlaneViolationError",
+          "kind": "class",
+          "signature": "class PlaneViolationError extends Error {\n    readonly names: readonly string[];\n    constructor(names: readonly string[]);\n}"
+        },
+        {
+          "name": "ProposalEditError",
+          "kind": "class",
+          "signature": "class ProposalEditError extends Error {\n    constructor(message: string);\n}"
+        },
+        {
+          "name": "ProposalStateError",
+          "kind": "class",
+          "signature": "class ProposalStateError extends Error {\n    readonly from: ProposalStatus;\n    readonly to: ProposalStatus;\n    constructor(from: ProposalStatus, to: ProposalStatus);\n}"
+        },
+        {
+          "name": "RESERVED_DEVELOPMENT_NAMESPACES",
+          "kind": "const",
+          "signature": "const RESERVED_DEVELOPMENT_NAMESPACES: readonly string[];"
+        },
+        {
+          "name": "SecretFileError",
+          "kind": "class",
+          "signature": "class SecretFileError extends WorkspaceViolationError {\n    constructor(path: string);\n}"
+        },
+        {
+          "name": "StudioApprovalError",
+          "kind": "class",
+          "signature": "class StudioApprovalError extends Error {\n    readonly proposal: ChangeProposal;\n    constructor(message: string, proposal: ChangeProposal);\n}"
+        },
+        {
+          "name": "StudioNotFoundError",
+          "kind": "class",
+          "signature": "class StudioNotFoundError extends Error {\n    constructor(message: string);\n}"
+        },
+        {
+          "name": "WorkspaceViolationError",
+          "kind": "class",
+          "signature": "class WorkspaceViolationError extends Error {\n    readonly path: string;\n    constructor(path: string, reason: string);\n}"
+        },
+        {
+          "name": "agentGenerator",
+          "kind": "const",
+          "signature": "const agentGenerator: Generator<readonly Domain[]>;"
+        },
+        {
+          "name": "apiToolsGenerator",
+          "kind": "const",
+          "signature": "const apiToolsGenerator: Generator<ApiToolsAnalysis>;"
+        },
+        {
+          "name": "applyEdits",
+          "kind": "function",
+          "signature": "function applyEdits(items: ProposalItems, edits: readonly unknown[]): ProposalItems;"
+        },
+        {
+          "name": "approvalFloor",
+          "kind": "function",
+          "signature": "function approvalFloor(risk: ToolActionRisk): ToolApprovalLevel;"
+        },
+        {
+          "name": "assertApplicationPlane",
+          "kind": "function",
+          "signature": "function assertApplicationPlane(tools: ToolNameSource): void;"
+        },
+        {
+          "name": "assertTransition",
+          "kind": "function",
+          "signature": "function assertTransition(from: ProposalStatus, to: ProposalStatus): void;"
+        },
+        {
+          "name": "compareDiscoveries",
+          "kind": "function",
+          "signature": "function compareDiscoveries(previous: DiscoveredProject, current: DiscoveredProject): DiscoveryComparison;"
+        },
+        {
+          "name": "computeDiagnostics",
+          "kind": "function",
+          "signature": "function computeDiagnostics(input: {\n    readonly facts: RuntimeFacts;\n    readonly model: PublicModelSettings;\n    readonly discovery?: DiscoveredProject;\n    readonly proposals: readonly ChangeProposal[];\n}): StudioDiagnostics;"
+        },
+        {
+          "name": "configurationGenerator",
+          "kind": "const",
+          "signature": "const configurationGenerator: Generator<{\n    readonly values: Readonly<Record<string, unknown>>;"
+        },
+        {
+          "name": "contextGenerator",
+          "kind": "const",
+          "signature": "const contextGenerator: Generator<readonly ContextCandidate[]>;"
+        },
+        {
+          "name": "createApplyEngine",
+          "kind": "function",
+          "signature": "function createApplyEngine(options: ApplyEngineOptions): ApplyEngine;"
+        },
+        {
+          "name": "createModelSettingsStore",
+          "kind": "function",
+          "signature": "function createModelSettingsStore(options?: ModelSettingsOptions): ModelSettingsStore;"
+        },
+        {
+          "name": "createReadonlyWorkspace",
+          "kind": "function",
+          "signature": "function createReadonlyWorkspace(rootPath: string, limits?: Partial<WorkspaceLimits>): ReadonlyWorkspace;"
+        },
+        {
+          "name": "createStudioService",
+          "kind": "function",
+          "signature": "function createStudioService(options: StudioServiceOptions): StudioService;"
+        },
+        {
+          "name": "createWorkspaceGuard",
+          "kind": "function",
+          "signature": "function createWorkspaceGuard(rootPath: string): WorkspaceGuard;"
+        },
+        {
+          "name": "discoverProject",
+          "kind": "function",
+          "signature": "function discoverProject(workspace: ReadonlyWorkspace, options?: DiscoverProjectOptions): Promise<DiscoveredProject>;"
+        },
+        {
+          "name": "generativeUiGenerator",
+          "kind": "const",
+          "signature": "const generativeUiGenerator: Generator<readonly GenerativeUIProposal[]>;"
+        },
+        {
+          "name": "isDevelopmentAgentOrSkill",
+          "kind": "function",
+          "signature": "function isDevelopmentAgentOrSkill(id: string): boolean;"
+        },
+        {
+          "name": "isDevelopmentToolName",
+          "kind": "function",
+          "signature": "function isDevelopmentToolName(name: string): boolean;"
+        },
+        {
+          "name": "isSecretPath",
+          "kind": "function",
+          "signature": "function isSecretPath(path: string): boolean;"
+        },
+        {
+          "name": "knowledgeGenerator",
+          "kind": "const",
+          "signature": "const knowledgeGenerator: Generator<readonly KnowledgeCandidate[]>;"
+        },
+        {
+          "name": "modelSettingsSchema",
+          "kind": "const",
+          "signature": "const modelSettingsSchema: z.ZodObject<{\n    provider: z.ZodString;"
+        },
+        {
+          "name": "openApiToolsGenerator",
+          "kind": "const",
+          "signature": "const openApiToolsGenerator: Generator<ApiToolsAnalysis>;"
+        },
+        {
+          "name": "proposalEditSchema",
+          "kind": "const",
+          "signature": "const proposalEditSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{\n    collection: z.ZodLiteral<\"tools\">;"
+        },
+        {
+          "name": "redactConfig",
+          "kind": "function",
+          "signature": "function redactConfig(value: unknown, key?: string, depth?: number): unknown;"
+        },
+        {
+          "name": "redactSecrets",
+          "kind": "function",
+          "signature": "function redactSecrets(text: string): string;"
+        },
+        {
+          "name": "reviewProposalSecurity",
+          "kind": "function",
+          "signature": "function reviewProposalSecurity(items: ProposalItems, files: readonly FileChange[]): SecurityFinding[];"
+        },
+        {
+          "name": "runGenerator",
+          "kind": "function",
+          "signature": "function runGenerator(generator: AnyGenerator, context: GeneratorContext, input?: GeneratorInput): Promise<{\n    readonly proposal: ChangeProposal;\n    readonly generatorWarnings: ChangeProposal['warnings'];\n}>;\n//# sourceMappingURL=pipeline.d.ts.map\nimport type { KnowledgeCandidate } from '../discovery/model.js';\nimport type { Generator } from './contract.js';\ninterface Domain {\n    readonly resource: string;\n    readonly readTools: readonly string[];\n    readonly writeTools: readonly string[];\n}\nexport declare const agentGenerator: Generator<readonly Domain[]>;\nexport declare const skillGenerator: Generator<readonly Domain[]>;\nexport declare const knowledgeGenerator: Generator<readonly KnowledgeCandidate[]>;\nexport declare const COPILOT_CONFIG_FILE = \".gix/copilot.config.json\";\n\nexport declare const configurationGenerator: Generator<{\n    readonly values: Readonly<Record<string, unknown>>;\n    readonly current: Record<string, unknown>;\n}>;\nexport {};\n//# sourceMappingURL=project-generators.d.ts.map\nimport type { ToolActionRisk, ToolApprovalLevel } from '@gixcopilot/protocol';\n\nexport declare function suggestRisk(method: string): ToolActionRisk;"
+        },
+        {
+          "name": "scanForSecrets",
+          "kind": "function",
+          "signature": "function scanForSecrets(content: string): SecretFinding[];"
+        },
+        {
+          "name": "securityPolicyGenerator",
+          "kind": "const",
+          "signature": "const securityPolicyGenerator: Generator<SecurityAnalysis>;"
+        },
+        {
+          "name": "skillGenerator",
+          "kind": "const",
+          "signature": "const skillGenerator: Generator<readonly Domain[]>;"
+        },
+        {
+          "name": "suggestPermission",
+          "kind": "function",
+          "signature": "function suggestPermission(method: string, path: string, declared: readonly string[], known: readonly string[]): PermissionSuggestion;"
+        },
+        {
+          "name": "suggestRisk",
+          "kind": "function",
+          "signature": "function suggestRisk(method: string): ToolActionRisk;"
+        },
+        {
+          "name": "toolNameFor",
+          "kind": "function",
+          "signature": "function toolNameFor(method: string, path: string): string;"
+        },
+        {
+          "name": "unifiedDiff",
+          "kind": "function",
+          "signature": "function unifiedDiff(path: string, before: string | undefined, after: string | undefined): string;"
+        }
+      ],
+      "types": [
+        {
+          "name": "AnyGenerator",
+          "kind": "type",
+          "signature": "type AnyGenerator = Generator<unknown>;"
+        },
+        {
+          "name": "ApplyEngine",
+          "kind": "interface",
+          "signature": "interface ApplyEngine {\n    apply(proposal: ChangeProposal, options?: {\n        readonly signal?: AbortSignal;\n    }): Promise<ChangeProposal>;\n    rollback(proposal: ChangeProposal): Promise<{\n        readonly restored: readonly string[];\n        readonly skipped: readonly string[];\n    }>;\n}"
+        },
+        {
+          "name": "ApplyEngineOptions",
+          "kind": "interface",
+          "signature": "interface ApplyEngineOptions {\n    readonly guard: WorkspaceGuard;\n    readonly commands: () => DetectedCommands;\n    readonly validationSteps?: readonly ValidationStep[];\n    readonly runner?: CommandRunner;\n    readonly commandTimeoutMs?: number;\n}"
+        },
+        {
+          "name": "CapabilityDescriptor",
+          "kind": "interface",
+          "signature": "interface CapabilityDescriptor {\n    readonly id: string;\n    readonly plane: Plane;\n    readonly kind: CapabilityKind;\n    readonly description: string;\n}"
+        },
+        {
+          "name": "CapabilityKind",
+          "kind": "type",
+          "signature": "type CapabilityKind = 'tool' | 'agent' | 'skill';"
+        },
+        {
+          "name": "CommandRunner",
+          "kind": "type",
+          "signature": "type CommandRunner = (command: DetectedCommand, options: {\n    readonly cwd: string;"
+        },
+        {
+          "name": "ConnectionTestResult",
+          "kind": "interface",
+          "signature": "interface ConnectionTestResult {\n    readonly success: boolean;\n    readonly provider: string;\n    readonly model: string;\n    readonly latencyMs: number;\n    readonly error?: {\n        readonly code: string;\n        readonly message: string;\n        readonly retryable: boolean;\n    };\n}"
+        },
+        {
+          "name": "DetectionInput",
+          "kind": "interface",
+          "signature": "interface DetectionInput {\n    readonly manifests: readonly PackageManifest[];\n    readonly files: readonly string[];\n}"
+        },
+        {
+          "name": "DiscoverProjectOptions",
+          "kind": "interface",
+          "signature": "interface DiscoverProjectOptions {\n    readonly signal?: AbortSignal;\n    readonly detectors?: readonly ProjectDetector[];\n    readonly maxKnowledgeSources?: number;\n}"
+        },
+        {
+          "name": "DiscoveryComparison",
+          "kind": "interface",
+          "signature": "interface DiscoveryComparison {\n    readonly newApis: readonly ApiOperation[];\n    readonly changedApis: readonly ApiOperation[];\n    readonly removedApis: readonly ApiOperation[];\n    readonly newComponents: readonly ComponentInfo[];\n    readonly changedComponents: readonly ComponentInfo[];\n    readonly removedComponents: readonly ComponentInfo[];\n    readonly newPermissions: readonly PermissionInfo[];\n    readonly newContextCandidates: readonly ContextCandidate[];\n    readonly unchanged: boolean;\n}"
+        },
+        {
+          "name": "GeneratedDraft",
+          "kind": "interface",
+          "signature": "interface GeneratedDraft extends ProposalItems {\n    readonly title: string;\n    readonly warnings: readonly ProposalWarning[];\n}"
+        },
+        {
+          "name": "Generator",
+          "kind": "interface",
+          "signature": "interface Generator<TAnalysis = unknown> {\n    readonly id: string;\n    readonly title: string;\n    readonly description: string;\n    analyze(context: GeneratorContext, input: GeneratorInput): Promise<TAnalysis>;\n    generate(analysis: TAnalysis, context: GeneratorContext): Promise<GeneratedDraft>;\n    render(items: ProposalItems, context: Pick<GeneratorContext, 'workspace'>): Promise<readonly RenderedFile[]>;\n    validate(items: ProposalItems): readonly ProposalWarning[];\n}"
+        },
+        {
+          "name": "GeneratorContext",
+          "kind": "interface",
+          "signature": "interface GeneratorContext {\n    readonly workspace: ReadonlyWorkspace;\n    readonly discovery: DiscoveredProject;\n    readonly signal?: AbortSignal;\n}"
+        },
+        {
+          "name": "GeneratorInput",
+          "kind": "interface",
+          "signature": "interface GeneratorInput {\n    readonly select?: readonly string[];\n    readonly values?: Readonly<Record<string, unknown>>;\n}"
+        },
+        {
+          "name": "HealthRow",
+          "kind": "interface",
+          "signature": "interface HealthRow {\n    readonly key: string;\n    readonly label: string;\n    readonly status: HealthStatus;\n    readonly value?: string | number;\n    readonly detail?: string;\n}"
+        },
+        {
+          "name": "HealthStatus",
+          "kind": "type",
+          "signature": "type HealthStatus = 'ok' | 'warning' | 'error' | 'not-run' | 'unknown';"
+        },
+        {
+          "name": "HostToolView",
+          "kind": "interface",
+          "signature": "interface HostToolView {\n    readonly name: string;\n    readonly security?: ToolSecurityManifest;\n}"
+        },
+        {
+          "name": "LifecycleStage",
+          "kind": "type",
+          "signature": "type LifecycleStage = 'pre-discovery' | 'discovered' | 'generated' | 'approved' | 'applied' | 'validation-failed';"
+        },
+        {
+          "name": "ListFilesOptions",
+          "kind": "interface",
+          "signature": "interface ListFilesOptions {\n    readonly extensions?: readonly string[];\n    readonly signal?: AbortSignal;\n}"
+        },
+        {
+          "name": "ListFilesResult",
+          "kind": "interface",
+          "signature": "interface ListFilesResult {\n    readonly files: readonly WorkspaceFile[];\n    readonly truncated: boolean;\n    readonly skippedSecrets: number;\n}"
+        },
+        {
+          "name": "ModelSettingsInput",
+          "kind": "type",
+          "signature": "type ModelSettingsInput = z.infer<typeof modelSettingsSchema>;"
+        },
+        {
+          "name": "ModelSettingsStore",
+          "kind": "interface",
+          "signature": "interface ModelSettingsStore {\n    get(): PublicModelSettings;\n    set(input: unknown): PublicModelSettings;\n    test(signal?: AbortSignal): Promise<ConnectionTestResult>;\n}"
+        },
+        {
+          "name": "PackageManifest",
+          "kind": "interface",
+          "signature": "interface PackageManifest {\n    readonly path: string;\n    readonly directory: string;\n    readonly name?: string;\n    readonly private?: boolean;\n    readonly dependencies: Readonly<Record<string, string>>;\n    readonly scripts: Readonly<Record<string, string>>;\n    readonly workspaces?: readonly string[];\n}"
+        },
+        {
+          "name": "Plane",
+          "kind": "type",
+          "signature": "type Plane = 'development' | 'application';"
+        },
+        {
+          "name": "ProjectDetector",
+          "kind": "interface",
+          "signature": "interface ProjectDetector {\n    readonly id: FrameworkId;\n    readonly role: FrameworkRole;\n    detect(input: DetectionInput): FrameworkInfo | undefined;\n}"
+        },
+        {
+          "name": "ProposalEdit",
+          "kind": "type",
+          "signature": "type ProposalEdit = z.infer<typeof proposalEditSchema>;"
+        },
+        {
+          "name": "ProposalView",
+          "kind": "interface",
+          "signature": "interface ProposalView extends ChangeProposal {\n    readonly diffs: readonly {\n        readonly path: string;\n        readonly kind: string;\n        readonly diff: string;\n    }[];\n}"
+        },
+        {
+          "name": "ProviderFactory",
+          "kind": "type",
+          "signature": "type ProviderFactory = (settings: ProviderSettings) => ModelProvider;"
+        },
+        {
+          "name": "ProviderSettings",
+          "kind": "interface",
+          "signature": "interface ProviderSettings {\n    readonly apiKey?: string;\n    readonly baseUrl?: string;\n    readonly timeoutMs?: number;\n}"
+        },
+        {
+          "name": "PublicModelSettings",
+          "kind": "interface",
+          "signature": "interface PublicModelSettings {\n    readonly provider: string;\n    readonly model: string;\n    readonly configured: boolean;\n    readonly keySource: 'studio-session' | 'environment' | 'none';\n    readonly baseUrl?: string;\n    readonly timeoutMs?: number;\n    readonly retries?: number;\n    readonly providers: readonly string[];\n}"
+        },
+        {
+          "name": "ReadonlyWorkspace",
+          "kind": "interface",
+          "signature": "interface ReadonlyWorkspace {\n    readonly root: string;\n    readonly limits: WorkspaceLimits;\n    readonly guard: WorkspaceGuard;\n    listFiles(options?: ListFilesOptions): Promise<ListFilesResult>;\n    exists(path: string): Promise<boolean>;\n    readText(path: string): Promise<string | undefined>;\n    hash(path: string): Promise<string | null>;\n}"
+        },
+        {
+          "name": "RenderedFile",
+          "kind": "interface",
+          "signature": "interface RenderedFile {\n    readonly path: string;\n    readonly content: string | undefined;\n    readonly itemIds: readonly string[];\n}"
+        },
+        {
+          "name": "RuntimeFacts",
+          "kind": "interface",
+          "signature": "interface RuntimeFacts {\n    readonly runtime: boolean;\n    readonly server: boolean;\n    readonly firewall: boolean;\n    readonly devtools: boolean;\n    readonly registeredTools?: number;\n    readonly lastConnection?: {\n        readonly success: boolean;\n        readonly latencyMs: number;\n    };\n}"
+        },
+        {
+          "name": "SecretFinding",
+          "kind": "interface",
+          "signature": "interface SecretFinding {\n    readonly kind: string;\n    readonly line: number;\n}"
+        },
+        {
+          "name": "SecuritySummary",
+          "kind": "interface",
+          "signature": "interface SecuritySummary {\n    readonly firewall: boolean;\n    readonly defaultPolicy?: string;\n    readonly approvalPolicy?: string;\n    readonly piiProtection?: boolean;\n    readonly audit?: boolean;\n}"
+        },
+        {
+          "name": "StudioConfigView",
+          "kind": "interface",
+          "signature": "interface StudioConfigView {\n    readonly layers: Readonly<Record<string, unknown>>;\n    readonly copilot: unknown;\n    readonly security: SecuritySummary & {\n        readonly toolPolicies: readonly HostToolView[];\n    };\n}"
+        },
+        {
+          "name": "StudioDiagnostics",
+          "kind": "interface",
+          "signature": "interface StudioDiagnostics {\n    readonly stage: LifecycleStage;\n    readonly generatedAt: string;\n    readonly runtime: readonly HealthRow[];\n    readonly discovery: readonly HealthRow[];\n    readonly generation: readonly HealthRow[];\n    readonly apply: readonly HealthRow[];\n}"
+        },
+        {
+          "name": "StudioService",
+          "kind": "interface",
+          "signature": "interface StudioService {\n    readonly workspace: ReadonlyWorkspace;\n    status(): StudioStatus;\n    discover(signal?: AbortSignal): Promise<DiscoveredProject>;\n    latestDiscovery(): DiscoveredProject | undefined;\n    rescan(signal?: AbortSignal): Promise<{\n        readonly discovery: DiscoveredProject;\n        readonly comparison?: DiscoveryComparison;\n    }>;\n    sync(signal?: AbortSignal): Promise<{\n        readonly comparison?: DiscoveryComparison;\n        readonly proposals: readonly ChangeProposal[];\n    }>;\n    generators(): readonly {\n        readonly id: string;\n        readonly title: string;\n        readonly description: string;\n    }[];\n    generate(generatorId: string, input?: GeneratorInput, signal?: AbortSignal): Promise<ChangeProposal>;\n    proposals(): readonly ChangeProposal[];\n    proposal(id: string): Promise<ProposalView>;\n    edit(id: string, edits: readonly unknown[]): Promise<ChangeProposal>;\n    approve(id: string, selection?: readonly string[]): Promise<ChangeProposal>;\n    reject(id: string): ChangeProposal;\n    apply(id: string, signal?: AbortSignal): Promise<ChangeProposal>;\n    rollback(id: string): Promise<{\n        readonly restored: readonly string[];\n        readonly skipped: readonly string[];\n    }>;\n    diagnostics(): StudioDiagnostics;\n    model: ModelSettingsStore;\n    testConnection(signal?: AbortSignal): Promise<ConnectionTestResult>;\n    config(): Promise<Stu\n  …\n}"
+        },
+        {
+          "name": "StudioServiceOptions",
+          "kind": "interface",
+          "signature": "interface StudioServiceOptions {\n    readonly root: string;\n    readonly limits?: Partial<WorkspaceLimits>;\n    readonly generators?: readonly AnyGenerator[];\n    readonly model?: {\n        readonly provider: string;\n        readonly model: string;\n    };\n    readonly providers?: Readonly<Record<string, ProviderFactory>>;\n    readonly keyEnvironment?: Readonly<Record<string, string>>;\n    readonly modelRuntime?: ModelRuntime;\n    readonly facts?: () => Omit<RuntimeFacts, 'lastConnection'>;\n    readonly tools?: () => readonly HostToolView[];\n    readonly configLayers?: () => Readonly<Partial<Record<'default' | 'project' | 'environment' | 'runtime', unknown>>>;\n    readonly security?: () => SecuritySummary;\n    readonly validationSteps?: readonly ValidationStep[];\n    readonly commandRunner?: CommandRunner;\n    readonly discovery?: Pick<DiscoverProjectOptions, 'detectors' | 'maxKnowledgeSources'>;\n}"
+        },
+        {
+          "name": "StudioStatus",
+          "kind": "interface",
+          "signature": "interface StudioStatus {\n    readonly project: string;\n    readonly environment: string;\n    readonly model: ReturnType<ModelSettingsStore['get']>;\n    readonly discovered: boolean;\n    readonly pendingProposals: number;\n    readonly stage: StudioDiagnostics['stage'];\n}"
+        },
+        {
+          "name": "ToolNameSource",
+          "kind": "type",
+          "signature": "type ToolNameSource = {\n    list(): readonly {\n        readonly name: string;"
+        },
+        {
+          "name": "ValidationStep",
+          "kind": "type",
+          "signature": "type ValidationStep = 'typecheck' | 'lint' | 'test' | 'build';"
+        },
+        {
+          "name": "WorkspaceFile",
+          "kind": "interface",
+          "signature": "interface WorkspaceFile {\n    readonly path: string;\n    readonly size: number;\n}"
+        },
+        {
+          "name": "WorkspaceGuard",
+          "kind": "interface",
+          "signature": "interface WorkspaceGuard {\n    readonly root: string;\n    resolve(path: string): string;\n    toRelative(absolute: string): string;\n}"
+        },
+        {
+          "name": "WorkspaceLimits",
+          "kind": "interface",
+          "signature": "interface WorkspaceLimits {\n    readonly maxFileBytes: number;\n    readonly maxFiles: number;\n}"
         }
       ]
     },

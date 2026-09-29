@@ -272,6 +272,16 @@ Fastify HTTP/SSE transport adapter for the AI Copilot SDK: adapts @gixcopilot/co
 
 **Types (13):** `AdmissionDecision`, `AwaitFrontendResultOptions`, `CreateRunRequestBody`, `CreateServerOptions`, `CreateToolCallingExecutorOptions`, `FrontendToolBridge`, `MetricsRegistry`, `OperationalRoutesOptions`, `ReadinessCheck`, `RunAdmission`, `RunInfo`, `RunObserver`, `RunRegistry`
 
+## @gixcopilot/studio
+
+Development-only GIX Developer Studio (/__gix): read-only project discovery, proposal-producing generators, preview/diff, explicit approval and a deterministic apply engine. Never exposed in production.
+
+**Values (51):** `ApplyRefusedError`, `DEFAULT_DETECTORS`, `DEFAULT_GENERATORS`, `DEFAULT_WORKSPACE_LIMITS`, `DEVELOPMENT_AGENTS`, `DEVELOPMENT_CAPABILITIES`, `DEVELOPMENT_SKILLS`, `DEVELOPMENT_TOOLS`, `PlaneViolationError`, `ProposalEditError`, `ProposalStateError`, `RESERVED_DEVELOPMENT_NAMESPACES`, `SecretFileError`, `StudioApprovalError`, `StudioNotFoundError`, `WorkspaceViolationError`, `agentGenerator`, `apiToolsGenerator`, `applyEdits`, `approvalFloor`, `assertApplicationPlane`, `assertTransition`, `compareDiscoveries`, `computeDiagnostics`, `configurationGenerator`, `contextGenerator`, `createApplyEngine`, `createModelSettingsStore`, `createReadonlyWorkspace`, `createStudioService`, `createWorkspaceGuard`, `discoverProject`, `generativeUiGenerator`, `isDevelopmentAgentOrSkill`, `isDevelopmentToolName`, `isSecretPath`, `knowledgeGenerator`, `modelSettingsSchema`, `openApiToolsGenerator`, `proposalEditSchema`, `redactConfig`, `redactSecrets`, `reviewProposalSecurity`, `runGenerator`, `scanForSecrets`, `securityPolicyGenerator`, `skillGenerator`, `suggestPermission`, `suggestRisk`, `toolNameFor`, `unifiedDiff`
+
+**Types (45):** `AnyGenerator`, `ApplyEngine`, `ApplyEngineOptions`, `CapabilityDescriptor`, `CapabilityKind`, `CommandRunner`, `ConnectionTestResult`, `DetectionInput`, `DiscoverProjectOptions`, `DiscoveryComparison`, `GeneratedDraft`, `Generator`, `GeneratorContext`, `GeneratorInput`, `HealthRow`, `HealthStatus`, `HostToolView`, `LifecycleStage`, `ListFilesOptions`, `ListFilesResult`, `ModelSettingsInput`, `ModelSettingsStore`, `PackageManifest`, `Plane`, `ProjectDetector`, `ProposalEdit`, `ProposalView`, `ProviderFactory`, `ProviderSettings`, `PublicModelSettings`, `ReadonlyWorkspace`, `RenderedFile`, `RuntimeFacts`, `SecretFinding`, `SecuritySummary`, `StudioConfigView`, `StudioDiagnostics`, `StudioService`, `StudioServiceOptions`, `StudioStatus`, `ToolNameSource`, `ValidationStep`, `WorkspaceFile`, `WorkspaceGuard`, `WorkspaceLimits`
+
+**Subpath exports:** `@gixcopilot/studio/server`
+
 ## @gixcopilot/telemetry
 
 Observability foundation for the AI Copilot SDK - a TelemetryAdapter port (no-op, OpenTelemetry, and in-memory recording implementations), semantic conventions, safe redaction, metrics, cost estimation, and instrumentation wrappers that observe the runtime without becoming it.
