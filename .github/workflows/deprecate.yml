@@ -1,0 +1,33 @@
+# Deprecate: marks every @gixcopilot/* version below `below` as deprecated on npm (e.g. after a
+# partial release), using the NPM_TOKEN secret so no one-time code is needed. Safe to re-run.
+# See docs/RELEASING.md.
+name: Deprecate old versions
+
+on:
+  workflow_dispatch:
+    inputs:
+      below:
+        description: 'Deprecate every version below this one'
+        required: true
+        default: '0.2.0'
+
+permissions:
+  contents: read
+
+jobs:
+  deprecate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22.15.0', registry-url: 'https://registry.npmjs.org' }
+      - name: Deprecate older versions
+        run: |
+          if ! [[ "$BELOW" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::'below' must be a version like 0.2.0"; exit 1
+          fi
+          bash tools/deprecate-old-versions.sh "$BELOW"
+        env:
+          BELOW: ${{ inputs.below }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

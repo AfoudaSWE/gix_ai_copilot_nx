@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # Deprecates every @gixcopilot/* version below the given one (default 0.2.0), e.g. after a
-# partial release. npm requires two-factor auth for this; the script asks for a one-time code
-# and asks again whenever the code expires. Idempotent: safe to re-run.
+# partial release. Idempotent: safe to re-run.
 #   bash tools/deprecate-old-versions.sh [version]
+# Interactive, it asks for an npm one-time code (authenticator app) and asks again when it
+# expires. With NODE_AUTH_TOKEN set (the Deprecate workflow, using the NPM_TOKEN secret, which
+# bypasses 2FA) it runs without prompting and exits non-zero if any package fails.
 set -uo pipefail
 below="${1:-0.2.0}"
 message="Partial release; please use >=$below"
@@ -15,6 +17,19 @@ for name in $(node tools/check-npm-published.mjs --json 2>/dev/null | node -e 'l
   fi
 done
 echo "${#names[@]} package(s) to deprecate."
+
+if [ -n "${NODE_AUTH_TOKEN:-}" ]; then
+  failed=0
+  for name in "${names[@]}"; do
+    if out=$(npm deprecate "$name@<$below" "$message" 2>&1); then
+      echo "deprecated $name@<$below"
+    else
+      echo "::error::FAILED $name: $(grep -m1 'npm error' <<<"$out")"
+      failed=1
+    fi
+  done
+  exit $failed
+fi
 
 otp=""
 for name in "${names[@]}"; do

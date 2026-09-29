@@ -95,6 +95,8 @@ re-run the workflow for the same version.
 If the fixed-version rule is already broken on `latest` (packages at different versions), cut
 a new patch version for all packages and `npm deprecate` the mixed versions:
 `npm deprecate "@gixcopilot/<name>@<version>" "Partial release; use >=<new version>"`.
+Run the **Deprecate old versions** workflow (Actions tab; uses `NPM_TOKEN`, no one-time code
+needed) or, with an authenticator app, `bash tools/deprecate-old-versions.sh <new version>`.
 
 ## Credential history
 
