@@ -47,6 +47,8 @@ describe('aicopilot CLI', () => {
       // optional peers resolve to: other templates take a range, Angular overrides the tree.
       if (template === 'angular') expect(pkg.overrides?.['vitest']).toBe(pkg.devDependencies['vitest']);
       else expect(pkg.devDependencies['vitest']).toMatch(/^\^/);
+      // yarn 1 does not install peer dependencies: Vitest's vite peer must be listed.
+      if (template !== 'angular') expect(pkg.devDependencies['vite']).toBeDefined();
       expect(existsSync(join(cwd, 'app', '.env.example'))).toBe(true);
       expect(await readFile(join(cwd, 'app', '.gitignore'), 'utf8')).toContain('.env');
       // No real secret ever written: .env.example has empty placeholders only.

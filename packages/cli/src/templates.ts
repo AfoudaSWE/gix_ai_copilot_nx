@@ -293,6 +293,8 @@ function enterpriseFiles(options: TemplateOptions): PlannedFile[] {
       content: packageJson(options, {
         scripts: { build: 'tsc -p tsconfig.json', typecheck: 'tsc -p tsconfig.json --noEmit', test: 'vitest run', start: 'node --env-file-if-exists=.env dist/server.js' },
         sdk: [...NODE_SDK, 'rag', 'telemetry', 'tenancy'],
+        // Vitest's peer; yarn 1 does not install peers, so list it explicitly.
+        devDependencies: { vite: TOOLCHAIN.vite },
       }),
     },
     {
@@ -447,7 +449,7 @@ export function templateFiles(options: TemplateOptions): PlannedFile[] {
     case 'node':
       return [
         ...nodeFiles(options, false),
-        { path: 'package.json', content: packageJson(options, { scripts: { build: 'tsc -p tsconfig.json', typecheck: 'tsc -p tsconfig.json --noEmit', test: 'vitest run', start: 'node --env-file-if-exists=.env dist/server.js', dev: 'tsc -p tsconfig.json && node --env-file-if-exists=.env dist/server.js' }, sdk: NODE_SDK }) },
+        { path: 'package.json', content: packageJson(options, { scripts: { build: 'tsc -p tsconfig.json', typecheck: 'tsc -p tsconfig.json --noEmit', test: 'vitest run', start: 'node --env-file-if-exists=.env dist/server.js', dev: 'tsc -p tsconfig.json && node --env-file-if-exists=.env dist/server.js' }, sdk: NODE_SDK, devDependencies: { vite: TOOLCHAIN.vite } }) },
         { path: 'README.md', content: readme(options, 'npm start          # server on :4000\n') },
       ];
     case 'react':
