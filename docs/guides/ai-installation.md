@@ -39,9 +39,15 @@ RULES (apply to every phase)
   server's .env file, which I fill in myself.
 - Do not install any package other than the ones the installer adds, unless I approve it.
 - Do not disable lint rules, type checks or tests to make something pass.
-- If a command fails, stop, show me the error and propose a fix. Do not retry blindly.
+- If an install, build, test or write command fails, stop, show me the error and propose a
+  fix. Do not retry blindly.
+- Inspect only the repository on disk (the current working directory). Ignore files that are
+  open in the editor or mentioned in context but live outside it.
 
 PHASE 1 - INSPECT (read-only; run no install or write commands)
+In this phase a missing file, an empty search or a failed read-only command is a finding,
+not an error: note it (for example "no copilot-server/ folder") and keep going. Do not stop
+to ask; the first stop is Phase 2.
 Find out and note:
 1. Which app to install into. If this is a monorepo/workspace, list the apps and which one
    looks like the user-facing frontend.
