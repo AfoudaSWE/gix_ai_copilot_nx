@@ -33,6 +33,7 @@ export const DOC_SECTIONS: readonly DocSection[] = [
     pages: [
       { slug: '', label: 'Introduction', description: 'What GIX AI is and where to start.' },
       guide('installation', 'Installation', 'installation'),
+      guide('ai-installation', 'Install with an AI agent', 'ai-installation'),
       guide('quickstart', 'Quickstart', 'getting-started'),
       { slug: 'architecture', label: 'Architecture', source: 'docs/ARCHITECTURE_OVERVIEW.md' },
       guide('concepts', 'Core Concepts', 'concepts'),

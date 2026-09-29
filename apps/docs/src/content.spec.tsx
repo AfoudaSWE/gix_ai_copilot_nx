@@ -36,7 +36,7 @@ describe('content integrity', () => {
       if (page.source) expect(existsSync(join(repo, page.source)), page.source).toBe(true);
       expect(docPath(page.slug)).toMatch(/^\/docs(\/[a-z0-9-]+(\/[a-z0-9-]+)?)?$/);
     }
-    for (const required of ['quickstart', 'installation', 'react', 'vue', 'angular', 'node', 'context', 'tools', 'openapi', 'mcp', 'generative-ui', 'security', 'rag', 'memory', 'agents', 'workflows', 'devtools', 'testing', 'evals', 'production', 'cli', 'api']) {
+    for (const required of ['quickstart', 'installation', 'ai-installation', 'react', 'vue', 'angular', 'node', 'context', 'tools', 'openapi', 'mcp', 'generative-ui', 'security', 'rag', 'memory', 'agents', 'workflows', 'devtools', 'testing', 'evals', 'production', 'cli', 'api']) {
       expect(slugs, required).toContain(required);
     }
     expect(DOC_SECTIONS.every((section) => section.pages.length > 0)).toBe(true);
@@ -84,7 +84,8 @@ describe('content integrity', () => {
   });
 
   it('orders pages for previous/next navigation', () => {
-    expect(neighbours('quickstart').previous?.slug).toBe('installation');
+    expect(neighbours('quickstart').previous?.slug).toBe('ai-installation');
+    expect(neighbours('ai-installation').previous?.slug).toBe('installation');
     expect(neighbours('quickstart').next?.slug).toBe('architecture');
     expect(neighbours('').previous).toBeUndefined();
   });

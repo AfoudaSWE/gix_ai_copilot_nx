@@ -21,6 +21,9 @@ for what each step sets up.
 > `npm create @gixcopilot@latest -- --dry-run` prints the plan without changing anything, and
 > `--yes` accepts every default (useful in scripts).
 
+Using a coding agent? [Install with an AI agent](ai-installation.md) gives you a prompt that
+inspects your repository first and asks for your approval before each change.
+
 ## Install packages yourself
 
 | You are building | Install |
