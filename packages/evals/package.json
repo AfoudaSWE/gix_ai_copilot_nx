@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/evals",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Evaluation framework for AI Copilot applications - versioned datasets, execution records derived from recorded diagnostics, deterministic evaluators (tools, permission compliance, RAG, citations, memory, agents, workflows, UI, latency, tokens, cost), baseline comparison, experiments, reports and CI gates with non-negotiable security hard gates.",
   "keywords": [
     "ai",

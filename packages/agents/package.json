@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/agents",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Framework-independent agent runtime for the AI Copilot SDK - agent definitions, registry, lifecycle, routing, delegation, handoff, and planner/executor, reusing the existing model/tool/security stack.",
   "keywords": [
     "ai",

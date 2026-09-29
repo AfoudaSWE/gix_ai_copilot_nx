@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/context",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Framework-independent application context and shared state engine for the AI Copilot SDK: registration, scopes, priority, serialization, token budgeting, and resolution.",
   "keywords": [
     "ai",

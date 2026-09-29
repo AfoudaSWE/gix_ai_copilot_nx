@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/react",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Headless React adapter for the Copilot client.",
   "keywords": [
     "ai",

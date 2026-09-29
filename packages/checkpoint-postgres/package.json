@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/checkpoint-postgres",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "PostgreSQL CheckpointStore adapter for @gixcopilot/workflows - the only other package besides @gixcopilot/vectorstore-pgvector allowed to depend on drizzle-orm/pg.",
   "keywords": [
     "ai",

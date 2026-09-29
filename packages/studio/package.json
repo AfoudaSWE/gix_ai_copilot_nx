@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/studio",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Development-only GIX Developer Studio (/__gix): read-only project discovery, proposal-producing generators, preview/diff, explicit approval and a deterministic apply engine. Never exposed in production.",
   "keywords": [
     "ai",

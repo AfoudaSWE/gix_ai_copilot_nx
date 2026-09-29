@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/studio-preview",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "private": true,
   "description": "The Developer Studio's live copilot preview: the real @gixcopilot/ui, bundled and shipped inside @gixcopilot/studio.",
   "type": "module",

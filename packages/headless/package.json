@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/headless",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Framework-neutral chat store and copilot composition shared by the React and Angular adapters.",
   "keywords": [
     "ai",

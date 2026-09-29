@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/security",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Framework-independent AI Action Firewall, RBAC/ABAC, human-in-the-loop approval, PII redaction, and audit trail for the AI Copilot SDK.",
   "keywords": [
     "ai",

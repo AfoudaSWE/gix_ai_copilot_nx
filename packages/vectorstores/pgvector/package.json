@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/vectorstore-pgvector",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "PostgreSQL + pgvector VectorStore adapter for @gixcopilot/rag - the only package in the workspace allowed to depend on drizzle-orm/pg for RAG storage.",
   "keywords": [
     "ai",

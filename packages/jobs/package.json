@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/jobs",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "BullMQ/Redis JobExecutor adapter for @gixcopilot/workflows - background scheduling for workflow step execution, kept behind the workflows package's own JobExecutor port.",
   "keywords": [
     "ai",

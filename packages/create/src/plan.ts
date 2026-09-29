@@ -3,7 +3,7 @@ import type { Framework, PackageManager, ProjectInfo } from './detect.js';
 import { ANGULAR_PROXY, ANGULAR_PROXY_FILE, API_PREFIX, SERVER_URL, VITE_PROXY_SNIPPET, patchAngularJson, patchScripts, patchViteConfig } from './patch.js';
 import type { PatchResult } from './patch.js';
 
-export const VERSION = '0.2.2';
+export const VERSION = '0.2.3';
 
 export interface Choices {
   /** Frontend to integrate; undefined means server only. */

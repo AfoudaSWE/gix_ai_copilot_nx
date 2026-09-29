@@ -3,7 +3,19 @@
 All `@gixcopilot/*` packages share one version. Entries are generated from conventional
 commits by `nx release changelog`; see [docs/RELEASING.md](docs/RELEASING.md).
 
-## Unreleased
+## 0.2.3 (2026-09-30)
+
+### 🚀 Features
+
+- **studio:** new `@gixcopilot/studio` (Experimental, development-only): the Developer Studio at
+  `/__gix`. Read-only project discovery, nine proposal-only generators (API/OpenAPI → tools,
+  state → context, components → generative UI, auth → security policies, agents, skills, docs →
+  knowledge, configuration), preview and diff, selective approval, and a deterministic apply engine
+  with workspace protection, secret scanning, conflict detection, post-apply validation and
+  rollback. A live preview built from the real `@gixcopilot/ui`, and Test Copilot against the real
+  runtime. Never registered in production. See [ADR 0023](docs/adr/0023-development-and-application-planes.md) ([878d313](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/878d313))
+- **node:** `Copilot` exposes read-only `model`, `modelRuntime`, `toolRegistry` and
+  `firewallEnabled`; `attachStudio(copilot)` uses them ([b1d65fd](https://github.com/AfoudaSWE/gix_ai_copilot_nx/commit/b1d65fd))
 
 ### 🩹 Fixes
 
