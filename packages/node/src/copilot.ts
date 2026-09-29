@@ -62,6 +62,14 @@ export interface CopilotRunResult {
 export interface Copilot {
   /** The configured Fastify server: `listen()` it, or register more plugins on it. */
   readonly app: FastifyApp;
+  /** The default model every run uses. */
+  readonly model: ModelReference;
+  /** The model runtime runs execute on (for example, for a connection test). */
+  readonly modelRuntime: ModelRuntime;
+  /** The backend tool registry, when tools were configured. */
+  readonly toolRegistry?: ToolRegistry;
+  /** True when an Action Firewall guards backend tool calls. */
+  readonly firewallEnabled: boolean;
   /** An in-process `CopilotClient` that goes through the same HTTP pipeline (auth, firewall). */
   client(headers?: Readonly<Record<string, string>>): CopilotClient;
   /** Runs one turn and collects the result. */
@@ -167,6 +175,10 @@ export function createCopilot(options: CreateCopilotOptions): Copilot {
 
   return {
     app,
+    model: options.model,
+    modelRuntime,
+    ...(toolRegistry ? { toolRegistry } : {}),
+    firewallEnabled: security.firewall !== undefined,
     client,
     stream,
     async run(raw) {

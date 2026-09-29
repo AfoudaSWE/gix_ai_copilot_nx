@@ -31,6 +31,7 @@ await copilot.listen({ port: 4000 });
 | `fetchHandler({ basePath })` | Web-standard `Request` → `Response` (streaming): [Next.js](nextjs.md) route handlers, Remix, Hono, Bun, Deno |
 | `run(input)` / `stream(input)` | In-process turns (jobs, scripts, tests); they dispatch into the same routes, so authentication and the firewall still apply |
 | `client(headers?)` | An in-process `CopilotClient` |
+| `model`, `modelRuntime`, `toolRegistry`, `firewallEnabled` | Read-only facts about the composition; the [Developer Studio](../developer-studio/README.md) reads them through `attachStudio` |
 
 Agents, RAG and memory compose as tools and context from their packages
 (`@gixcopilot/agents`, `@gixcopilot/rag`, `@gixcopilot/memory`). Example: `examples/node-basic`.
