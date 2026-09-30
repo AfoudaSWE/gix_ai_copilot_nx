@@ -306,6 +306,11 @@ export default tseslint.config(
               onlyDependOnLibsWithTags: ['scope:studio-preview', 'scope:react', 'scope:ui'],
             },
             {
+              // The one-package installer (`npm add @gixcopilot/sdk`, `npx gix init`).
+              sourceTag: 'scope:sdk',
+              onlyDependOnLibsWithTags: ['scope:sdk', 'scope:studio', 'scope:node', 'scope:protocol', 'scope:provider', 'scope:provider-adapter', 'scope:security', 'scope:tools'],
+            },
+            {
               sourceTag: 'scope:config',
               onlyDependOnLibsWithTags: ['scope:config'],
             },
@@ -398,6 +403,7 @@ export default tseslint.config(
                 'scope:management',
                 'scope:cli',
                 'scope:studio',
+                'scope:sdk',
                 'scope:example',
               ],
             },

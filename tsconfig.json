@@ -50,6 +50,9 @@
       "path": "packages/studio"
     },
     {
+      "path": "packages/sdk"
+    },
+    {
       "path": "packages/testing"
     },
     {
