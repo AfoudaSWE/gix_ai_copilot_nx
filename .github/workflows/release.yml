@@ -62,11 +62,16 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Validate everything
         run: pnpm exec nx run-many -t lint typecheck test build
+      - name: Check secrets and generated API reference
+        run: |
+          node tools/secret-scan.mjs
+          node tools/api-reference.mjs --check
       - name: Release candidate checks on packed artifacts
         run: |
           node tools/verify-packages.mjs --out .packs --keep
           node tools/consumer-test.mjs --packs .packs
           node tools/consumer-test.mjs --packs .packs --npm 11
+          node tools/installer-consumer-test.mjs --packs .packs
       - name: Preview version
         run: pnpm exec nx release version ${{ inputs.specifier }} --dry-run
       - name: Publish to npm

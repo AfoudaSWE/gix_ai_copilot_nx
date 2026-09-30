@@ -1,6 +1,7 @@
 # Universal Existing-Project Installer
 
-**Experimental, unreleased and not published to npm.** This post-Phase-12 enhancement
+**Experimental, 0.2.4 coordinated release candidate; npm publication pending registry
+verification. Not for production.** This post-Phase-12 enhancement
 builds on the [Developer Studio](../developer-studio/README.md), not a new phase. The
 [plan](INSTALLER_PLAN.md) describes intent; this guide describes current source behavior.
 The owner maintains final verification evidence in [INSTALLER_STATUS.md](INSTALLER_STATUS.md).
@@ -8,11 +9,11 @@ Detection and generation are not proof that a framework's packed consumer passes
 
 ## Flow
 
-The intended release workflow below requires a future published SDK or locally packed
-packages today. Run at the repository root containing `package.json`:
+The 0.2.4 release-candidate workflow below requires verified npm publication or locally
+packed packages today. Run at the repository root containing `package.json`:
 
 ```sh
-npm add @gixcopilot/sdk
+npm add @gixcopilot/sdk@0.2.4
 npx gix init
 npx gix dev
 ```

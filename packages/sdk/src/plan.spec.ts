@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { classifyProject, createReadonlyWorkspace, discoverProject } from '@gixcopilot/studio';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createFixture, GIX_DEPENDENCIES, NX_FIXTURE, recordingIo, removeFixture, ROOT_PACKAGE } from './fixtures.spec-helper.js';
@@ -15,6 +16,19 @@ async function plan(files: Readonly<Record<string, string>>, env: Readonly<Recor
 }
 
 describe('planInstalls', () => {
+  it('keeps scaffold dependency versions synchronized with the released SDK package', async () => {
+    const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { version: string };
+    expect(SDK_VERSION).toBe(manifest.version);
+    const steps = await plan({ 'package.json': '{"name":"app","dependencies":{"react":"^19.0.0"}}' });
+    const packages = steps.flatMap((step) => step.packages).filter((name) => name.startsWith('@gixcopilot/'));
+    expect(packages).toEqual(expect.arrayContaining(['@gixcopilot/sdk', '@gixcopilot/react', '@gixcopilot/ui']));
+    for (const step of steps) {
+      for (const name of step.packages.filter((name) => name.startsWith('@gixcopilot/'))) {
+        expect(step.args).toContain(`${name}@^${manifest.version}`);
+      }
+    }
+  });
+
   it('plans every direct import emitted by the init generators even when the SDK is already listed', async () => {
     const root = createFixture({ ...NX_FIXTURE, 'package.json': JSON.stringify({ name: 'workspace', dependencies: { '@gixcopilot/sdk': SDK_VERSION, react: '^19.0.0', fastify: '^5.0.0' }, devDependencies: { typescript: '5.9.3' } }), 'apps/api/src/permissions.ts': "export enum Permissions { ORDER_VIEW = 'orders:view' }\n", 'apps/api/src/main.ts': "import Fastify from 'fastify';\nimport { Permissions } from './permissions.js';\nconst app = Fastify();\napp.get('/orders', async () => requirePermission(Permissions.ORDER_VIEW));\n" });
     roots.push(root);

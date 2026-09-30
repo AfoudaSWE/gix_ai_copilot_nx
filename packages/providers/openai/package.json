@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/provider-openai",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "OpenAI streaming ModelProvider adapter for the AI Copilot SDK. The only package in the workspace allowed to depend on the openai SDK.",
   "keywords": [
     "ai",

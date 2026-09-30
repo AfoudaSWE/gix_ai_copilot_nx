@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/sdk",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "One package to add GIX Copilot to an existing project: `npm add @gixcopilot/sdk`, then `npx gix init` detects your repo, installs what each app needs, and prepares reviewable proposals in the Developer Studio.",
   "keywords": [
     "ai",

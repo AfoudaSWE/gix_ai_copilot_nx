@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/connectors",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Connect any HTTP or GraphQL API (any language or framework, no OpenAPI document needed) and turn its endpoints into schema-validated, firewall-enforced copilot tools; in TypeScript or from a JSON/YAML manifest.",
   "keywords": [
     "ai",

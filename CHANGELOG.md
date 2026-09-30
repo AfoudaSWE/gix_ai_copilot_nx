@@ -3,7 +3,10 @@
 All `@gixcopilot/*` packages share one version. Entries are generated from conventional
 commits by `nx release changelog`; see [docs/RELEASING.md](docs/RELEASING.md).
 
-## Unreleased
+## 0.2.4 (2026-09-30)
+
+Coordinated release candidate; npm publication is pending registry verification. This is
+not a universal production-readiness claim. The installer remains Experimental.
 
 ### Features
 
@@ -19,10 +22,19 @@ commits by `nx release changelog`; see [docs/RELEASING.md](docs/RELEASING.md).
 - Intended SDK quick start, public API/non-responsibilities, installer flow, manifest,
   idempotency and known verification limits. The published `npm create @gixcopilot` path remains.
 
-These additions are **unreleased and not published to npm**; the SDK's `0.2.3` source
-version is not a release claim. Installer readiness and actual validation results are
-owner-maintained in [installer status](docs/installer/INSTALLER_STATUS.md), not certified by
-this changelog entry.
+### Security Fixes
+
+- **studio:** persisted proposals require reapproval after restart; hardened source targets,
+  proposal-file symlinks and safe selection so destructive/conflicted changes stay unselected.
+- **sdk:** reject linked installer metadata and redirected parents before side effects;
+  replace metadata atomically and prevent environment overrides of production isolation.
+
+Recorded installer verification covers ten packed fixtures; only React/Vite and Express
+also exercised approved UI apply and real typecheck/build. Angular/Vue UI compilation,
+Next.js build/render, packed browser interaction, live providers and the packed pnpm/yarn/bun
+matrix remain unverified. See [installer status](docs/installer/INSTALLER_STATUS.md) for
+full evidence and limits. Release validation is owned by the main release session; this
+documentation update does not claim reruns or npm publication.
 
 ## 0.2.3 (2026-09-30)
 

@@ -1,6 +1,6 @@
 import type { ClassifiedApplication, DiscoveredProject, ReadonlyWorkspace } from '@gixcopilot/studio';
 
-export const SDK_VERSION = '0.2.3';
+export const SDK_VERSION = '0.2.4';
 
 type Manager = DiscoveredProject['workspace']['packageManager'];
 

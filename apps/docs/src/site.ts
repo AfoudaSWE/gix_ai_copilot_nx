@@ -14,7 +14,7 @@ export const SITE = {
   branch: env['VITE_GITHUB_BRANCH'] ?? 'main',
   company: { name: 'GIX Technology', url: 'https://gixtechnology.com' },
   npm: 'https://www.npmjs.com/org/gixcopilot',
-  version: '0.2.3',
+  version: '0.2.4',
   description:
     'GIX AI is an enterprise SDK for building application-aware AI copilots and agents with tools, context, RAG, generative UI, workflows and built-in security.',
 } as const;

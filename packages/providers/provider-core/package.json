@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/provider",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Provider-independent model contracts, registry, and model runtime for the AI Copilot SDK.",
   "keywords": [
     "ai",

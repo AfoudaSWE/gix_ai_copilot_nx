@@ -1,8 +1,19 @@
 # Releasing
 
 The `@gixcopilot/*` SDK packages are published to the public npm registry under the
-[MIT license](../LICENSE), from the npm account `gixtech`. All packages share one fixed
+[MIT license](../LICENSE). The current workstation `npm whoami` account is
+`gix_ai_copilot_nx`, not the historical `gixtech` account. All packages share one fixed
 version (Nx fixed release group). Apps and examples stay `private` and are never published.
+
+## 0.2.4 Release Candidate
+
+The owner authorized a coordinated 0.2.4 release, including the Experimental
+`@gixcopilot/sdk` installer. npm publication is pending registry verification, not implied
+by local version fields or tarball checks. This is not a universal production-readiness
+claim; [installer status](installer/INSTALLER_STATUS.md) retains the verified scope and limits.
+The main release session owns validation and the final publication-evidence update after
+`node tools/check-npm-published.mjs` confirms every package. This documentation update does
+not claim validation reruns or successful publication.
 
 ## Before every publish
 
@@ -20,11 +31,13 @@ contains tests, `.env` files or secret-shaped strings, or still has `workspace:`
 
 ## First publish from a workstation
 
-The `@gixcopilot` scope must be an npm organization owned by the `gixtech` account (create a
-free organization named `gixcopilot` at <https://www.npmjs.com/org/create>). Then:
+The `@gixcopilot` scope must be an npm organization that grants the publishing account
+write access. The current account is `gix_ai_copilot_nx`; verify identity and scope access
+before publishing rather than assuming the historical `gixtech` account is in use. Then:
 
 ```bash
-npm login                                       # as gixtech; 2FA prompts for an OTP
+npm login                                       # as gix_ai_copilot_nx; 2FA prompts for an OTP
+npm whoami                                      # confirm the authorized publishing account
 pnpm -r --filter "./packages/**" publish --access public --no-git-checks
 ```
 

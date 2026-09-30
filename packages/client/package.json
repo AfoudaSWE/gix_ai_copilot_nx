@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/client",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Framework-independent streaming client for the AI Copilot SDK. No React/Angular dependency.",
   "keywords": [
     "ai",

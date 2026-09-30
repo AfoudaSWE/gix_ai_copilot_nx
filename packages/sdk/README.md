@@ -1,5 +1,5 @@
 # @gixcopilot/sdk
-Experimental. Unreleased and not published to npm; not for production.
+Experimental. 0.2.4 coordinated release candidate; npm publication pending registry verification. Not for production.
 
 An umbrella installer and server entry point for adding GIX to an existing project. It
 composes the modular Node SDK, Developer Studio, providers, tool registry and Action
@@ -8,12 +8,12 @@ peer for AST discovery; `init` plans its installation when missing.
 
 ## Install and use
 
-This is the intended release flow, **not an available npm install yet**. Evaluate the
-working-tree package using packed packages and their workspace dependencies; see the
-[installer plan](../../docs/installer/INSTALLER_PLAN.md).
+This is the 0.2.4 release-candidate flow, **not a verified npm install yet**. Until npm
+publication is verified, evaluate locally packed packages and their workspace dependencies;
+see the [installer status](../../docs/installer/INSTALLER_STATUS.md) for evidence and limits.
 
 ```sh
-npm add @gixcopilot/sdk
+npm add @gixcopilot/sdk@0.2.4
 npx gix init
 npx gix dev
 ```
@@ -36,8 +36,8 @@ is `npm create @gixcopilot@latest`.
 | `gix status` | Compare fresh discovery with `.gix/discovery.json` and report installation details |
 | `gix --help`, `gix --version` | Print help or the package's source version |
 
-There is no `--yes` option in the current CLI. The package's `0.2.3` version field does not
-mean the SDK was included in the published 0.2.3 release.
+There is no `--yes` option in the current CLI. The SDK is included in the coordinated
+0.2.4 release candidate; its version field alone is not evidence of npm publication.
 
 `init` plans direct root dependencies for the server and the tools/policies its generators
 emit: `@gixcopilot/sdk`, `@gixcopilot/openapi`, `@gixcopilot/tools`,

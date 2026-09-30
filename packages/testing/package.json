@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/testing",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Deterministic testing SDK for AI Copilot applications - request-aware test models, tool mocks and assertions, security/RAG/memory/approval fixtures, agent and workflow simulation, a one-call copilot harness, and side-effect-free replay of recorded runs.",
   "keywords": [
     "ai",

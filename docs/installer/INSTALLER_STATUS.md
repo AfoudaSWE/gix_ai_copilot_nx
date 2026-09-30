@@ -1,13 +1,20 @@
 # Universal Existing-Project Installer - Status
 
 > Plan: [INSTALLER_PLAN.md](INSTALLER_PLAN.md). Handoff: [CODEX_PROMPT.md](CODEX_PROMPT.md).
-> Verified 2026-09-30. Unreleased; no version bump, push or publication.
+> Installer verification recorded 2026-09-30. Authorized 0.2.4 coordinated release
+> candidate; npm publication pending registry verification.
 
 ## Final Status: READY
 
 READY means the handoff's mandatory fixture and security checks passed, not that every
 detected framework's generated UI has been compiled. The original 69-section brief was
 not found in this repository; this report follows the handoff's available requirements.
+
+The SDK remains Experimental, not for production. READY is not a universal
+production-readiness claim or proof of npm publication. The evidence below records the
+installer handoff verification, not reruns by this documentation update. The main release
+session owns release validation and the final publication-evidence update after registry
+verification; those release results are pending here.
 
 ## Completion Report
 
@@ -39,6 +46,25 @@ Docker-dependent infrastructure and optional live-provider tests; they are not i
 tests introduced to suppress failures.
 
 ## Packed Consumers
+
+### 0.2.4 Release Candidate Validation
+
+Fresh release validation on 2026-09-30, before publication:
+
+- `pnpm install --frozen-lockfile`: passed.
+- `REQUIRE_DOCKER=1 pnpm validate -- --skip-nx-cache`: all 72 projects and 286 tasks
+  passed with no Nx task cache; 1617 tests passed, 6 optional OpenAI smoke tests skipped.
+  All Docker-backed PostgreSQL/pgvector/Redis/BullMQ suites ran, with no infrastructure skips.
+- Playwright: 23 passed. Secret scan: 1641 files checked, zero findings.
+- API reference: generated for 44 packages and freshness check passed.
+- Package verification: 44 packages packed to `.packs/release-0.2.4`, zero failures.
+- Clean package consumers: 8/8 passed with bundled npm and 8/8 with npm 11.
+- Installer consumers: 10/10 passed against the 0.2.4 tarballs, retaining the framework
+  coverage limits below. Evidence:
+  `C:\Users\afoud\AppData\Local\Temp\gix-installer-consumers-3U6VWb\results.json`.
+
+Publication and registry-backed installation remain pending; these are packed release
+candidate checks, not proof that npm serves the packages.
 
 | Fixture | Result | Coverage |
 | --- | --- | --- |
@@ -100,6 +126,7 @@ both and then all ten passed after the harness correction.
   integration. Unsupported frontend frameworks get no automatic UI integration.
 - Runtime approval/audit stores are in-memory. Persisted Studio approvals require
   reapproval on restart. Package-manager partial failure is not rolled back.
-- Publishing is a separate owner-approved action. No version was changed.
+- The owner authorized the coordinated 0.2.4 release. npm publication remains pending
+  registry verification; local versions and packed-consumer results do not prove publication.
 
 FINAL STATUS: READY

@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/cli",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "The aicopilot command line: init, add tool/agent/mcp/api, import-openapi, api check, mcp serve, dev, test, eval, doctor and db migrations.",
   "keywords": [
     "ai",

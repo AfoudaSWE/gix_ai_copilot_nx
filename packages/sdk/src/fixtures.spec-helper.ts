@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, relative } from 'node:path';
 import type { InitIo } from './init.js';
 import type { InstallStep } from './plan.js';
+import { SDK_VERSION } from './plan.js';
 
 export function writeFixture(root: string, files: Readonly<Record<string, string>>): void {
   for (const [path, content] of Object.entries(files)) {
@@ -43,7 +44,7 @@ export function recordingIo(root: string, exitCode = 0): InitIo & { readonly out
   return { cwd: root, env: {}, output, errors, runs, out: (line) => output.push(line), err: (line) => errors.push(line), run: (step, cwd) => { runs.push({ step, cwd }); return Promise.resolve(exitCode); } };
 }
 
-export const GIX_DEPENDENCIES: Readonly<Record<string, string>> = { '@gixcopilot/sdk': '0.2.3', '@gixcopilot/openapi': '0.2.3', '@gixcopilot/tools': '0.2.3', '@gixcopilot/protocol': '0.2.3', '@gixcopilot/security': '0.2.3', zod: '^4.0.0' };
+export const GIX_DEPENDENCIES: Readonly<Record<string, string>> = { '@gixcopilot/sdk': SDK_VERSION, '@gixcopilot/openapi': SDK_VERSION, '@gixcopilot/tools': SDK_VERSION, '@gixcopilot/protocol': SDK_VERSION, '@gixcopilot/security': SDK_VERSION, zod: '^4.0.0' };
 export const ROOT_PACKAGE = JSON.stringify({ name: 'fixture', private: true, type: 'module', dependencies: GIX_DEPENDENCIES, devDependencies: { typescript: '5.9.3' } });
 export const REACT_SOURCE = "import { createRoot } from 'react-dom/client';\nimport { App } from './App.js';\ncreateRoot(document.getElementById('root')).render(<App />);\n";
 export const BACKEND_SOURCE = "import Fastify from 'fastify';\nconst app = Fastify();\napp.get('/orders', async () => []);\n";

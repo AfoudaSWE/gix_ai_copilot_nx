@@ -361,7 +361,7 @@ phase is started without an explicit instruction naming it.
 
 - Implemented Angular and Node SDKs over shared headless state, a CLI with four starter templates, validated configuration and secret references, tenant-scoped PostgreSQL persistence, Redis workers and limits, model routing/fallback, usage admission, an authenticated management API and platform, Docker deployment, CI/release workflows, and a documentation portal.
 - The post-upgrade 64-project `pnpm validate` gate passed (235 of 254 tasks executed, 19 cached). Real PostgreSQL/Redis suites, 11 Chromium tests, all eight initial clean tarball consumers and the upgraded enterprise starter passed. See [Phase 12 testing](phases/phase-12/Phase_12_Testing.md) for exact results and limits.
-- The owner reversed the earlier proprietary decision: packages are MIT licensed and published to npm from the `gixtech` account; see [Releasing](RELEASING.md). The owner confirmed revocation and rotation of the previously committed real credential and completion of the exposure review. The production audit prompted an upgrade to patched Drizzle ORM 0.45.3; the audit reported no known vulnerabilities. Docker smoke passed 10/10 checks on rebuilt images. See [Phase 12 issues](phases/phase-12/Phase_12_Issues.md).
+- The owner reversed the earlier proprietary decision: packages are MIT licensed and were initially published to npm from the `gixtech` account; the current release account is `gix_ai_copilot_nx`, see [Releasing](RELEASING.md). The owner confirmed revocation and rotation of the previously committed real credential and completion of the exposure review. The production audit prompted an upgrade to patched Drizzle ORM 0.45.3; the audit reported no known vulnerabilities. Docker smoke passed 10/10 checks on rebuilt images. See [Phase 12 issues](phases/phase-12/Phase_12_Issues.md).
 
 ## Production readiness — 0.2.0 (post-Phase 12 hardening)
 
@@ -391,23 +391,28 @@ phase is started without an explicit instruction naming it.
   `attachStudio(copilot)` for `createCopilot`. Example: `examples/studio`.
 - Verified: `pnpm validate` 71/71 projects, Playwright 23/23, 43/43 packages pack cleanly.
 
-## Universal Existing-Project Installer (post-Phase 12, verified and unreleased)
+## Universal Existing-Project Installer (post-Phase 12, 0.2.4 release candidate)
 
 - Explicitly scoped post-Phase-12 enhancement, not a new phase. Tracked in the
   [installer plan](installer/INSTALLER_PLAN.md) and owner-maintained
   [installer status](installer/INSTALLER_STATUS.md), with the [guide](installer/README.md)
   describing current source behavior.
-- `@gixcopilot/sdk` is **Experimental, unreleased and not published to npm**. Its current
-  `0.2.3` source version does not mean it shipped in the published Studio release.
+- `@gixcopilot/sdk` is **Experimental, not for production**, and included in the authorized
+  coordinated 0.2.4 release candidate. npm publication is pending registry verification;
+  this release is not a universal production-readiness claim.
 - Implements a dedicated GIX server bootstrap and `init`/`dev`/`status` CLI over the existing
   Studio and modular SDK. Missing GIX-owned files may be created during initialization;
   application edits remain proposals requiring preview, approval and apply. The published
   `npm create @gixcopilot` installer remains a compatibility path.
-- Verified: 72-project `pnpm validate`, 54 SDK tests, 106 Studio tests, 23 browser tests,
+- Recorded installer verification: 72-project `pnpm validate`, 54 SDK tests, 106 Studio tests, 23 browser tests,
   44 clean package tarballs and all ten mandatory packed installer fixtures. React/Vite and
   Express additionally passed approved UI apply and real typecheck/build; other fixtures
   verify installer/runtime only. Full results, cached/skipped checks and unverified framework
   compilation are recorded in `installer/INSTALLER_STATUS.md` (READY for the handoff scope).
+- Fresh 0.2.4 release validation passed with Docker required and Nx task caching disabled:
+  72 projects, 286 tasks, 1617 tests passed and 6 optional live-provider tests skipped.
+  Packed package consumers passed 8/8 with bundled npm and 8/8 with npm 11; installer
+  consumers passed 10/10. Publication evidence remains pending registry verification.
 
 ## Current Validation (Phase 11 completion)
 

@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { runStatus } from './commands.js';
 import { BACKEND_SOURCE, createFixture, GIX_DEPENDENCIES, NX_FIXTURE, REACT_FIXTURE, recordingIo, removeFixture, ROOT_PACKAGE, snapshot, writeFixture } from './fixtures.spec-helper.js';
 import { runInit } from './init.js';
+import { SDK_VERSION } from './plan.js';
 import { ENV_EXAMPLE } from './templates.js';
 
 const roots: string[] = [];
@@ -106,7 +107,7 @@ describe('runInit safety and repeat runs', () => {
     const root = fixture(REACT_FIXTURE);
     const first = await runInit(recordingIo(root));
     const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')) as { dependencies: Record<string, string> };
-    for (const step of first.installs) for (const name of step.packages) packageJson.dependencies[name] = '0.2.3';
+    for (const step of first.installs) for (const name of step.packages) packageJson.dependencies[name] = SDK_VERSION;
     writeFixture(root, { 'package.json': JSON.stringify(packageJson) });
     const io = recordingIo(root);
     const second = await runInit(io);

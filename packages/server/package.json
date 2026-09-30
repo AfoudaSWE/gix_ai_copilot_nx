@@ -1,6 +1,6 @@
 {
   "name": "@gixcopilot/server",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Fastify HTTP/SSE transport adapter for the AI Copilot SDK: adapts @gixcopilot/core's runtime to an HTTP boundary.",
   "keywords": [
     "ai",
