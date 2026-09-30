@@ -49,7 +49,7 @@ export interface ProjectUnit {
 export type ApplicationInfo = ProjectUnit;
 export type LibraryInfo = ProjectUnit;
 
-export type ApiSourceKind = 'openapi' | 'backend-route' | 'frontend-client';
+export type ApiSourceKind = 'openapi' | 'swagger' | 'postman' | 'backend-route' | 'frontend-client';
 
 export interface ApiOperation {
   readonly id: string;
@@ -81,6 +81,46 @@ export interface RouteInfo {
   readonly kind: 'frontend' | 'backend';
   readonly file: string;
   readonly line?: number;
+  /** The page component the route renders, when the route definition names it. */
+  readonly component?: string;
+}
+
+export type OperationConfidence = 'high' | 'medium' | 'review';
+
+/**
+ * One API operation after every source that describes it has been merged (§17, §21). Sources
+ * are ranked (OpenAPI 3 > Swagger > backend routes > Postman > frontend calls); the strongest
+ * one supplies the contract, and disagreements are listed as conflicts, never merged silently.
+ */
+export interface NormalizedApiOperation {
+  /** Method + canonical path, e.g. `GET /applications/{}`. */
+  readonly key: string;
+  readonly method: ApiOperation['method'];
+  /** The path as the strongest source writes it. */
+  readonly path: string;
+  readonly operationId?: string;
+  readonly summary?: string;
+  readonly input?: Readonly<Record<string, unknown>>;
+  readonly output?: Readonly<Record<string, unknown>>;
+  readonly authentication?: string;
+  readonly permissions: readonly string[];
+  readonly sources: readonly { readonly kind: ApiSourceKind; readonly file: string; readonly line?: number; readonly operationId?: string }[];
+  /** The strongest source's operation, which generators use. */
+  readonly primary: ApiOperation;
+  readonly confidence: OperationConfidence;
+  readonly conflicts: readonly string[];
+}
+
+/** A frontend route with what its page uses (§30). */
+export interface PageInfo {
+  readonly route: string;
+  readonly params: readonly string[];
+  readonly component?: string;
+  readonly file?: string;
+  /** Normalized operation keys the page (or files it imports) calls. */
+  readonly operations: readonly string[];
+  readonly contextCandidates: readonly string[];
+  readonly entity?: string;
 }
 
 export interface ComponentProp {
@@ -157,6 +197,8 @@ export interface DiscoveredProject {
   readonly apis: readonly ApiSource[];
   readonly routes: readonly RouteInfo[];
   readonly components: readonly ComponentInfo[];
+  readonly operations: readonly NormalizedApiOperation[];
+  readonly pages: readonly PageInfo[];
   readonly contextCandidates: readonly ContextCandidate[];
   readonly authentication?: AuthenticationInfo;
   readonly permissions: readonly PermissionInfo[];

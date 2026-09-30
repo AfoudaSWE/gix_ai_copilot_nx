@@ -1,11 +1,11 @@
-import type { ApiOperation } from '../discovery/model.js';
+import type { ApiOperation, OperationConfidence } from '../discovery/model.js';
 import type { PolicyProposal, ProposalItems, ProposalWarning, ToolProposal } from '../proposals/model.js';
 import { GENERATED_ROOT, header, identifier, pascal, slug, str, zodFromJsonSchema } from './codegen.js';
 import type { GeneratedDraft, Generator, GeneratorContext, GeneratorInput, RenderedFile } from './contract.js';
 import { approvalFloor, suggestPermission, suggestRisk, toolNameFor } from './risk.js';
 
 interface ApiToolsAnalysis {
-  readonly operations: readonly ApiOperation[];
+  readonly operations: readonly { readonly operation: ApiOperation; readonly confidence: OperationConfidence; readonly conflicts: readonly string[] }[];
   readonly knownPermissions: readonly string[];
   readonly specFiles: Readonly<Record<string, string>>;
 }
@@ -146,31 +146,33 @@ function createApiToolsGenerator(mode: Mode): Generator<ApiToolsAnalysis> {
     title,
     description: mode === 'openapi' ? 'Turns selected OpenAPI operations into reviewed tools registered through @gixcopilot/openapi.' : 'Turns discovered backend routes and API client calls into reviewed tools.',
     analyze(context: GeneratorContext, input: GeneratorInput) {
-      const operations = context.discovery.apis
-        .filter((source) => (mode === 'openapi' ? source.kind === 'openapi' : source.kind !== 'openapi'))
-        .flatMap((source) => source.operations);
-      // Frontend client calls often repeat one backend route: keep the first per method+path.
-      const unique = new Map<string, ApiOperation>();
-      for (const operation of operations) if (!unique.has(`${operation.method} ${operation.path}`)) unique.set(`${operation.method} ${operation.path}`, operation);
-      const selected = input.select && input.select.length > 0 ? [...unique.values()].filter((operation) => input.select?.includes(operation.id) || input.select?.includes(`${operation.method} ${operation.path}`)) : [...unique.values()];
+      // One candidate per normalized operation (§17): an operation described by OpenAPI belongs
+      // to OpenAPI → Tools, everything else (Swagger, routes, Postman, client calls) to API → Tools.
+      const normalized = context.discovery.operations.filter((operation) => (mode === 'openapi') === (operation.primary.sourceKind === 'openapi'));
+      const chosen = input.select && input.select.length > 0 ? normalized.filter((operation) => input.select?.some((key) => key === operation.key || key === operation.primary.id || key === `${operation.method} ${operation.path}`)) : normalized;
+      const selected = chosen.map((operation) => ({ operation: operation.primary, confidence: operation.confidence, conflicts: operation.conflicts }));
       const specFiles = Object.fromEntries(context.discovery.apis.filter((source) => source.kind === 'openapi').map((source) => [source.title ?? source.file, source.file]));
       return Promise.resolve({ operations: selected, knownPermissions: context.discovery.permissions.map((permission) => permission.name), specFiles });
     },
     generate(analysis) {
       const warnings: ProposalWarning[] = [];
       const names = new Set<string>();
-      const tools = analysis.operations.map((operation, index): ToolProposal => {
+      const tools = analysis.operations.map(({ operation, confidence, conflicts }, index): ToolProposal => {
         let name = toolNameFor(operation.method, operation.path);
         for (let suffix = 2; names.has(name); suffix += 1) name = `${toolNameFor(operation.method, operation.path)}${String(suffix)}`;
         names.add(name);
         const risk = suggestRisk(operation.method);
         const permission = suggestPermission(operation.method, operation.path, operation.permissions, analysis.knownPermissions);
         const toolId = `tool:${String(index)}:${name}`;
+        if (confidence === 'review') warnings.push({ code: 'NEEDS_REVIEW', message: `${name}: ${conflicts.length > 0 ? conflicts.join(' ') : 'inferred only from client calls; confirm the contract'} It is not preselected.`, itemId: toolId });
         if (!permission.discovered) warnings.push({ code: 'PERMISSION_NOT_FOUND', message: `No permission for ${operation.method} ${operation.path} was found in the code; "${permission.permission}" is a suggested new name.`, itemId: toolId });
         if (!operation.input && operation.method !== 'GET' && operation.method !== 'DELETE') warnings.push({ code: 'INPUT_SCHEMA_PLACEHOLDER', message: `${name}: no request schema was discovered; the body is an open object. Tighten it before enabling.`, itemId: toolId });
         return {
           id: toolId,
-          selected: risk !== 'destructive',
+          // Destructive and needs-review operations are proposed but never preselected (§26, §44).
+          selected: risk !== 'destructive' && confidence !== 'review',
+          confidence,
+          ...(conflicts.length > 0 ? { conflicts } : {}),
           name,
           description: operation.summary ?? `${operation.method} ${operation.path} (${operation.source})`,
           operation: { method: operation.method, path: operation.path, source: operation.source, file: operation.file, key: operation.sourceKind === 'openapi' ? (operation.operationId ?? `${operation.method} ${operation.path}`) : operation.id },
@@ -193,6 +195,7 @@ function createApiToolsGenerator(mode: Mode): Generator<ApiToolsAnalysis> {
         skills: [],
         knowledge: [],
         configChanges: [],
+        integrations: [],
       };
       return Promise.resolve(draft);
     },

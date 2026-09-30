@@ -50,6 +50,12 @@ export interface Generator<TAnalysis = unknown> {
   render(items: ProposalItems, context: Pick<GeneratorContext, 'workspace'>): Promise<readonly RenderedFile[]>;
   /** VALIDATE PROPOSAL: generator-specific checks on the (possibly edited) items. */
   validate(items: ProposalItems): readonly ProposalWarning[];
+  /**
+   * Paths outside `.gix/` this generator may write (§6, §11), e.g. an app's `src/gix/` folder or
+   * its root component. Anything else outside `.gix/` fails the security review, and every
+   * edit to an existing file outside `.gix/` is flagged for the developer.
+   */
+  readonly allowedPaths?: (path: string, items: ProposalItems) => boolean;
 }
 
 export type AnyGenerator = Generator<unknown>;

@@ -7,6 +7,8 @@ import { z, ZodError } from 'zod';
 import { ApplyRefusedError } from '../apply/engine.js';
 import { redactSecrets } from '../apply/secret-scan.js';
 import { copilotSettingsSchema, SYSTEM_INSTRUCTIONS_NOTICE } from '../configuration/copilot-settings.js';
+import { classifyProject } from '../discovery/classify.js';
+import type { DiscoveredProject } from '../discovery/model.js';
 import { DEVELOPMENT_CAPABILITIES } from '../planes.js';
 import { ProposalEditError } from '../proposals/edit.js';
 import { ProposalStateError } from '../proposals/store.js';
@@ -171,7 +173,11 @@ export async function studioPlugin(app: FastifyInstance, options: StudioPluginOp
         return service.generate('studio-configuration', { values });
       });
 
-      scope.get(`${api}/discovery`, (_request, reply) => service.latestDiscovery() ?? reply.status(404).send({ error: { code: 'NOT_DISCOVERED', message: 'Run discovery first.' } }));
+      const withClassification = (discovery: DiscoveredProject) => ({ ...discovery, classification: classifyProject(discovery) });
+      scope.get(`${api}/discovery`, (_request, reply) => {
+        const discovery = service.latestDiscovery();
+        return discovery ? withClassification(discovery) : reply.status(404).send({ error: { code: 'NOT_DISCOVERED', message: 'Run discovery first.' } });
+      });
       scope.post(`${api}/discovery/rescan`, (_request, reply) => service.rescan(abortOnClose(reply)));
       scope.post<{ Params: { section: string } }>(`${api}/discovery/:section`, async (request, reply) => {
         const section = DISCOVERY_SECTIONS.find((name) => name === request.params.section);
@@ -179,9 +185,9 @@ export async function studioPlugin(app: FastifyInstance, options: StudioPluginOp
         const discovery = await service.discover(abortOnClose(reply));
         switch (section) {
           case 'project':
-            return discovery;
+            return withClassification(discovery);
           case 'apis':
-            return { apis: discovery.apis, routes: discovery.routes, diagnostics: discovery.diagnostics };
+            return { apis: discovery.apis, operations: discovery.operations, routes: discovery.routes, diagnostics: discovery.diagnostics };
           case 'components':
             return { components: discovery.components };
           case 'context':
@@ -207,6 +213,7 @@ export async function studioPlugin(app: FastifyInstance, options: StudioPluginOp
         const { selection } = approveBody.parse(request.body ?? {});
         return service.approve(idParams.parse(request.params).id, selection);
       });
+      scope.post(`${api}/proposals/:id/approve-safe`, (request) => service.approveSafe(idParams.parse(request.params).id));
       scope.post(`${api}/proposals/:id/reject`, (request) => service.reject(idParams.parse(request.params).id));
       scope.post(`${api}/proposals/:id/apply`, (request, reply) => service.apply(idParams.parse(request.params).id, abortOnClose(reply)));
       scope.post(`${api}/proposals/:id/rollback`, (request) => service.rollback(idParams.parse(request.params).id));

@@ -60,7 +60,8 @@ describe('generators (§30-45, §74)', () => {
       const proposal = await service.generate(generator.id, generator.id === 'studio-configuration' ? { values: { 'appearance.colors.primary': '#e11d2e' } } : {});
       expect(proposal.generator).toBe(generator.id);
       expect(['draft', 'ready-for-review']).toContain(proposal.status);
-      for (const change of proposal.fileChanges) expect(change.path.startsWith('.gix/')).toBe(true);
+      // Only under .gix/, or in paths the generator declares (its app's gix/ folder, entry, proxy).
+      for (const change of proposal.fileChanges) expect(change.path.startsWith('.gix/') || generator.allowedPaths?.(change.path, proposal) === true, change.path).toBe(true);
     }
     expect(snapshot(root)).toEqual(before);
   });
@@ -69,12 +70,14 @@ describe('generators (§30-45, §74)', () => {
     const { service } = studio();
     const proposal = await service.generate('api-tools');
     const byName = Object.fromEntries(proposal.tools.map((tool) => [tool.name, tool]));
-    expect(byName['applications.list']).toMatchObject({ risk: 'read-only', permission: 'APPLICATION_VIEW', approval: 'none', enabled: true, selected: true });
-    expect(byName['applications.create']).toMatchObject({ risk: 'write', permission: 'APPLICATION_CREATE', approval: 'user-confirmation', enabled: true });
+    // GET/POST /applications are also in the OpenAPI document, so they belong to OpenAPI →
+    // Tools: one tool per operation, never one per source.
+    expect(Object.keys(byName).sort()).toEqual(['appointments.delete', 'payments.status.list']);
+    expect(byName['payments.status.list']).toMatchObject({ risk: 'read-only', approval: 'none', enabled: true, selected: true, confidence: 'high' });
     expect(byName['appointments.delete']).toMatchObject({ risk: 'destructive', approval: 'admin', enabled: false, selected: false });
     expect(proposal.policies).toHaveLength(proposal.tools.length);
     const file = proposal.fileChanges.find((change) => change.path === '.gix/tools/routes.ts');
-    expect(file?.content).toContain("name: \"applications.list\"");
+    expect(file?.content).toContain("name: \"payments.status.list\"");
     expect(file?.content).toContain('createFetchHttpExecutor');
     expect(proposal.fileChanges.map((change) => change.path)).toContain('.gix/security/routes.security.ts');
   });
@@ -82,14 +85,16 @@ describe('generators (§30-45, §74)', () => {
   it('OpenAPI → Tools registers only reviewed operations through @gixcopilot/openapi', async () => {
     const { service } = studio();
     const generated = await service.generate('openapi-tools');
-    expect(generated.tools.map((tool) => tool.name)).toEqual(['applications.list', 'applications.create', 'applications.get', 'applications.update', 'applications.delete']);
+    expect(generated.tools.map((tool) => tool.name)).toEqual(['applications.delete', 'applications.list', 'applications.get', 'applications.create', 'applications.update']);
+    // The Fastify route for GET /applications merged into the OpenAPI operation.
+    expect(generated.tools.find((tool) => tool.name === 'applications.list')).toMatchObject({ permission: 'APPLICATION_VIEW', confidence: 'high' });
     // Unselected items produce no code at all; a selected-but-disabled tool is listed as not exposed.
     const remove = generated.tools.find((tool) => tool.name === 'applications.delete');
     expect(generated.fileChanges.find((change) => change.path.endsWith('.openapi.ts'))?.content).not.toContain('applications.delete');
     const proposal = await service.edit(generated.id, [{ collection: 'tools', id: remove?.id ?? '', changes: { selected: true } }]);
     const file = proposal.fileChanges.find((change) => change.path.endsWith('.openapi.ts'))?.content ?? '';
     expect(file).toContain('registerOpenAPI');
-    expect(file).toContain('include: ["listApplications", "createApplication", "getApplication", "updateApplication"]');
+    expect(file).toContain('include: ["listApplications", "getApplication", "createApplication", "updateApplication"]');
     expect(file).not.toContain('"deleteApplication": {');
     expect(file).toContain('Disabled in review (not exposed): applications.delete');
   });
@@ -154,9 +159,9 @@ describe('proposal review and approval (§47-52, §75)', () => {
 
   it('edits cannot bypass the security floor', async () => {
     const { service } = studio();
-    const proposal = await service.generate('api-tools');
+    const proposal = await service.generate('openapi-tools');
     const create = proposal.tools.find((tool) => tool.name === 'applications.create');
-    const remove = proposal.tools.find((tool) => tool.name === 'appointments.delete');
+    const remove = proposal.tools.find((tool) => tool.name === 'applications.delete');
     if (!create || !remove) throw new Error('fixture tools missing');
     const lowered = await service.edit(proposal.id, [{ collection: 'tools', id: create.id, changes: { approval: 'none' } }]);
     expect(lowered.status).toBe('draft');
@@ -165,7 +170,7 @@ describe('proposal review and approval (§47-52, §75)', () => {
     await service.edit(proposal.id, [{ collection: 'tools', id: create.id, changes: { approval: 'user-confirmation' } }]);
     const exposed = await service.edit(proposal.id, [{ collection: 'tools', id: remove.id, changes: { selected: true, enabled: true, permission: null } }]);
     expect(exposed.securityReview.map((finding) => finding.code)).toContain('DESTRUCTIVE_WITHOUT_PERMISSION');
-    const renamed = await service.edit(proposal.id, [{ collection: 'tools', id: remove.id, changes: { permission: 'APPOINTMENT_DELETE', name: 'repo.readFile' } }]);
+    const renamed = await service.edit(proposal.id, [{ collection: 'tools', id: remove.id, changes: { permission: 'APPLICATION_DELETE', name: 'repo.readFile' } }]);
     expect(renamed.securityReview.map((finding) => finding.code)).toContain('DEVELOPMENT_PLANE_NAME');
     await expect(service.edit(proposal.id, [{ collection: 'tools', id: remove.id, changes: { name: 'shell run' } }])).rejects.toThrow(/Invalid edit/);
     await expect(service.edit(proposal.id, [{ collection: 'tools', id: remove.id, changes: { content: 'x' } }])).rejects.toThrow(/Invalid edit/);
@@ -173,7 +178,7 @@ describe('proposal review and approval (§47-52, §75)', () => {
 
   it('lowering a heuristic risk is allowed but called out in review', async () => {
     const { service } = studio();
-    const proposal = await service.generate('api-tools');
+    const proposal = await service.generate('openapi-tools');
     const create = proposal.tools.find((tool) => tool.name === 'applications.create');
     const edited = await service.edit(proposal.id, [{ collection: 'tools', id: create?.id ?? '', changes: { risk: 'read-only', approval: 'none' } }]);
     expect(edited.status).toBe('ready-for-review');

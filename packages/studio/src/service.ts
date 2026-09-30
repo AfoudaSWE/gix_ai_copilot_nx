@@ -19,9 +19,13 @@ import { contextGenerator, generativeUiGenerator, securityPolicyGenerator } from
 import type { AnyGenerator, GeneratorInput } from './generators/contract.js';
 import { buildProposal, runGenerator } from './generators/pipeline.js';
 import { agentGenerator, configurationGenerator, COPILOT_CONFIG_FILE, knowledgeGenerator, skillGenerator } from './generators/project-generators.js';
+import { appIntegrationGenerator } from './generators/app-integration.js';
 import { applyEdits } from './proposals/edit.js';
-import type { ChangeProposal, ProposalItems, ProposalWarning } from './proposals/model.js';
-import { assertTransition, createProposalStore } from './proposals/store.js';
+import type { ChangeProposal, ProposalItems } from './proposals/model.js';
+import { assertTransition, createFileProposalStore, createProposalStore } from './proposals/store.js';
+import { safeSelection } from './proposals/safe.js';
+
+export const PROPOSALS_DIRECTORY = '.gix/proposals';
 import { createReadonlyWorkspace } from './workspace/workspace.js';
 import type { ReadonlyWorkspace, WorkspaceLimits } from './workspace/workspace.js';
 
@@ -35,6 +39,7 @@ export const DEFAULT_GENERATORS: readonly AnyGenerator[] = [
   skillGenerator,
   knowledgeGenerator,
   configurationGenerator,
+  appIntegrationGenerator,
 ] as AnyGenerator[];
 
 /** A tool as the host's registry lists it: only what the Studio shows (§11). */
@@ -62,6 +67,8 @@ export interface StudioServiceOptions {
   readonly validationSteps?: readonly ValidationStep[];
   readonly commandRunner?: CommandRunner;
   readonly discovery?: Pick<DiscoverProjectOptions, 'detectors' | 'maxKnowledgeSources'>;
+  /** Persist proposals under the workspace (e.g. `.gix/proposals`), shared with `gix init`. */
+  readonly persistProposals?: boolean;
 }
 
 /** What the Security view shows; always a description of the existing @gixcopilot/security setup. */
@@ -98,6 +105,8 @@ export interface StudioService {
   proposal(id: string): Promise<ProposalView>;
   edit(id: string, edits: readonly unknown[]): Promise<ChangeProposal>;
   approve(id: string, selection?: readonly string[]): Promise<ChangeProposal>;
+  /** "Approve Safe Changes" (§44): approves only the items `safeSelection` allows. */
+  approveSafe(id: string): Promise<ChangeProposal>;
   reject(id: string): ChangeProposal;
   apply(id: string, signal?: AbortSignal): Promise<ChangeProposal>;
   rollback(id: string): Promise<{ readonly restored: readonly string[]; readonly skipped: readonly string[] }>;
@@ -140,10 +149,11 @@ function withSelection(items: ProposalItems, selection: readonly string[]): Prop
     skills: mark(items.skills),
     knowledge: mark(items.knowledge),
     configChanges: mark(items.configChanges),
+    integrations: mark(items.integrations),
   };
 }
 
-const itemsOf = (proposal: ChangeProposal): ProposalItems => ({ tools: proposal.tools, context: proposal.context, ui: proposal.ui, agents: proposal.agents, skills: proposal.skills, knowledge: proposal.knowledge, policies: proposal.policies, configChanges: proposal.configChanges });
+const itemsOf = (proposal: ChangeProposal): ProposalItems => ({ tools: proposal.tools, context: proposal.context, ui: proposal.ui, agents: proposal.agents, skills: proposal.skills, knowledge: proposal.knowledge, policies: proposal.policies, configChanges: proposal.configChanges, integrations: proposal.integrations });
 
 /**
  * The Studio's framework-independent core. The HTTP plugin is a thin layer over it, so every
@@ -153,14 +163,14 @@ const itemsOf = (proposal: ChangeProposal): ProposalItems => ({ tools: proposal.
 export function createStudioService(options: StudioServiceOptions): StudioService {
   const workspace = createReadonlyWorkspace(options.root, options.limits);
   const generators = new Map((options.generators ?? DEFAULT_GENERATORS).map((generator) => [generator.id, generator]));
-  const store = createProposalStore();
-  const generatorWarnings = new Map<string, readonly ProposalWarning[]>();
+  const store = options.persistProposals ? createFileProposalStore(workspace.guard.resolve(PROPOSALS_DIRECTORY)) : createProposalStore();
   const model = createModelSettingsStore({ ...(options.model ? { initial: options.model } : {}), ...(options.providers ? { providers: options.providers } : {}), ...(options.modelRuntime ? { runtime: options.modelRuntime } : {}), ...(options.keyEnvironment ? { keyEnvironment: options.keyEnvironment } : {}) });
   let discovery: DiscoveredProject | undefined;
   let lastConnection: RuntimeFacts['lastConnection'];
   const engine: ApplyEngine = createApplyEngine({
     guard: workspace.guard,
     commands: () => discovery?.commands ?? {},
+    allowedPathsFor: (proposal) => generators.get(proposal.generator)?.allowedPaths,
     ...(options.validationSteps ? { validationSteps: options.validationSteps } : {}),
     ...(options.commandRunner ? { runner: options.commandRunner } : {}),
   });
@@ -177,7 +187,7 @@ export function createStudioService(options: StudioServiceOptions): StudioServic
   };
   const ensureDiscovery = async (signal?: AbortSignal): Promise<DiscoveredProject> => discovery ?? service.discover(signal);
   const rebuild = (proposal: ChangeProposal, items: ProposalItems): Promise<ChangeProposal> =>
-    buildProposal(generatorOf(proposal), workspace, { id: proposal.id, title: proposal.title, createdAt: proposal.createdAt, diagnostics: proposal.diagnostics, generatorWarnings: generatorWarnings.get(proposal.id) ?? [] }, items, proposal.fileChanges);
+    buildProposal(generatorOf(proposal), workspace, { id: proposal.id, title: proposal.title, createdAt: proposal.createdAt, diagnostics: proposal.diagnostics, generatorWarnings: store.generatorWarnings(proposal.id) }, items, proposal.fileChanges);
 
   const service: StudioService = {
     workspace,
@@ -234,8 +244,7 @@ export function createStudioService(options: StudioServiceOptions): StudioServic
       if (!generator) throw new StudioNotFoundError(`No generator "${generatorId}".`);
       const current = await ensureDiscovery(signal);
       const { proposal, generatorWarnings: warnings } = await runGenerator(generator, { workspace, discovery: current, ...(signal ? { signal } : {}) }, input);
-      generatorWarnings.set(proposal.id, warnings);
-      store.save(proposal);
+      store.save(proposal, warnings);
       return proposal;
     },
     proposals: () => store.list(),
@@ -272,6 +281,9 @@ export function createStudioService(options: StudioServiceOptions): StudioServic
       const approved: ChangeProposal = { ...reviewed, status: 'approved', updatedAt: new Date().toISOString() };
       store.save(approved);
       return approved;
+    },
+    approveSafe(id) {
+      return service.approve(id, safeSelection(getProposal(id)));
     },
     reject(id) {
       // Reject All (§51): no repository change; the proposal stays available for editing.

@@ -27,6 +27,9 @@ export interface ToolProposal extends ProposalItem {
   readonly enabled: boolean;
   readonly agent?: string;
   readonly inputSchema: Readonly<Record<string, unknown>>;
+  /** How well the operation's contract is known (§21); `review` is never approved as "safe". */
+  readonly confidence?: 'high' | 'medium' | 'review';
+  readonly conflicts?: readonly string[];
 }
 
 export interface ContextProposal extends ProposalItem {
@@ -35,6 +38,34 @@ export interface ContextProposal extends ProposalItem {
   readonly description: string;
   readonly sensitivity: 'public' | 'internal' | 'sensitive' | 'restricted';
   readonly source: { readonly file: string; readonly line?: number };
+  /** The frontend app this context belongs to (page context is per app). */
+  readonly app?: string;
+  /** Set for page context (§31): one route of the app. */
+  readonly page?: {
+    readonly route: string;
+    readonly component?: string;
+    readonly params: readonly string[];
+    readonly entity?: string;
+    readonly context: readonly string[];
+    /** Tools relevant on this page. Relevance for the model only, never authorization (§33, §56). */
+    readonly relevantTools: readonly string[];
+  };
+}
+
+/** Wiring GIX into one application (§11, §34): its UI and dev proxy. */
+export interface IntegrationProposal extends ProposalItem {
+  readonly kind: 'ui';
+  /** Workspace-relative app directory ('.' for the root). */
+  readonly app: string;
+  readonly framework: 'react' | 'angular' | 'vue' | 'nextjs';
+  readonly description: string;
+  /** The GIX-owned folder inside the app, e.g. `apps/portal/src/gix`. */
+  readonly gixDir: string;
+  readonly typescript: boolean;
+  /** Existing files this integration may edit (entry/root component, dev-proxy config). */
+  readonly targets: readonly string[];
+  /** Steps the developer must do by hand where no safe automatic edit was found. */
+  readonly manual: readonly string[];
 }
 
 export interface GenerativeUIProposal extends ProposalItem {
@@ -129,6 +160,7 @@ export interface ProposalSummary {
   readonly skillsAdded: number;
   readonly knowledgeAdded: number;
   readonly policiesAdded: number;
+  readonly integrationsAdded: number;
   readonly warnings: number;
   readonly conflicts: number;
   readonly securityErrors: number;
@@ -168,6 +200,7 @@ export interface ChangeProposal {
   readonly skills: readonly SkillProposal[];
   readonly knowledge: readonly KnowledgeProposal[];
   readonly policies: readonly PolicyProposal[];
+  readonly integrations: readonly IntegrationProposal[];
   readonly diagnostics: readonly DiscoveryDiagnostic[];
   readonly warnings: readonly ProposalWarning[];
   readonly conflicts: readonly ProposalConflict[];
@@ -176,9 +209,9 @@ export interface ChangeProposal {
 }
 
 /** The item collections of a proposal, everything a generator decides. */
-export type ProposalItems = Pick<ChangeProposal, 'tools' | 'context' | 'ui' | 'agents' | 'skills' | 'knowledge' | 'policies' | 'configChanges'>;
+export type ProposalItems = Pick<ChangeProposal, 'tools' | 'context' | 'ui' | 'agents' | 'skills' | 'knowledge' | 'policies' | 'configChanges' | 'integrations'>;
 
-export const EMPTY_ITEMS: ProposalItems = { tools: [], context: [], ui: [], agents: [], skills: [], knowledge: [], policies: [], configChanges: [] };
+export const EMPTY_ITEMS: ProposalItems = { tools: [], context: [], ui: [], agents: [], skills: [], knowledge: [], policies: [], configChanges: [], integrations: [] };
 
 export function summarize(proposal: Pick<ChangeProposal, 'fileChanges' | 'warnings' | 'conflicts' | 'securityReview'> & ProposalItems): ProposalSummary {
   const selected = <T extends { readonly selected: boolean }>(items: readonly T[]): T[] => items.filter((item) => item.selected);
@@ -199,6 +232,7 @@ export function summarize(proposal: Pick<ChangeProposal, 'fileChanges' | 'warnin
     skillsAdded: selected(proposal.skills).length,
     knowledgeAdded: selected(proposal.knowledge).length,
     policiesAdded: selected(proposal.policies).length,
+    integrationsAdded: selected(proposal.integrations).length,
     warnings: proposal.warnings.length + proposal.securityReview.filter((finding) => finding.severity === 'warning').length,
     conflicts: proposal.conflicts.length,
     securityErrors: proposal.securityReview.filter((finding) => finding.severity === 'error').length,

@@ -71,7 +71,8 @@ describe('Developer Studio attached to createCopilot', () => {
     expect(project.components.filter((component) => component.candidate).map((component) => component.name)).toEqual(['PaymentStatusCard']);
     expect(project.permissions.map((permission) => permission.name).sort()).toEqual(['APPLICATION_VIEW', 'PAYMENT_VIEW']);
     const proposal = (await copilot.app.inject({ method: 'POST', url: '/__gix/api/generators/openapi-tools', headers, payload: {} })).json<{ id: string; tools: { name: string; selected: boolean }[] }>();
-    expect(proposal.tools.map((tool) => `${tool.name}:${String(tool.selected)}`)).toEqual(['applications.list:true', 'applications.get:true', 'applications.delete:false']);
+    // Candidates follow normalized method/path order, not source-document order.
+    expect(proposal.tools.map((tool) => `${tool.name}:${String(tool.selected)}`)).toEqual(['applications.delete:false', 'applications.list:true', 'applications.get:true']);
     await copilot.app.inject({ method: 'POST', url: `/__gix/api/proposals/${proposal.id}/approve`, headers, payload: {} });
     const applied = (await copilot.app.inject({ method: 'POST', url: `/__gix/api/proposals/${proposal.id}/apply`, headers, payload: {} })).json<{ status: string; applyResult: { validation: { name: string; status: string }[] } }>();
     expect(applied.status).toBe('applied');

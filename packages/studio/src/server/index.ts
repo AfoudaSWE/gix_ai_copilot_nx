@@ -61,6 +61,8 @@ export async function attachStudio(copilot: StudioCopilot, options: AttachStudio
     model: copilot.model,
     modelRuntime: copilot.modelRuntime,
     copilotRuntimeUrl: '/',
+    // Shared with `gix init`, which writes its proposals to .gix/proposals.
+    persistProposals: true,
     facts: () => ({ runtime: true, server: true, firewall: copilot.firewallEnabled, devtools: options.devtools ?? false, registeredTools: registry?.list().length ?? 0 }),
     tools: () => (registry?.list() ?? []).map((tool) => ({ name: tool.name, ...(tool.security ? { security: tool.security } : {}) })),
     security: () => ({ firewall: copilot.firewallEnabled }),

@@ -22,6 +22,9 @@ const PACKAGE_DIRECTORIES: Readonly<Record<string, string>> = {
   mcp: 'packages/mcp',
   telemetry: 'packages/telemetry',
   provider: 'packages/providers/provider-core',
+  react: 'packages/react',
+  ui: 'packages/ui',
+  client: 'packages/client',
 };
 
 const cleanup: string[] = [];
@@ -60,11 +63,22 @@ describe('generated code', () => {
     }
     const base = ts.parseJsonConfigFileContent(ts.readConfigFile(join(repository, 'tsconfig.base.json'), (path) => ts.sys.readFile(path)).config, ts.sys, repository);
     const paths = Object.fromEntries(Object.entries(PACKAGE_DIRECTORIES).map(([name, directory]) => [`@gixcopilot/${name}`, [`${directory}/src/index.ts`]]));
-    const roots = [...files.keys()].filter((path) => path.endsWith('.ts')).map((path) => join(output, path));
+    // .vue files need vue-tsc; everything else (including the React integration) is checked here.
+    const roots = [...files.keys()].filter((path) => /\.tsx?$/.test(path)).map((path) => join(output, path));
+    expect(roots.some((path) => path.endsWith('GixCopilot.tsx'))).toBe(true);
+    const reactTypes = join(repository, 'packages/react/node_modules/@types/react');
     expect(roots.length).toBeGreaterThanOrEqual(8);
-    const program = ts.createProgram(roots, { ...base.options, noEmit: true, composite: false, declaration: false, declarationMap: false, sourceMap: false, baseUrl: repository, paths, types: ['node'], skipLibCheck: true });
-    const diagnostics = ts
-      .getPreEmitDiagnostics(program)
+    const options: ts.CompilerOptions = { ...base.options, noEmit: true, composite: false, declaration: false, declarationMap: false, sourceMap: false, baseUrl: repository, paths: { ...paths, react: [`${reactTypes}/index.d.ts`], 'react/jsx-runtime': [`${reactTypes}/jsx-runtime.d.ts`] }, types: ['node'], lib: ['lib.es2023.d.ts', 'lib.dom.d.ts', 'lib.dom.iterable.d.ts'], jsx: ts.JsxEmit.ReactJSX, skipLibCheck: true };
+    // Server-side .gix/ code compiles like the repository (NodeNext); app code inside a frontend
+    // compiles the way its bundler (Vite, Next.js, Angular) resolves modules.
+    const serverRoots = roots.filter((path) => path.startsWith(join(output, '.gix')));
+    const appRoots = roots.filter((path) => !serverRoots.includes(path));
+    const programs = [
+      ts.createProgram(serverRoots, options),
+      ts.createProgram(appRoots, { ...options, module: ts.ModuleKind.ESNext, moduleResolution: ts.ModuleResolutionKind.Bundler }),
+    ];
+    const diagnostics = programs
+      .flatMap((program) => ts.getPreEmitDiagnostics(program))
       .filter((diagnostic) => diagnostic.file?.fileName.startsWith(output.split('\\').join('/')))
       .map((diagnostic) => `${diagnostic.file?.fileName.slice(output.length) ?? ''}: ${ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')}`);
     expect(diagnostics).toEqual([]);

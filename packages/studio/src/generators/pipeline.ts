@@ -34,7 +34,7 @@ export async function buildProposal(
 ): Promise<ChangeProposal> {
   const fileChanges = await toFileChanges(workspace, await generator.render(items, { workspace }), previousFiles);
   const warnings = [...base.generatorWarnings, ...generator.validate(items)];
-  const securityReview = reviewProposalSecurity(items, fileChanges);
+  const securityReview = reviewProposalSecurity(items, fileChanges, generator.allowedPaths);
   const blocked = securityReview.some((finding) => finding.severity === 'error');
   return {
     id: base.id,

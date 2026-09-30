@@ -28,6 +28,18 @@ export interface ApiCallFinding {
   readonly permissions: readonly string[];
   readonly authenticated: boolean;
   readonly handler?: string;
+  /** The top-level function, variable or method that makes a client call. */
+  readonly owner?: string;
+}
+
+/** The nearest named top-level function/variable or class method enclosing a node. */
+function ownerOf(ts: TypeScriptApi, node: TS.Node): string | undefined {
+  let owner: string | undefined;
+  for (let current: TS.Node | undefined = node.parent; current; current = current.parent) {
+    if ((ts.isFunctionDeclaration(current) || ts.isMethodDeclaration(current)) && current.name) owner = current.name.getText();
+    else if (ts.isVariableDeclaration(current) && ts.isIdentifier(current.name)) owner = current.name.text;
+  }
+  return owner;
 }
 
 export interface SourceFindings {
@@ -37,6 +49,33 @@ export interface SourceFindings {
   readonly contextCandidates: readonly ContextCandidate[];
   readonly permissions: readonly PermissionInfo[];
   readonly userModels: readonly string[];
+  /** Local binding → module specifier for this file's imports (page analysis follows these). */
+  readonly imports: Readonly<Record<string, string>>;
+  /** Module specifier → the exported names this file imports from it (`*` for default/namespace). */
+  readonly importedNames: Readonly<Record<string, readonly string[]>>;
+}
+
+/**
+ * The component a route renders: `element={<X />}`, `component: X`, `Component: X`,
+ * `loadComponent: () => import('./x').then((m) => m.X)`, or `component: () => import('./X.vue')`.
+ */
+function routeComponent(ts: TypeScriptApi, source: TS.SourceFile, value: TS.Node | undefined): string | undefined {
+  if (!value) return undefined;
+  if (ts.isJsxExpression(value)) return routeComponent(ts, source, value.expression);
+  if (ts.isJsxSelfClosingElement(value)) return value.tagName.getText(source);
+  if (ts.isJsxElement(value)) return value.openingElement.tagName.getText(source);
+  if (ts.isIdentifier(value)) return value.text;
+  let found: string | undefined;
+  walk(ts, value, (child) => {
+    if (found) return;
+    if (ts.isPropertyAccessExpression(child) && ts.isArrowFunction(child.parent) && /^[A-Z]/.test(child.name.text)) found = child.name.text;
+    else if (ts.isCallExpression(child) && child.expression.kind === ts.SyntaxKind.ImportKeyword) {
+      const specifier = staticString(ts, child.arguments[0]);
+      const base = specifier?.split('/').pop()?.replace(/\.(vue|[cm]?[jt]sx?)$/, '');
+      if (base && /^[A-Z]/.test(base)) found = base;
+    }
+  });
+  return found;
 }
 
 function contextKindOf(name: string): ContextCandidateKind | undefined {
@@ -129,6 +168,24 @@ export function analyzeSource(ts: TypeScriptApi, file: string, text: string, fro
   const contextCandidates: ContextCandidate[] = [];
   const permissions: PermissionInfo[] = [];
   const userModels: string[] = [];
+  const imports: Record<string, string> = {};
+  const importedNames: Record<string, string[]> = {};
+  for (const statement of source.statements) {
+    if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier) || !statement.importClause) continue;
+    const specifier = statement.moduleSpecifier.text;
+    const names = (importedNames[specifier] ??= []);
+    if (statement.importClause.name) {
+      imports[statement.importClause.name.text] = specifier;
+      names.push('*');
+    }
+    const bindings = statement.importClause.namedBindings;
+    if (bindings && ts.isNamedImports(bindings)) {
+      for (const element of bindings.elements) {
+        imports[element.name.text] = specifier;
+        names.push((element.propertyName ?? element.name).text);
+      }
+    } else if (bindings) names.push('*');
+  }
   const localTypes = new Map<string, TS.TypeNode | TS.InterfaceDeclaration>();
   const seenContext = new Set<string>();
 
@@ -167,7 +224,7 @@ export function analyzeSource(ts: TypeScriptApi, file: string, text: string, fro
           if (!frontend && hasHandler && !HTTP_CLIENTS.test(objectName)) {
             apiCalls.push({ kind: 'backend-route', method: verb, path, line: lineOf(source, node), permissions: permissionsIn(ts, node), authenticated: mentionsAuth(ts, source, handlerArgs.slice(0, -1)) });
           } else if (frontend || CLIENT_OBJECTS.test(objectName)) {
-            apiCalls.push({ kind: 'frontend-client', method: verb, path, line: lineOf(source, node), permissions: [], authenticated: false });
+            apiCalls.push({ kind: 'frontend-client', ...(ownerOf(ts, node) ? { owner: ownerOf(ts, node) } : {}), method: verb, path, line: lineOf(source, node), permissions: [], authenticated: false });
           }
         }
         // fastify.route({ method, url })
@@ -182,7 +239,7 @@ export function analyzeSource(ts: TypeScriptApi, file: string, text: string, fro
       } else if (ts.isIdentifier(callee)) {
         if (callee.text === 'fetch') {
           const path = pathTemplate(ts, node.arguments[0]);
-          if (path?.startsWith('/')) apiCalls.push({ kind: 'frontend-client', method: methodFromInit(ts, node.arguments[1]), path, line: lineOf(source, node), permissions: [], authenticated: false });
+          if (path?.startsWith('/')) apiCalls.push({ kind: 'frontend-client', ...(ownerOf(ts, node) ? { owner: ownerOf(ts, node) } : {}), method: methodFromInit(ts, node.arguments[1]), path, line: lineOf(source, node), permissions: [], authenticated: false });
         }
         if (/^(createContext|defineStore|createSlice|createStore|create|signalStore|createFeature)$/.test(callee.text) && ts.isVariableDeclaration(node.parent) && ts.isIdentifier(node.parent.name)) {
           const name = node.parent.name.text;
@@ -279,23 +336,28 @@ export function analyzeSource(ts: TypeScriptApi, file: string, text: string, fro
 
     // --- Frontend routes: <Route path>, { path, component|element } ----------------------
     if ((ts.isJsxSelfClosingElement(node) || ts.isJsxOpeningElement(node)) && node.tagName.getText(source) === 'Route') {
+      let path: string | undefined;
+      let component: string | undefined;
       for (const attribute of node.attributes.properties) {
-        if (ts.isJsxAttribute(attribute) && attribute.name.getText(source) === 'path' && attribute.initializer && ts.isStringLiteral(attribute.initializer)) {
-          routes.push({ path: attribute.initializer.text, kind: 'frontend', file, line: lineOf(source, node) });
-        }
+        if (!ts.isJsxAttribute(attribute)) continue;
+        const name = attribute.name.getText(source);
+        if (name === 'path' && attribute.initializer && ts.isStringLiteral(attribute.initializer)) path = attribute.initializer.text;
+        if (name === 'element' || name === 'component' || name === 'Component') component = routeComponent(ts, source, attribute.initializer);
       }
+      if (path !== undefined) routes.push({ path, kind: 'frontend', file, line: lineOf(source, node), ...(component ? { component } : {}) });
     }
     if (ts.isObjectLiteralExpression(node)) {
       const path = staticString(ts, objectProperty(ts, node, 'path'));
       const target = ['component', 'element', 'loadComponent', 'loadChildren', 'children', 'redirectTo', 'Component', 'lazy'].some((key) => objectProperty(ts, node, key) !== undefined);
-      if (path !== undefined && target) routes.push({ path: path.startsWith('/') || path === '' ? path || '/' : `/${path}`, kind: 'frontend', file, line: lineOf(source, node) });
+      const component = ['element', 'component', 'Component', 'loadComponent'].map((key) => routeComponent(ts, source, objectProperty(ts, node, key))).find(Boolean);
+      if (path !== undefined && target) routes.push({ path: path.startsWith('/') || path === '' ? path || '/' : `/${path}`, kind: 'frontend', file, line: lineOf(source, node), ...(component ? { component } : {}) });
     }
   });
 
   for (const call of apiCalls) {
     if (call.kind === 'backend-route') routes.push({ path: call.path, kind: 'backend', file, line: call.line });
   }
-  return { apiCalls, routes, components, contextCandidates, permissions, userModels };
+  return { apiCalls, routes, components, contextCandidates, permissions, userModels, imports, importedNames };
 }
 
 /** `defineProps<{...}>()` in a Vue single-file component's `<script setup lang="ts">`. */

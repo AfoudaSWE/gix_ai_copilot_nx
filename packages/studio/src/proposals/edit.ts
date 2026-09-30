@@ -34,6 +34,7 @@ export const proposalEditSchema = z.discriminatedUnion('collection', [
   z.object({ collection: z.literal('knowledge'), id: z.string().min(1), changes: z.object({ selected: z.boolean() }).partial().strict() }).strict(),
   z.object({ collection: z.literal('policies'), id: z.string().min(1), changes: z.object({ selected: z.boolean() }).partial().strict() }).strict(),
   z.object({ collection: z.literal('configChanges'), id: z.string().min(1), changes: z.object({ selected: z.boolean() }).partial().strict() }).strict(),
+  z.object({ collection: z.literal('integrations'), id: z.string().min(1), changes: z.object({ selected: z.boolean() }).partial().strict() }).strict(),
 ]);
 
 export type ProposalEdit = z.infer<typeof proposalEditSchema>;

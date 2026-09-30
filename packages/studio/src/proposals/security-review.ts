@@ -9,7 +9,7 @@ import type { FileChange, ProposalItems, SecurityFinding } from './model.js';
  * The security review every proposal passes before it can be approved (§31, §50). An
  * `error` blocks approval; UI edits cannot get around it because approval re-runs it.
  */
-export function reviewProposalSecurity(items: ProposalItems, files: readonly FileChange[]): SecurityFinding[] {
+export function reviewProposalSecurity(items: ProposalItems, files: readonly FileChange[], allowedPaths?: (path: string, items: ProposalItems) => boolean): SecurityFinding[] {
   const findings: SecurityFinding[] = [];
   const tools = items.tools.filter((tool) => tool.selected);
   const seen = new Map<string, string>();
@@ -41,7 +41,12 @@ export function reviewProposalSecurity(items: ProposalItems, files: readonly Fil
   }
   for (const file of files) {
     if (!file.path.startsWith(`${GENERATED_ROOT}/`)) {
-      findings.push({ severity: 'error', code: 'OUTSIDE_GENERATED_ROOT', message: `Generators may only write under ${GENERATED_ROOT}/.`, path: file.path });
+      if (!allowedPaths?.(file.path, items)) {
+        findings.push({ severity: 'error', code: 'OUTSIDE_GENERATED_ROOT', message: `This generator may only write under ${GENERATED_ROOT}/.`, path: file.path });
+      } else if (file.kind !== 'create') {
+        // Editing existing application source is allowed only for declared files, and always shown.
+        findings.push({ severity: 'warning', code: 'MODIFIES_APPLICATION_SOURCE', message: `Changes your existing file ${file.path}; review the diff.`, path: file.path });
+      }
     }
     for (const secret of scanForSecrets(file.content ?? '')) {
       findings.push({ severity: 'error', code: 'SECRET_IN_OUTPUT', message: `Possible ${secret.kind} at line ${String(secret.line)}. Secrets never go into generated code.`, path: file.path });

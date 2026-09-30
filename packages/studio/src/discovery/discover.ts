@@ -21,6 +21,10 @@ import type {
   PermissionInfo,
   RouteInfo,
 } from './model.js';
+import { isPostmanCollection, nextRouteHandlerMethods, nextRoutePath, pagesApiMethods, parsePostman, parseSwagger2 } from './api-sources.js';
+import { normalizeApiOperations } from './normalize.js';
+import { analyzePages } from './pages.js';
+import type { FileFacts } from './pages.js';
 import { analyzeSource, analyzeVueComponent } from './source-analyzer.js';
 import type { ApiCallFinding } from './source-analyzer.js';
 
@@ -205,18 +209,64 @@ export async function discoverProject(workspace: ReadonlyWorkspace, options: Dis
   const isNx = fileSet.has('nx.json');
   const workspaceKind: DiscoveredProject['workspace']['kind'] = isNx ? 'nx' : fileSet.has('pnpm-workspace.yaml') ? 'pnpm-workspaces' : rootManifest?.workspaces ? 'npm-workspaces' : 'single';
 
+  const detectors = options.detectors ?? DEFAULT_DETECTORS;
+  // A repository without workspaces can still hold several apps, e.g. client/ and server/,
+  // each with its own package.json. The root is an app too when its own manifest has a framework.
+  const nested = manifests.filter((manifest) => manifest.directory !== '');
+  const rootIsApp = rootManifest !== undefined && runDetectors(detectors, { manifests: [rootManifest], files: [] }).some((framework) => FRONTEND_FRAMEWORKS.has(framework.id) || BACKEND_FRAMEWORKS.has(framework.id));
   const unitDirectories: { name: string; path: string; type?: 'application' | 'library' }[] =
     isNx && nxProjects.length > 0
       ? nxProjects
       : workspaceKind === 'single'
-        ? [{ name: rootManifest?.name ?? 'workspace', path: '' }]
-        : manifests.filter((manifest) => manifest.directory !== '').map((manifest) => ({ name: manifest.name ?? manifest.directory, path: manifest.directory }));
+        ? nested.length > 0
+          ? [...(rootIsApp ? [{ name: rootManifest?.name ?? 'workspace', path: '' }] : []), ...nested.map((manifest) => ({ name: manifest.name ?? manifest.directory, path: manifest.directory }))]
+          : [{ name: rootManifest?.name ?? 'workspace', path: '' }]
+        : nested.map((manifest) => ({ name: manifest.name ?? manifest.directory, path: manifest.directory }));
 
   const within = (directory: string, file: string): boolean => directory === '' || file === directory || file.startsWith(`${directory}/`);
   const unitOf = (file: string): (typeof unitDirectories)[number] | undefined =>
     unitDirectories.filter((unit) => within(unit.path, file)).sort((a, b) => b.path.length - a.path.length)[0];
 
-  const detectors = options.detectors ?? DEFAULT_DETECTORS;
+  // Read source once, up front: units that share the root package.json (typical in Nx) are
+  // classified by what their own files import, not by every dependency of the workspace.
+  const codeFiles = files.filter((file) => CODE_FILE.test(file) && !DECLARATION_OR_TEST.test(file) && !file.startsWith('.gix/'));
+  const texts = new Map<string, string>();
+  let tooLarge = 0;
+  for (const file of codeFiles) {
+    signal?.throwIfAborted();
+    const text = await workspace.readText(file);
+    if (text === undefined) tooLarge += 1;
+    else texts.set(file, text);
+  }
+  const importsOf = (directory: string): Set<string> => {
+    const packages = new Set<string>();
+    for (const [file, text] of texts) {
+      if (!within(directory, file)) continue;
+      if (/\.(tsx|jsx)$/.test(file)) packages.add('#jsx');
+      if (file.endsWith('.vue')) packages.add('vue');
+      for (const match of text.matchAll(/(?:from\s+|import\s*\(\s*|require\s*\(\s*)['"]((?:@[^/'"]+\/)?[^/'".][^/'"]*)/g)) packages.add(match[1] ?? '');
+    }
+    return packages;
+  };
+  const EVIDENCE: Partial<Record<FrameworkId, readonly string[]>> = {
+    react: ['react', 'react-dom', 'react-router', 'react-router-dom', '#jsx'],
+    angular: ['@angular/core', '@angular/router', '@angular/common'],
+    vue: ['vue', 'vue-router', 'pinia'],
+    nextjs: ['next'],
+    fastify: ['fastify'],
+    express: ['express'],
+    nestjs: ['@nestjs/core', '@nestjs/common'],
+  };
+  const refine = (directory: string, detected: readonly FrameworkId[]): FrameworkId[] => {
+    const imported = importsOf(directory);
+    const kept = detected.filter((id) => {
+      const evidence = EVIDENCE[id];
+      return evidence === undefined || evidence.some((name) => imported.has(name));
+    });
+    const frontend = kept.some((id) => FRONTEND_FRAMEWORKS.has(id));
+    const backend = kept.some((id) => BACKEND_FRAMEWORKS.has(id) && id !== 'node');
+    return kept.filter((id) => (id === 'vite' ? frontend : id === 'node' ? backend || (!frontend && detected.includes('node')) : true));
+  };
   const applications: ApplicationInfo[] = [];
   const libraries: LibraryInfo[] = [];
   const unitFrameworks = new Map<string, readonly FrameworkId[]>();
@@ -224,11 +274,14 @@ export async function discoverProject(workspace: ReadonlyWorkspace, options: Dis
     const unitManifests = manifests.filter((manifest) => manifest.directory === unit.path);
     const scope = unitManifests.length > 0 ? unitManifests : rootManifest ? [rootManifest] : [];
     const unitFiles = files.filter((file) => within(unit.path, file) && !file.slice(unit.path.length + 1).includes('/'));
-    const frameworks = runDetectors(detectors, { manifests: scope, files: unitFiles }).map((framework) => framework.id).filter((id) => id !== 'typescript' && id !== 'nx');
+    const detected = runDetectors(detectors, { manifests: scope, files: unitFiles }).map((framework) => framework.id).filter((id) => id !== 'typescript' && id !== 'nx');
+    // A unit without its own manifest inherits the root's dependencies; keep only what it uses.
+    const frameworks = unitManifests.length === 0 && unitDirectories.length > 1 ? refine(unit.path, detected) : detected;
     unitFrameworks.set(unit.path, frameworks);
     const scripts = scope[0]?.scripts ?? {};
     const runnable = scripts['dev'] !== undefined || scripts['start'] !== undefined || scripts['serve'] !== undefined || fileSet.has(unit.path ? `${unit.path}/index.html` : 'index.html');
-    const type = unit.type ?? (runnable && frameworks.some((id) => FRONTEND_FRAMEWORKS.has(id) || BACKEND_FRAMEWORKS.has(id)) ? 'application' : workspaceKind === 'single' ? 'application' : 'library');
+    const hasAppFramework = frameworks.some((id) => FRONTEND_FRAMEWORKS.has(id) || BACKEND_FRAMEWORKS.has(id));
+    const type = unit.type ?? ((runnable && hasAppFramework) || (workspaceKind === 'single' && (hasAppFramework || unitDirectories.length === 1)) ? 'application' : 'library');
     (type === 'application' ? applications : libraries).push({ name: unit.name, path: unit.path || '.', frameworks });
   }
 
@@ -245,25 +298,22 @@ export async function discoverProject(workspace: ReadonlyWorkspace, options: Dis
 
   // --- Source analysis ------------------------------------------------------------------
   const ts = await loadTypeScript();
-  const codeFiles = files.filter((file) => CODE_FILE.test(file) && !DECLARATION_OR_TEST.test(file) && !file.startsWith('.gix/'));
   const apis: ApiSource[] = [];
   const routes: RouteInfo[] = [];
   const components: ComponentInfo[] = [];
   const contextByName = new Map<string, ContextCandidate>();
   const permissionsByName = new Map<string, PermissionInfo>();
   const userModels: { name: string; file: string }[] = [];
+  const facts = new Map<string, FileFacts>();
+  const isNextFile = (file: string): boolean => (unitFrameworks.get(unitOf(file)?.path ?? '') ?? []).includes('nextjs');
   const tokenHandling = new Set<string>();
-  let tooLarge = 0;
   if (!ts) {
     diagnostics.push({ severity: 'warning', code: 'AST_UNAVAILABLE', message: 'The "typescript" package is not installed, so API, component, context and permission discovery could not parse source files. Install typescript as a devDependency and re-scan.' });
   }
   for (const file of codeFiles) {
     signal?.throwIfAborted();
-    const text = await workspace.readText(file);
-    if (text === undefined) {
-      tooLarge += 1;
-      continue;
-    }
+    const text = texts.get(file);
+    if (text === undefined) continue;
     for (const [pattern, fact] of TOKEN_HANDLING) if (pattern.test(text)) tokenHandling.add(fact);
     if (!ts) continue;
     try {
@@ -272,7 +322,20 @@ export async function discoverProject(workspace: ReadonlyWorkspace, options: Dis
         continue;
       }
       const findings = analyzeSource(ts, file, text, isFrontendFile(file));
+      facts.set(file, { calls: findings.apiCalls.filter((call) => call.kind === 'frontend-client'), imports: findings.imports, importedNames: findings.importedNames });
       routes.push(...findings.routes);
+      // Next.js file-system routes: pages and route handlers (§19, §29).
+      const next = isNextFile(file) ? nextRoutePath(file) : undefined;
+      if (next?.kind === 'app-page' || next?.kind === 'pages-page') routes.push({ path: next.path, kind: 'frontend', file });
+      if (next?.kind === 'app-route' || next?.kind === 'pages-api') {
+        const handlers = next.kind === 'app-route' ? nextRouteHandlerMethods(ts, file, text) : pagesApiMethods(text).map((method) => ({ method, line: 1 }));
+        // The file path is the URL path: app/api/users/route.ts serves /api/users.
+        const nextPath = next.path;
+        if (handlers.length > 0) {
+          apis.push({ id: `backend-route:${file}`, kind: 'backend-route', file, operations: handlers.map(({ method, line }) => ({ id: `${method} ${nextPath} @ ${file}:${String(line)}`, method, path: nextPath, permissions: [], source: sourceNameOf(file), sourceKind: 'backend-route' as const, file, line })) });
+          for (const { line } of handlers) routes.push({ path: nextPath, kind: 'backend', file, line });
+        }
+      }
       components.push(...findings.components);
       for (const candidate of findings.contextCandidates) if (!contextByName.has(candidate.name)) contextByName.set(candidate.name, candidate);
       for (const permission of findings.permissions) if (!permissionsByName.has(permission.name)) permissionsByName.set(permission.name, permission);
@@ -316,9 +379,29 @@ export async function discoverProject(workspace: ReadonlyWorkspace, options: Dis
     const text = await workspace.readText(file);
     if (!text) continue;
     const head = text.slice(0, 4000);
+    if (file.endsWith('.json') && (/postman/i.test(file) || head.includes('_postman_id') || head.includes('schema.getpostman.com'))) {
+      try {
+        const collection = JSON.parse(text) as unknown;
+        if (isPostmanCollection(collection)) {
+          const parsed = parsePostman(file, collection);
+          apis.push({ id: `postman:${file}`, kind: 'postman', file, ...(parsed.title ? { title: parsed.title } : {}), operations: parsed.operations });
+          specFiles.push(file);
+        }
+      } catch {
+        diagnostics.push({ severity: 'warning', code: 'POSTMAN_INVALID', message: 'Postman collection could not be parsed.', file });
+      }
+      continue;
+    }
     if (!named && !/["']?(openapi|swagger)["']?\s*:/.test(head)) continue;
     if (/["']?swagger["']?\s*:\s*["']?2/.test(head)) {
-      diagnostics.push({ severity: 'warning', code: 'SWAGGER_2_UNSUPPORTED', message: 'Swagger 2.0 documents are not supported; convert to OpenAPI 3.x to discover its operations.', file });
+      try {
+        const raw = resolveLocalRefs(await loader.load({ kind: 'file', path: workspace.guard.resolve(file) })) as Record<string, unknown>;
+        const parsed = parseSwagger2(file, raw);
+        apis.push({ id: `swagger:${file}`, kind: 'swagger', file, ...(parsed.title ? { title: parsed.title } : {}), operations: parsed.operations });
+        specFiles.push(file);
+      } catch (error) {
+        diagnostics.push({ severity: 'warning', code: 'SWAGGER_LOAD_FAILED', message: error instanceof Error ? error.message : 'Could not load the Swagger document.', file });
+      }
       continue;
     }
     if (!/["']?openapi["']?\s*:\s*["']?3/.test(head)) continue;
@@ -338,6 +421,11 @@ export async function discoverProject(workspace: ReadonlyWorkspace, options: Dis
       diagnostics.push({ severity: 'warning', code: 'OPENAPI_LOAD_FAILED', message: error instanceof Error ? error.message : 'Could not load the OpenAPI document.', file });
     }
   }
+
+  // --- One normalized operation list across every source (§17, §21) ----------------------
+  const operations = normalizeApiOperations(apis);
+  const conflicted = operations.filter((operation) => operation.conflicts.length > 0).length;
+  if (conflicted > 0) diagnostics.push({ severity: 'warning', code: 'API_CONFLICTS', message: `${String(conflicted)} API operation(s) are described differently by different sources; review them before generating tools.` });
 
   // --- Authentication (§21): facts only, never secret values -----------------------------
   const allDependencies = Object.assign({}, ...manifests.map((manifest) => manifest.dependencies)) as Record<string, string>;
@@ -405,6 +493,8 @@ export async function discoverProject(workspace: ReadonlyWorkspace, options: Dis
     apis,
     routes,
     components,
+    operations,
+    pages: analyzePages({ routes, components, facts, operations, contextCandidates: [...contextByName.values()] }),
     contextCandidates: [...contextByName.values()],
     ...(authentication ? { authentication } : {}),
     permissions: [...permissionsByName.values()],

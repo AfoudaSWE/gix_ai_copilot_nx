@@ -284,14 +284,19 @@ var views = {
     var content;
     if (sub === 'project') {
       var fw = function (role) { return d.frameworks.filter(function (f) { return f.role === role; }).map(function (f) { return f.id; }).join(', ') || '—'; };
-      content = [h('div', { className: 'cards' }, card('Workspace', d.workspace.kind + ' · ' + d.workspace.packageManager), card('Frontend', fw('frontend')), card('Backend', fw('backend')), card('Language', d.workspace.language)),
+      var cls = d.classification;
+      content = [h('div', { className: 'cards' }, card('Classification', cls ? cls.classification : '—'), card('Workspace', d.workspace.kind + ' · ' + d.workspace.packageManager), card('Frontend', fw('frontend')), card('Backend', fw('backend')), card('Language', d.workspace.language)),
+        cls ? [h('h3', { text: 'Applications' }), table(['App', 'Role', 'Framework'], cls.applications.map(function (a) { return [a.path, a.role, [a.ui, a.backend].filter(Boolean).join(' + ') || a.frameworks.join(', ')]; }))] : null,
         h('h3', { text: 'Discovered' }),
         h('table', { className: 'rows' }, h('tbody', {}, [['Applications', d.applications.length], ['Libraries', d.libraries.length], ['API Operations', count(d)], ['Routes', d.routes.length], ['Components', d.components.length], ['Context Candidates', d.contextCandidates.length], ['Permissions', d.permissions.length], ['Knowledge Sources', d.knowledgeSources.length], ['Test files', d.tests.files], ['Files scanned', d.workspace.filesScanned]].map(function (r) { return h('tr', {}, h('td', { text: r[0] }), h('td', { text: r[1] })); }))),
         h('h3', { text: 'Existing GIX integration' }), h('p', { text: d.gix.packages.length ? d.gix.packages.join(', ') : 'No @gixcopilot packages found.' }),
         h('h3', { text: 'Diagnostics' }), table(['Severity', 'Code', 'Message', 'File'], d.diagnostics.map(function (x) { return [badge(x.severity === 'error' ? 'error' : x.severity === 'warning' ? 'warning' : 'not-run', x.severity), x.code, x.message, x.file || '']; }))];
     } else if (sub === 'apis') {
-      var ops = []; d.apis.forEach(function (s) { s.operations.forEach(function (o) { ops.push(o); }); });
-      content = table(['Method', 'Path', 'Source', 'Kind', 'Auth', 'Permissions'], ops.map(function (o) { return [o.method, o.path, o.source, o.sourceKind, o.authentication || '', o.permissions.join(', ')]; }));
+      var ops = d.operations || [];
+      var level = function (c) { return badge(c === 'high' ? 'ok' : c === 'medium' ? 'warning' : 'error', c === 'review' ? 'needs review' : c); };
+      content = [h('div', { className: 'cards' }, card('API Sources', d.apis.length), card('Unique Operations', ops.length), card('High Confidence', ops.filter(function (o) { return o.confidence === 'high'; }).length), card('Medium', ops.filter(function (o) { return o.confidence === 'medium'; }).length), card('Needs Review', ops.filter(function (o) { return o.confidence === 'review'; }).length)),
+        h('h3', { text: 'Sources' }), table(['Kind', 'File', 'Operations'], d.apis.map(function (s) { return [s.kind, s.file, s.operations.length]; })),
+        h('h3', { text: 'Operations' }), table(['Method', 'Path', 'Confidence', 'Sources', 'Auth', 'Permissions', 'Conflicts'], ops.map(function (o) { return [o.method, o.path, level(o.confidence), o.sources.map(function (s) { return s.kind; }).join(', '), o.authentication || '', o.permissions.join(', '), o.conflicts.join(' ')]; }))];
     } else if (sub === 'components') {
       content = table(['Component', 'Framework', 'File', 'Candidate', 'Why'], d.components.map(function (c) { return [c.name, c.framework, c.file, c.candidate ? badge('ok', 'yes') : badge('not-run', 'no'), c.reason]; }));
     } else if (sub === 'context') {
@@ -363,6 +368,7 @@ var views = {
      ['agents', 'Agents', function (x) { return [x.name, x.description, x.tools.join(', ')]; }, ['Agent', 'Description', 'Tools']],
      ['skills', 'Skills', function (x) { return [x.name, x.description, x.tools.join(', ')]; }, ['Skill', 'Description', 'Tools']],
      ['knowledge', 'Knowledge', function (x) { return [x.name, x.description, x.sources.map(function (s) { return s.path; }).join(', ')]; }, ['Group', 'Description', 'Sources']],
+     ['integrations', 'App Integration', function (x) { return [x.app, x.framework, x.description, x.manual.join(' ')]; }, ['App', 'Framework', 'What', 'Manual steps']],
      ['configChanges', 'Configuration Changes', function (x) { return [x.file, x.key, JSON.stringify(x.before === undefined ? null : x.before), JSON.stringify(x.after)]; }, ['File', 'Key', 'Before', 'After']],
      ['policies', 'Security Policies', function (x) { return [x.tool, x.risk, x.approval, x.requiredPermissions.join(', ')]; }, ['Tool', 'Risk', 'Approval', 'Permissions']]].forEach(function (g) {
       var items = p[g[0]];
@@ -388,6 +394,7 @@ var views = {
         table(['Check', 'Status', 'Detail'], result.validation.map(function (c) { return [c.name, badge(c.status === 'passed' ? 'ok' : c.status === 'failed' ? 'error' : 'not-run', c.status), c.detail ? h('pre', { text: c.detail }) : '']; }))] : null,
       h('div', { className: 'actions' },
         h('button', { className: 'danger', text: 'Reject All', disabled: !(p.status === 'draft' || p.status === 'ready-for-review'), onclick: async function () { await run('Reject', function () { return api('POST', '/proposals/' + p.id + '/reject', {}); }); render(); } }),
+        h('button', { className: 'secondary', text: 'Approve Safe Changes', title: 'Read-only tools, context, configuration and UI bootstrap only. Never destructive, write or needs-review items.', disabled: p.status !== 'ready-for-review', onclick: async function () { try { await run('Approve safe changes', function () { return api('POST', '/proposals/' + p.id + '/approve-safe', {}); }); } finally { render(); } } }),
         h('button', { className: 'primary', text: 'Approve Selected Changes', disabled: p.status !== 'ready-for-review', onclick: async function () { try { await run('Approve', function () { return api('POST', '/proposals/' + p.id + '/approve', {}); }); } finally { render(); } } }),
         h('button', { className: 'primary', text: 'Apply', disabled: p.status !== 'approved', onclick: async function () { try { await run('Apply and validate', function () { return api('POST', '/proposals/' + p.id + '/apply', {}); }); } finally { render(); } } }),
         h('button', { className: 'secondary', text: 'Roll back this apply', disabled: !(p.status === 'applied' || p.status === 'failed') || !p.applyResult || p.applyResult.written.length === 0, onclick: async function () { var r = await run('Roll back', function () { return api('POST', '/proposals/' + p.id + '/rollback', {}); }); say('Restored ' + r.restored.length + ' file(s); left ' + r.skipped.length + ' changed file(s) untouched.'); } }))];

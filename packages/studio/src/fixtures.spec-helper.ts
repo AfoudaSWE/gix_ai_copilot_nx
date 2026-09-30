@@ -214,3 +214,103 @@ export class CustomersController {
 declare const AuthGuard: unknown;
 `,
 };
+
+/** The brief's §36 example: Nx, a React portal, a Fastify API, and several API descriptions. */
+export const PORTAL_FIXTURE: Readonly<Record<string, string>> = {
+  'package.json': JSON.stringify({ name: 'visa-workspace', private: true, dependencies: { react: '^19.0.0', 'react-router': '^7.0.0', fastify: '^5.0.0', axios: '^1.0.0' }, devDependencies: { nx: '21.0.0', typescript: '5.9.3', vite: '8.0.0' } }),
+  'package-lock.json': '{}',
+  'nx.json': '{}',
+  'apps/portal/project.json': JSON.stringify({ name: 'portal', projectType: 'application' }),
+  'apps/portal/package.json': JSON.stringify({ name: 'portal', private: true, scripts: { dev: 'vite' }, dependencies: { react: '^19.0.0', 'react-router': '^7.0.0', axios: '^1.0.0' } }),
+  'apps/portal/src/main.tsx': `import { createRoot } from 'react-dom/client';
+import { App } from './app/App';
+createRoot(document.getElementById('root')!).render(<App />);
+`,
+  'apps/portal/src/app/App.tsx': `import { Route, Routes } from 'react-router';
+import { ApplicationDetails } from '../pages/ApplicationDetails';
+import { Dashboard } from '../pages/Dashboard';
+export function App() {
+  return (
+    <Routes>
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/applications/:id" element={<ApplicationDetails />} />
+      <Route path="/payments" element={<div />} />
+    </Routes>
+  );
+}
+`,
+  'apps/portal/src/pages/Dashboard.tsx': `export function Dashboard() { return <h1>Dashboard</h1>; }
+`,
+  'apps/portal/src/pages/ApplicationDetails.tsx': `import { getApplication, getDocuments } from '../services/applications';
+import { getPaymentStatus } from '../services/payments';
+export function ApplicationDetails(props: { id: string }) {
+  void getApplication(props.id); void getDocuments(props.id); void getPaymentStatus(props.id);
+  return <section>Application</section>;
+}
+`,
+  'apps/portal/src/services/applications.ts': `import axios from 'axios';
+export const getApplication = (id: string) => axios.get(\`/api/applications/\${id}\`);
+export const getDocuments = (id: string) => axios.get(\`/api/applications/\${id}/documents\`);
+export const listApplications = () => axios.get('/api/applications');
+`,
+  'apps/portal/src/services/payments.ts': `export const getPaymentStatus = (applicationId: string) => fetch(\`/api/payments/\${applicationId}\`);
+`,
+  'apps/api/project.json': JSON.stringify({ name: 'api', projectType: 'application' }),
+  'apps/api/package.json': JSON.stringify({ name: 'api', private: true, scripts: { start: 'node dist/main.js' }, dependencies: { fastify: '^5.0.0' } }),
+  'apps/api/src/routes.ts': `export async function routes(app: any) {
+  app.get('/applications', async () => []);
+  app.get('/applications/:id', async () => ({}));
+  app.patch('/applications/:id', async () => ({}));
+}
+`,
+  'apis/application-api.yaml': `openapi: 3.0.3
+info: { title: Application API, version: 1.0.0 }
+paths:
+  /applications:
+    get: { operationId: listApplications, summary: List applications, responses: { '200': { description: OK } } }
+    post:
+      operationId: createApplication
+      requestBody: { content: { application/json: { schema: { type: object, properties: { name: { type: string } } } } } }
+      responses: { '201': { description: Created } }
+  /applications/{id}:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    get: { operationId: getApplication, summary: Get an application, responses: { '200': { description: OK } } }
+    patch:
+      operationId: updateApplication
+      requestBody: { content: { application/json: { schema: { type: object, properties: { status: { type: string } } } } } }
+      responses: { '200': { description: OK } }
+    delete: { operationId: deleteApplication, responses: { '204': { description: Deleted } } }
+  /applications/{id}/documents:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    get: { operationId: getApplicationDocuments, responses: { '200': { description: OK } } }
+`,
+  'apis/payments.swagger.json': JSON.stringify({ swagger: '2.0', info: { title: 'Payments API', version: '1' }, basePath: '/', paths: { '/payments/{applicationId}': { get: { operationId: 'getPaymentStatus', summary: 'Payment status', parameters: [{ name: 'applicationId', in: 'path', required: true, type: 'string' }], responses: { '200': { description: 'OK' } } } } } }),
+  'postman/Admin API.postman_collection.json': JSON.stringify({
+    info: { _postman_id: 'x', name: 'Admin API', schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json' },
+    auth: { type: 'bearer' },
+    item: [
+      { name: 'Applications', item: [{ name: 'Update application', request: { method: 'PATCH', url: { raw: '{{baseUrl}}/applications/:id', path: ['applications', ':id'] }, body: { mode: 'raw', raw: '{"state":"approved"}' } } }] },
+      { name: 'Reset system', request: { method: 'POST', url: '{{baseUrl}}/system/reset' } },
+    ],
+  }),
+};
+
+/** A repository with separate client/ and server/ apps and no workspaces (§8). */
+export const FULL_STACK_FIXTURE: Readonly<Record<string, string>> = {
+  'package.json': JSON.stringify({ name: 'shop', private: true }),
+  'client/package.json': JSON.stringify({ name: 'client', scripts: { dev: 'vite' }, dependencies: { vue: '^3.5.0' }, devDependencies: { vite: '8.0.0' } }),
+  'client/src/App.vue': '<script setup lang="ts">\n</script>\n<template><main /></template>\n',
+  'server/package.json': JSON.stringify({ name: 'server', scripts: { start: 'node index.js' }, dependencies: { express: '^5.0.0' } }),
+  'server/index.js': "import express from 'express';\nconst app = express();\napp.get('/orders', (_req, res) => res.json([]));\n",
+};
+
+/** A Next.js app-router project: pages and route handlers are file-system routes. */
+export const NEXT_FIXTURE: Readonly<Record<string, string>> = {
+  'package.json': JSON.stringify({ name: 'next-app', scripts: { dev: 'next dev' }, dependencies: { next: '^16.0.0', react: '^19.0.0' }, devDependencies: { typescript: '5.9.3' } }),
+  'next.config.ts': 'export default {};\n',
+  'app/page.tsx': 'export default function Home() { return <main />; }\n',
+  'app/(shop)/orders/[id]/page.tsx': 'export default function Order() { return <main />; }\n',
+  'app/api/orders/route.ts': 'export async function GET() { return Response.json([]); }\nexport async function POST() { return Response.json({}); }\n',
+  'app/api/orders/[id]/route.ts': 'export const DELETE = async () => new Response(null);\n',
+  'pages/api/health.ts': "export default function handler(req: any, res: any) { if (req.method === 'POST') return res.end(); res.end(); }\n",
+};

@@ -4,7 +4,7 @@ import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import type { DetectedCommand, DetectedCommands } from '../discovery/model.js';
 import { assertApplicationPlane } from '../planes.js';
-import type { ApplyResult, ChangeProposal, FileChange, ProposalConflict, ValidationCheck } from '../proposals/model.js';
+import type { ApplyResult, ChangeProposal, FileChange, ProposalConflict, ProposalItems, ValidationCheck } from '../proposals/model.js';
 import { summarize } from '../proposals/model.js';
 import { reviewProposalSecurity } from '../proposals/security-review.js';
 import { assertTransition } from '../proposals/store.js';
@@ -26,6 +26,8 @@ export interface ApplyEngineOptions {
   readonly validationSteps?: readonly ValidationStep[];
   readonly runner?: CommandRunner;
   readonly commandTimeoutMs?: number;
+  /** The generator's declared paths outside `.gix/`, so apply re-runs the same review. */
+  readonly allowedPathsFor?: (proposal: ChangeProposal) => ((path: string, items: ProposalItems) => boolean) | undefined;
 }
 
 export interface ApplyEngine {
@@ -125,7 +127,7 @@ export function createApplyEngine(options: ApplyEngineOptions): ApplyEngine {
         throw new ApplyRefusedError(proposal.status === 'applied' ? 'This proposal was already applied.' : `Only an approved proposal can be applied (status: ${proposal.status}).`);
       }
       // Approval must still hold: re-run the security review on exactly what will be written.
-      const review = reviewProposalSecurity(proposal, proposal.fileChanges);
+      const review = reviewProposalSecurity(proposal, proposal.fileChanges, options.allowedPathsFor?.(proposal));
       const blocking = review.filter((finding) => finding.severity === 'error');
       if (blocking.length > 0) throw new ApplyRefusedError(`Security review failed: ${blocking.map((finding) => finding.message).join(' ')}`);
 
