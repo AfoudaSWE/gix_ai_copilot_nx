@@ -391,6 +391,24 @@ phase is started without an explicit instruction naming it.
   `attachStudio(copilot)` for `createCopilot`. Example: `examples/studio`.
 - Verified: `pnpm validate` 71/71 projects, Playwright 23/23, 43/43 packages pack cleanly.
 
+## Universal Existing-Project Installer (post-Phase 12, verified and unreleased)
+
+- Explicitly scoped post-Phase-12 enhancement, not a new phase. Tracked in the
+  [installer plan](installer/INSTALLER_PLAN.md) and owner-maintained
+  [installer status](installer/INSTALLER_STATUS.md), with the [guide](installer/README.md)
+  describing current source behavior.
+- `@gixcopilot/sdk` is **Experimental, unreleased and not published to npm**. Its current
+  `0.2.3` source version does not mean it shipped in the published Studio release.
+- Implements a dedicated GIX server bootstrap and `init`/`dev`/`status` CLI over the existing
+  Studio and modular SDK. Missing GIX-owned files may be created during initialization;
+  application edits remain proposals requiring preview, approval and apply. The published
+  `npm create @gixcopilot` installer remains a compatibility path.
+- Verified: 72-project `pnpm validate`, 54 SDK tests, 106 Studio tests, 23 browser tests,
+  44 clean package tarballs and all ten mandatory packed installer fixtures. React/Vite and
+  Express additionally passed approved UI apply and real typecheck/build; other fixtures
+  verify installer/runtime only. Full results, cached/skipped checks and unverified framework
+  compilation are recorded in `installer/INSTALLER_STATUS.md` (READY for the handoff scope).
+
 ## Current Validation (Phase 11 completion)
 
 Before any Phase 11 change: 41/41 projects, 1,154 tests passed, 4 skipped. Final tree:

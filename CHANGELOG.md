@@ -3,6 +3,27 @@
 All `@gixcopilot/*` packages share one version. Entries are generated from conventional
 commits by `nx release changelog`; see [docs/RELEASING.md](docs/RELEASING.md).
 
+## Unreleased
+
+### Features
+
+- **sdk:** Experimental `@gixcopilot/sdk` Universal Existing-Project Installer with `gix init`,
+  `gix dev`, `gix status` and a server entry point over existing modular packages. Bootstrap
+  creates only missing GIX-owned files; application edits remain reviewable Studio proposals.
+  Installation's `postinstall` prints a hint only.
+- **studio:** installer discovery/classification, normalized API operations, app-integration
+  and page-context proposals, file-backed proposal persistence and safe-change selection.
+
+### Documentation
+
+- Intended SDK quick start, public API/non-responsibilities, installer flow, manifest,
+  idempotency and known verification limits. The published `npm create @gixcopilot` path remains.
+
+These additions are **unreleased and not published to npm**; the SDK's `0.2.3` source
+version is not a release claim. Installer readiness and actual validation results are
+owner-maintained in [installer status](docs/installer/INSTALLER_STATUS.md), not certified by
+this changelog entry.
+
 ## 0.2.3 (2026-09-30)
 
 ### 🚀 Features

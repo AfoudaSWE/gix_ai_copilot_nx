@@ -256,6 +256,16 @@ Redis coordination for multi-instance deployments: distributed rate limiting, le
 
 **Types (5):** `DistributedLock`, `DistributedRateLimitDecision`, `DistributedRateLimitRule`, `DistributedRateLimiter`, `LockHandle`
 
+## @gixcopilot/sdk
+
+One package to add GIX Copilot to an existing project: `npm add @gixcopilot/sdk`, then `npx gix init` detects your repo, installs what each app needs, and prepares reviewable proposals in the Developer Studio.
+
+**Values (11):** `INIT_GENERATORS`, `MANIFEST_FILE`, `SDK_VERSION`, `UI_PACKAGES`, `parseManifest`, `planInstalls`, `run`, `runDev`, `runInit`, `runInstall`, `runStatus`
+
+**Types (5):** `GixManifest`, `InitIo`, `InitOptions`, `InitResult`, `InstallStep`
+
+**Subpath exports:** `@gixcopilot/sdk/server`
+
 ## @gixcopilot/security
 
 Framework-independent AI Action Firewall, RBAC/ABAC, human-in-the-loop approval, PII redaction, and audit trail for the AI Copilot SDK.
@@ -276,9 +286,9 @@ Fastify HTTP/SSE transport adapter for the AI Copilot SDK: adapts @gixcopilot/co
 
 Development-only GIX Developer Studio (/__gix): read-only project discovery, proposal-producing generators, preview/diff, explicit approval and a deterministic apply engine. Never exposed in production.
 
-**Values (51):** `ApplyRefusedError`, `DEFAULT_DETECTORS`, `DEFAULT_GENERATORS`, `DEFAULT_WORKSPACE_LIMITS`, `DEVELOPMENT_AGENTS`, `DEVELOPMENT_CAPABILITIES`, `DEVELOPMENT_SKILLS`, `DEVELOPMENT_TOOLS`, `PlaneViolationError`, `ProposalEditError`, `ProposalStateError`, `RESERVED_DEVELOPMENT_NAMESPACES`, `SecretFileError`, `StudioApprovalError`, `StudioNotFoundError`, `WorkspaceViolationError`, `agentGenerator`, `apiToolsGenerator`, `applyEdits`, `approvalFloor`, `assertApplicationPlane`, `assertTransition`, `compareDiscoveries`, `computeDiagnostics`, `configurationGenerator`, `contextGenerator`, `createApplyEngine`, `createModelSettingsStore`, `createReadonlyWorkspace`, `createStudioService`, `createWorkspaceGuard`, `discoverProject`, `generativeUiGenerator`, `isDevelopmentAgentOrSkill`, `isDevelopmentToolName`, `isSecretPath`, `knowledgeGenerator`, `modelSettingsSchema`, `openApiToolsGenerator`, `proposalEditSchema`, `redactConfig`, `redactSecrets`, `reviewProposalSecurity`, `runGenerator`, `scanForSecrets`, `securityPolicyGenerator`, `skillGenerator`, `suggestPermission`, `suggestRisk`, `toolNameFor`, `unifiedDiff`
+**Values (64):** `ApplyRefusedError`, `COPILOT_API_PREFIX`, `COPILOT_CONFIG_FILE`, `COPILOT_SERVER_URL`, `DEFAULT_DETECTORS`, `DEFAULT_GENERATORS`, `DEFAULT_WORKSPACE_LIMITS`, `DEVELOPMENT_AGENTS`, `DEVELOPMENT_CAPABILITIES`, `DEVELOPMENT_SKILLS`, `DEVELOPMENT_TOOLS`, `PROPOSALS_DIRECTORY`, `PlaneViolationError`, `ProposalEditError`, `ProposalStateError`, `RESERVED_DEVELOPMENT_NAMESPACES`, `SecretFileError`, `StudioApprovalError`, `StudioNotFoundError`, `WorkspaceViolationError`, `agentGenerator`, `analyzePages`, `apiToolsGenerator`, `appIntegrationGenerator`, `applyEdits`, `approvalFloor`, `assertApplicationPlane`, `assertTransition`, `canonicalOperationKey`, `classifyProject`, `compareDiscoveries`, `computeDiagnostics`, `configurationGenerator`, `contextGenerator`, `createApplyEngine`, `createFileProposalStore`, `createModelSettingsStore`, `createProposalStore`, `createReadonlyWorkspace`, `createStudioService`, `createWorkspaceGuard`, `discoverProject`, `generativeUiGenerator`, `isDevelopmentAgentOrSkill`, `isDevelopmentToolName`, `isSecretPath`, `knowledgeGenerator`, `modelSettingsSchema`, `normalizeApiOperations`, `openApiToolsGenerator`, `proposalEditSchema`, `redactConfig`, `redactSecrets`, `reviewProposalSecurity`, `routePattern`, `runGenerator`, `safeSelection`, `scanForSecrets`, `securityPolicyGenerator`, `skillGenerator`, `suggestPermission`, `suggestRisk`, `toolNameFor`, `unifiedDiff`
 
-**Types (45):** `AnyGenerator`, `ApplyEngine`, `ApplyEngineOptions`, `CapabilityDescriptor`, `CapabilityKind`, `CommandRunner`, `ConnectionTestResult`, `DetectionInput`, `DiscoverProjectOptions`, `DiscoveryComparison`, `GeneratedDraft`, `Generator`, `GeneratorContext`, `GeneratorInput`, `HealthRow`, `HealthStatus`, `HostToolView`, `LifecycleStage`, `ListFilesOptions`, `ListFilesResult`, `ModelSettingsInput`, `ModelSettingsStore`, `PackageManifest`, `Plane`, `ProjectDetector`, `ProposalEdit`, `ProposalView`, `ProviderFactory`, `ProviderSettings`, `PublicModelSettings`, `ReadonlyWorkspace`, `RenderedFile`, `RuntimeFacts`, `SecretFinding`, `SecuritySummary`, `StudioConfigView`, `StudioDiagnostics`, `StudioService`, `StudioServiceOptions`, `StudioStatus`, `ToolNameSource`, `ValidationStep`, `WorkspaceFile`, `WorkspaceGuard`, `WorkspaceLimits`
+**Types (50):** `AnyGenerator`, `ApplicationRole`, `ApplyEngine`, `ApplyEngineOptions`, `CapabilityDescriptor`, `CapabilityKind`, `ClassifiedApplication`, `CommandRunner`, `ConnectionTestResult`, `DetectionInput`, `DiscoverProjectOptions`, `DiscoveryComparison`, `GeneratedDraft`, `Generator`, `GeneratorContext`, `GeneratorInput`, `HealthRow`, `HealthStatus`, `HostToolView`, `LifecycleStage`, `ListFilesOptions`, `ListFilesResult`, `ModelSettingsInput`, `ModelSettingsStore`, `PackageManifest`, `Plane`, `ProjectClassification`, `ProjectClassificationResult`, `ProjectDetector`, `ProposalEdit`, `ProposalStore`, `ProposalView`, `ProviderFactory`, `ProviderSettings`, `PublicModelSettings`, `ReadonlyWorkspace`, `RenderedFile`, `RuntimeFacts`, `SecretFinding`, `SecuritySummary`, `StudioConfigView`, `StudioDiagnostics`, `StudioService`, `StudioServiceOptions`, `StudioStatus`, `ToolNameSource`, `ValidationStep`, `WorkspaceFile`, `WorkspaceGuard`, `WorkspaceLimits`
 
 **Subpath exports:** `@gixcopilot/studio/server`
 

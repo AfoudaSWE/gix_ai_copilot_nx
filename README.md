@@ -19,7 +19,28 @@ without treating model output as authority.
 
 ## Quick start
 
-Add a copilot to an existing React, Vue or Angular app (or an empty folder) with one command:
+The Universal Existing-Project Installer is **Experimental and unreleased**.
+`@gixcopilot/sdk` is not published to npm yet; this is the intended flow once released
+(local evaluation currently requires packed packages, not a registry install).
+Run at an existing project's root containing `package.json`:
+
+```sh
+npm add @gixcopilot/sdk
+npx gix init
+npx gix dev
+```
+
+Open `http://localhost:4000/__gix`. `init` detects the project, installs missing packages for
+selected apps, creates missing GIX-owned bootstrap files, and prepares proposals. Review the
+diff, select changes, approve, then apply in Studio. Existing application source is not
+edited by `init`. Installation's `postinstall` only prints a hint; it never initializes the
+repository. See the [installer guide](docs/installer/README.md) for selection, files,
+server-only configuration and verification limits.
+
+### Published compatibility path
+
+Until the SDK installer is released, the existing installer remains available for React,
+Vue or Angular apps (or an empty folder):
 
 ```sh
 npm create @gixcopilot@latest
@@ -111,6 +132,7 @@ packages/
   angular/              @gixcopilot/angular (Angular signals and components)
   vue/                  @gixcopilot/vue (Vue 3 plugin, composables and chat component)
   create/               @gixcopilot/create (npm create @gixcopilot installer)
+  sdk/                  @gixcopilot/sdk (gix installer, Experimental/unreleased)
   node/                 @gixcopilot/node (Node integration)
   cli/                  @gixcopilot/cli (aicopilot command)
   ui/                   @gixcopilot/ui (optional components + CSS)

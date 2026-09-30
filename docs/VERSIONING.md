@@ -40,7 +40,12 @@ change to expect between releases, on top of the SemVer rules above.
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Stable | protocol, core, client, server, provider, provider-openai, provider-mock, tools, security, context, headless, generative-ui, react, ui                                                                                                                                                 |
 | Beta   | agents, angular, checkpoint-postgres, cli, config, connectors, create, devtools, evals, integrations, jobs, knowledge, management, mcp, memory, model-router, node, openapi, persistence-postgres, rag, redis, telemetry, tenancy, testing, usage, vectorstore-pgvector, vue, workflows |
-| Experimental | studio                                                                                                                                                                                                                                                                            |
+| Experimental | studio, sdk (unreleased; not published) |
 
 A package moves from Beta to Stable in a minor release, noted in the changelog. It never moves
 back down; a Stable API that needs to break follows the deprecation cycle.
+
+`@gixcopilot/sdk` and the Universal Existing-Project Installer are working-tree additions,
+not part of the published 0.2.3 release. The package's current version field is not evidence
+of publication or consumer verification. See the [installer guide](installer/README.md) and
+owner-maintained [installer status](installer/INSTALLER_STATUS.md) before evaluating it.
