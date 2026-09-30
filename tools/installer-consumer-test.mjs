@@ -169,6 +169,16 @@ function write(dir, path, content) {
   writeFileSync(join(dir, path), content);
 }
 const readJson = (dir, path) => JSON.parse(readFileSync(join(dir, path), 'utf8'));
+function packedOverrides(dir) {
+  const pkg = readJson(dir, 'package.json');
+  const direct = { ...pkg.dependencies, ...pkg.devDependencies, ...pkg.optionalDependencies };
+  // npm add/install relativizes file arguments before checking direct-dependency overrides.
+  // Keep the SDK's environment map absolute: init also installs from app directories.
+  pkg.overrides = Object.fromEntries(Object.entries(tarballs).map(([name, spec]) => [name,
+    direct[name] ? `$${name}` : `file:${relative(dir, spec.slice(5)).replaceAll('\\', '/').replaceAll('#', '%23')}`,
+  ]));
+  write(dir, 'package.json', json(pkg));
+}
 function proposalSnapshot(dir) {
   const path = join(dir, '.gix/proposals');
   assert(existsSync(path), 'Missing persisted proposal directory');
@@ -294,6 +304,8 @@ try {
       mkdirSync(dir);
       write(dir, 'package.json', json({ name: `installer-${fixture.name}`, version: '0.0.0', private: true, type: 'module', ...fixture.pkg, devDependencies: { ...commonDev, ...fixture.pkg.devDependencies }, overrides: tarballs }));
       for (const [path, content] of Object.entries(fixture.files)) write(dir, path, content);
+      const packageDirs = ['.', ...Object.keys(fixture.files).filter((path) => path.endsWith('/package.json')).map(dirname)];
+      for (const path of packageDirs) packedOverrides(join(dir, path));
       // Source snapshots intentionally exclude package manifests, which init may update.
       const sources = Object.entries(fixture.files).filter(([path]) => !path.endsWith('package.json'));
       const assertUnchanged = () => {
@@ -301,6 +313,7 @@ try {
       };
       phase = 'npm add packed SDK';
       await run(dir, 'npm', ['add', `@gixcopilot/sdk@${tarballs['@gixcopilot/sdk']}`]);
+      packedOverrides(dir);
       assertUnchanged();
       assert(!existsSync(join(dir, '.gix')) && !existsSync(join(dir, 'gix')), 'postinstall modified the project');
       checks.push('postinstall is hint-only');
